@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minimalist Whiteboard</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        /* Basic styles for a smooth experience */
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* Prevents scrolling */
+            width: 100%;
+            height: 100%;
+        }
+        /* The canvas itself */
+        #whiteboard {
+            display: block;
+            background: #ffffff;
+            cursor: crosshair;
+        }
+        /* Style for the save indicator */
+        #save-indicator {
+            transition: opacity 0.5s ease-out;
+        }
+        /* Custom styles for color input */
+        input[type="color"] {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            width: 2.5rem; /* 40px */
+            height: 2.5rem; /* 40px */
+            padding: 0;
+            border: none;
+            border-radius: 0.375rem; /* rounded-md */
+            cursor: pointer;
+            background-color: transparent;
+        }
+        input[type="color"]::-webkit-color-swatch-wrapper {
+            padding: 0;
+            border-radius: 0.375rem;
+        }
+        input[type="color"]::-webkit-color-swatch {
+            border: 2px solid #e2e8f0; /* gray-200 */
+            border-radius: 0.375rem;
+        }
+        input[type="color"]::-moz-color-swatch {
+            border: 2px solid #e2e8f0;
+            border-radius: 0.375rem;
+        }
+    </style>
+</head>
+<body class="font-sans antialiased">
+
+    <!-- Toolbar -->
+    <div id="toolbar" class="fixed top-0 left-0 right-0 bg-white shadow-lg p-3 flex items-center justify-center space-x-2 md:space-x-4 z-10 select-none">
+        
+        <!-- Color Picker -->
+        <div class="flex flex-col items-center">
+            <label for="color-picker" class="text-xs text-gray-500 mb-1">Color</label>
+            <input type="color" id="color-picker" value="#000000">
+        </div>
+
+        <!-- Pen Tool -->
+        <div class="flex flex-col items-center">
+            <label class="text-xs text-gray-500 mb-1 invisible">Tool</label>
+            <button id="pen-btn" class="p-2 rounded-md bg-gray-200" title="Pen">
+                <!-- Lucide Pen icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 md:w-6 md:h-6">
+                    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Eraser Tool -->
+        <div class="flex flex-col items-center">
+            <label class="text-xs text-gray-500 mb-1 invisible">Tool</label>
+            <button id="eraser-btn" class="p-2 rounded-md hover:bg-gray-200" title="Eraser">
+                <!-- Lucide Eraser icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 md:w-6 md:h-6">
+                    <path d="m19 21-7-7-4 4L2 12l9-9 4 4 7 7Z"/><path d="m18 11 4-4"/><path d="m14 15 4-4"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Brush Size -->
+        <div class="flex flex-col items-center">
+            <label for="brush-size" class="text-xs text-gray-500 mb-1">Size (<span id="brush-size-label" class="w-4 inline-block">5</span>)</label>
+            <input type="range" id="brush-size" min="1" max="100" value="5" class="w-20 md:w-32 cursor-pointer">
+        </div>
+
+        <!-- Clear Canvas -->
+        <div class="flex flex-col items-center">
+            <label class="text-xs text-gray-500 mb-1 invisible">Action</label>
+            <button id="clear-btn" class="p-2 rounded-md hover:bg-red-100 text-red-600" title="Clear Canvas">
+                <!-- Lucide Trash 2 icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 md:w-6 md:h-6">
+                    <path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Save Indicator -->
+    <div id="save-indicator" class="fixed bottom-4 right-4 bg-green-600 text-white text-sm px-3 py-1 rounded-full shadow-lg opacity-0 select-none">
+        Saved!
+    </div>
+
+    <!-- Confirmation Modal (hidden by default) -->
+    <div id="confirm-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white p-6 rounded-lg shadow-xl w-11/12 max-w-sm">
+            <h3 class="text-lg font-medium mb-4">Clear Canvas?</h3>
+            <p class="text-sm text-gray-600 mb-6">This will permanently erase your drawing. This action cannot be undone.</p>
+            <div class="flex justify-end space-x-3">
+                <button id="cancel-clear" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Cancel</button>
+                <button id="confirm-clear" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">Clear</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Drawing Area -->
+    <canvas id="whiteboard"></canvas>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('whiteboard');
+            const ctx = canvas.getContext('2d');
+            const toolbar = document.getElementById('toolbar');
+
+            // Toolbar controls
+            const colorPicker = document.getElementById('color-picker');
+            const penBtn = document.getElementById('pen-btn');
+            const eraserBtn = document.getElementById('eraser-btn');
+            const brushSizeSlider = document.getElementById('brush-size');
+            const brushSizeLabel = document.getElementById('brush-size-label');
+            const clearBtn = document.getElementById('clear-btn');
+            
+            // Indicators & Modals
+            const saveIndicator = document.getElementById('save-indicator');
+            const confirmModal = document.getElementById('confirm-modal');
+            const cancelClearBtn = document.getElementById('cancel-clear');
+            const confirmClearBtn = document.getElementById('confirm-clear');
+
+            // Drawing state
+            let isDrawing = false;
+            let lastX = 0;
+            let lastY = 0;
+            let currentColor = '#000000';
+            let currentBrushSize = 5;
+            let lastUsedPenColor = '#000000'; // Remembers your color when switching to/from eraser
+
+            // --- Canvas Setup ---
+            function resizeCanvas() {
+                // Save the current canvas content
+                const dataUrl = canvas.toDataURL();
+
+                // Set canvas dimensions to fill the window
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+                
+                // Re-apply drawing settings
+                ctx.strokeStyle = currentColor;
+                ctx.lineWidth = currentBrushSize;
+                ctx.lineCap = 'round'; // Smooths line ends
+                ctx.lineJoin = 'round'; // Smooths line corners
+
+                // Restore the canvas content
+                loadCanvasFromData(dataUrl);
+            }
+
+            // --- Local Storage ---
+            function loadCanvasFromData(dataUrl) {
+                if (!dataUrl) return;
+                const img = new Image();
+                img.src = dataUrl;
+                img.onload = () => {
+                    ctx.drawImage(img, 0, 0);
+                }
+            }
+
+            function loadFromStorage() {
+                const dataUrl = localStorage.getItem('whiteboardData');
+                loadCanvasFromData(dataUrl);
+            }
+
+            function saveToStorage() {
+                try {
+                    const dataUrl = canvas.toDataURL();
+                    localStorage.setItem('whiteboardData', dataUrl);
+                    
+                    // Show save indicator
+                    saveIndicator.style.opacity = '1';
+                    setTimeout(() => {
+                        saveIndicator.style.opacity = '0';
+                    }, 1500);
+                } catch (e) {
+                    console.error("Error saving to localStorage", e);
+                    if (e.name === 'QuotaExceededError') {
+                        // Handle storage full error (e.g., show a persistent error message)
+                    }
+                }
+            }
+
+            // --- Drawing Functions ---
+            
+            // Gets correct coordinates for mouse or touch
+            function getCoords(e) {
+                if (e.touches && e.touches.length > 0) {
+                    return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+                }
+                return { x: e.clientX, y: e.clientY };
+            }
+
+            function startDrawing(e) {
+                // Ignore if clicking on the toolbar
+                if (e.target.closest('#toolbar')) return;
+
+                e.preventDefault();
+                isDrawing = true;
+                const { x, y } = getCoords(e);
+                [lastX, lastY] = [x, y];
+                
+                // Draw a single dot for a click/tap
+                ctx.beginPath();
+                ctx.moveTo(lastX, lastY);
+                ctx.lineTo(lastX, lastY);
+                ctx.stroke();
+            }
+
+            function draw(e) {
+                if (!isDrawing) return;
+                e.preventDefault();
+                const { x, y } = getCoords(e);
+
+                ctx.beginPath();
+                ctx.moveTo(lastX, lastY);
+                ctx.lineTo(x, y);
+                ctx.stroke();
+
+                [lastX, lastY] = [x, y];
+            }
+
+            function stopDrawing() {
+                if (!isDrawing) return;
+                isDrawing = false;
+                ctx.beginPath(); // Close the current path
+                
+                // Save the drawing at the end of the stroke
+                saveToStorage();
+            }
+
+            // --- Toolbar Event Listeners ---
+            
+            // Color Picker
+            colorPicker.addEventListener('input', (e) => {
+                currentColor = e.target.value;
+                lastUsedPenColor = currentColor;
+                ctx.strokeStyle = currentColor;
+                penBtn.classList.add('bg-gray-200');
+                eraserBtn.classList.remove('bg-gray-200');
+            });
+
+            // Pen Button
+            penBtn.addEventListener('click', () => {
+                currentColor = lastUsedPenColor;
+                ctx.strokeStyle = currentColor;
+                penBtn.classList.add('bg-gray-200');
+                eraserBtn.classList.remove('bg-gray-200');
+            });
+            
+            // Eraser Button
+            eraserBtn.addEventListener('click', () => {
+                currentColor = '#FFFFFF'; // Set to background color
+                ctx.strokeStyle = currentColor;
+                eraserBtn.classList.add('bg-gray-200');
+                penBtn.classList.remove('bg-gray-200');
+            });
+
+            // Brush Size
+            brushSizeSlider.addEventListener('input', (e) => {
+                currentBrushSize = e.target.value;
+                brushSizeLabel.textContent = currentBrushSize;
+                ctx.lineWidth = currentBrushSize;
+            });
+
+            // Clear Button
+            clearBtn.addEventListener('click', () => {
+                confirmModal.classList.remove('hidden');
+
+            });
+
+            cancelClearBtn.addEventListener('click', () => {
+                confirmModal.classList.add('hidden');
+            });
+
+            confirmClearBtn.addEventListener('click', () => {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                saveToStorage(); // Save the cleared state
+                confirmModal.classList.add('hidden');
+            });
+
+            // --- Main Event Listeners ---
+            
+            // Mouse events
+            canvas.addEventListener('mousedown', startDrawing);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', stopDrawing);
+            canvas.addEventListener('mouseout', stopDrawing); // Stop drawing if mouse leaves canvas
+
+            // Touch events
+            canvas.addEventListener('touchstart', startDrawing, { passive: false });
+            canvas.addEventListener('touchmove', draw, { passive: false });
+            canvas.addEventListener('touchend', stopDrawing);
+            canvas.addEventListener('touchcancel', stopDrawing);
+
+            // Window resize
+            window.addEventListener('resize', resizeCanvas);
+
+            // --- Initialization ---
+            resizeCanvas();      // Set initial canvas size
+            loadFromStorage();   // Load previous drawing from local storage
+        });
+    </script>
+</body>
+</html>
