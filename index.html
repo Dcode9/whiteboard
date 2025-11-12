@@ -29,20 +29,78 @@
         /* The canvas itself */
         #whiteboard {
             display: block;
-            background: #ffffff;
-            cursor: crosshair;
+            cursor: none; /* Hide default cursor */
         }
+        
+        #whiteboard.panning {
+            cursor: grab;
+        }
+
+        #whiteboard.panning:active {
+            cursor: grabbing;
+        }
+
+        /* MODIFIED: Renamed to custom-cursor-circle */
+        #custom-cursor-circle {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 20px;
+            height: 20px;
+            /* MODIFIED: Explicit styling as requested */
+            background-color: white;
+            border: 2px solid black; 
+            border-radius: 50%;
+            pointer-events: none; /* Let clicks pass through */
+            transform: translate(-50%, -50%);
+            /* REMOVED: mix-blend-mode: difference; */
+            z-index: 9999;
+            transition: width 0.1s ease, height 0.1s ease;
+            display: none; /* Hide by default */
+        }
+        
+        /* NEW: Eraser Cursor */
+        #custom-cursor-eraser {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 24px;
+            height: 24px;
+            pointer-events: none;
+            /* Offset to make the "corner" of the eraser the pointer */
+            transform: translate(-4px, -22px); 
+            z-index: 9999;
+            mix-blend-mode: difference;
+            display: none; /* Hide by default */
+        }
+        
+        #custom-cursor-eraser svg {
+            width: 100%;
+            height: 100%;
+            /* Use white, mix-blend-mode will invert it against background */
+            fill: white; 
+            stroke: white;
+            stroke-width: 1.5;
+        }
+
+        /* MODIFIED: Hide both custom cursors when panning */
+        #whiteboard.panning + #custom-cursor-circle,
+        #whiteboard.panning + #custom-cursor-eraser {
+            display: none;
+        }
+
         /* Style for the save indicator */
         #save-indicator {
             transition: opacity 0.5s ease-out;
         }
+        
         /* Custom styles for color input */
         input[type="color"] {
             -webkit-appearance: none;
             -moz-appearance: none;
             appearance: none;
-            width: 2.5rem; /* 40px */
-            height: 2.5rem; /* 40px */
+            width: 3rem; /* 48px - Larger */
+            height: 3rem; /* 48px - Larger */
             padding: 0;
             border: none;
             border-radius: 0.375rem; /* rounded-md */
@@ -61,26 +119,58 @@
             border: 2px solid #e2e8f0;
             border-radius: 0.375rem;
         }
+
+        /* Style for active tool button */
+        .tool-btn.active {
+            background-color: #dbeafe; /* blue-100 */
+            color: #2563eb; /* blue-600 */
+            box-shadow: 0 0 0 2px #bfdbfe; /* blue-200 */
+        }
+
+        /* NEW: Larger touch targets for buttons */
+        .tool-btn {
+            padding: 0.75rem; /* p-3 */
+            border-radius: 0.5rem; /* rounded-md */
+        }
+        .tool-btn svg {
+            width: 1.75rem; /* w-7 */
+            height: 1.75rem; /* h-7 */
+            pointer-events: none;
+        }
     </style>
 </head>
 <body class="font-sans antialiased">
 
-    <!-- Toolbar -->
-    <div id="toolbar" class="fixed top-0 left-0 right-0 bg-white shadow-lg p-3 flex items-center justify-center space-x-2 md:space-x-4 z-10 select-none">
+    <!-- MODIFIED: "Floating" Toolbar -->
+    <div id="toolbar" class="fixed top-4 left-1/2 -translate-x-1/2 bg-white rounded-lg shadow-xl p-3 flex items-center justify-center flex-nowrap gap-x-2 md:gap-x-4 z-10 select-none overflow-x-auto max-w-[95vw]">
         
         <!-- Color Picker -->
         <div class="flex flex-col items-center">
-            <label for="color-picker" class="text-xs text-gray-500 mb-1">Color</label>
-            <input type="color" id="color-picker" value="#000000">
+            <label for="color-picker" class="text-xs text-gray-500 mb-1">Brush</label>
+            <input type="color" id="color-picker" value="#000000" title="Brush Color">
         </div>
 
         <!-- Pen Tool -->
         <div class="flex flex-col items-center">
             <label class="text-xs text-gray-500 mb-1 invisible">Tool</label>
-            <button id="pen-btn" class="p-2 rounded-md bg-gray-200" title="Pen">
+            <button id="pen-btn" class="tool-btn rounded-md active" title="Pen">
                 <!-- Lucide Pen icon -->
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 md:w-6 md:h-6">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 pointer-events-none">
                     <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Pan Tool -->
+        <div class="flex flex-col items-center">
+            <label class="text-xs text-gray-500 mb-1 invisible">Tool</label>
+            <button id="pan-btn" class="tool-btn rounded-md hover:bg-gray-200" title="Pan (Move Canvas)">
+                <!-- Lucide Hand icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 pointer-events-none">
+                    <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/>
+                    <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"/>
+                    <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"/>
+                    <path d="M18 8a2 2 0 0 0-2 2v10a4 4 0 0 1-4 4v0a4 4 0 0 1-4-4V6a2 2 0 0 1 2-2v0a2 2 0 0 1 2 2v0"/>
                 </svg>
             </button>
         </div>
@@ -88,9 +178,9 @@
         <!-- Eraser Tool -->
         <div class="flex flex-col items-center">
             <label class="text-xs text-gray-500 mb-1 invisible">Tool</label>
-            <button id="eraser-btn" class="p-2 rounded-md hover:bg-gray-200" title="Eraser">
+            <button id="eraser-btn" class="tool-btn rounded-md hover:bg-gray-200" title="Object Eraser">
                 <!-- Lucide Eraser icon -->
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 md:w-6 md:h-6">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 pointer-events-none">
                     <path d="m19 21-7-7-4 4L2 12l9-9 4 4 7 7Z"/><path d="m18 11 4-4"/><path d="m14 15 4-4"/>
                 </svg>
             </button>
@@ -102,12 +192,72 @@
             <input type="range" id="brush-size" min="1" max="100" value="5" class="w-20 md:w-32 cursor-pointer">
         </div>
 
+        <!-- Line Tool -->
+        <div class="flex flex-col items-center">
+            <label class="text-xs text-gray-500 mb-1 invisible">Shape</label>
+            <button id="line-btn" class="tool-btn rounded-md hover:bg-gray-200" title="Line">
+                <!-- Lucide Minus icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 pointer-events-none">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+            </button>
+        </div>
+        
+        <!-- Rectangle Tool -->
+        <div class="flex flex-col items-center">
+            <label class="text-xs text-gray-500 mb-1 invisible">Shape</label>
+            <button id="rect-btn" class="tool-btn rounded-md hover:bg-gray-200" title="Rectangle">
+                <!-- Lucide Square icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 pointer-events-none">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Circle Tool -->
+        <div class="flex flex-col items-center">
+            <label class="text-xs text-gray-500 mb-1 invisible">Shape</label>
+            <button id="circle-btn" class="tool-btn rounded-md hover:bg-gray-200" title="Circle">
+                <!-- Lucide Circle icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 pointer-events-none">
+                    <circle cx="12" cy="12" r="10"></circle>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Triangle Tool -->
+        <div class="flex flex-col items-center">
+            <label class="text-xs text-gray-500 mb-1 invisible">Shape</label>
+            <button id="triangle-btn" class="tool-btn rounded-md hover:bg-gray-200" title="Triangle">
+                <!-- Lucide Triangle icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 pointer-events-none">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Background Color -->
+        <div class="flex flex-col items-center">
+            <label for="bg-color-picker" class="text-xs text-gray-500 mb-1">BG</label>
+            <input type="color" id="bg-color-picker" value="#FFFFFF" title="Background Color (for new canvas)">
+        </div>
+
+        <!-- Background Pattern -->
+        <div class="flex flex-col items-center">
+            <label for="bg-pattern" class="text-xs text-gray-500 mb-1">Pattern</label>
+            <select id="bg-pattern" class="text-sm border border-gray-300 rounded-md p-1 h-12 w-24" title="Background Pattern (for new canvas)">
+                <option value="plain">Plain</option>
+                <option value="ruled">Ruled</option>
+                <option value="grid">Grid</option>
+            </select>
+        </div>
+
         <!-- Clear Canvas -->
         <div class="flex flex-col items-center">
             <label class="text-xs text-gray-500 mb-1 invisible">Action</label>
-            <button id="clear-btn" class="p-2 rounded-md hover:bg-red-100 text-red-600" title="Clear Canvas">
+            <button id="clear-btn" class="tool-btn rounded-md hover:bg-red-100 text-red-600" title="Clear Canvas">
                 <!-- Lucide Trash 2 icon -->
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 md:w-6 md:h-6">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7">
                     <path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/>
                 </svg>
             </button>
@@ -123,7 +273,7 @@
     <div id="confirm-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
         <div class="bg-white p-6 rounded-lg shadow-xl w-11/12 max-w-sm">
             <h3 class="text-lg font-medium mb-4">Clear Canvas?</h3>
-            <p class="text-sm text-gray-600 mb-6">This will permanently erase your drawing. This action cannot be undone.</p>
+            <p class="text-sm text-gray-600 mb-6">This will permanently erase all drawings. This action cannot be undone.</p>
             <div class="flex justify-end space-x-3">
                 <button id="cancel-clear" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Cancel</button>
                 <button id="confirm-clear" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">Clear</button>
@@ -133,20 +283,46 @@
 
     <!-- Drawing Area -->
     <canvas id="whiteboard"></canvas>
+    
+    <!-- MODIFIED: Renamed -->
+    <div id="custom-cursor-circle"></div>
+    <!-- NEW: Eraser Cursor Element -->
+    <div id="custom-cursor-eraser">
+        <!-- Lucide Eraser icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m19 21-7-7-4 4L2 12l9-9 4 4 7 7Z"/><path d="m18 11 4-4"/>
+        </svg>
+    </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const canvas = document.getElementById('whiteboard');
             const ctx = canvas.getContext('2d');
             const toolbar = document.getElementById('toolbar');
+            // MODIFIED: Get both cursors
+            const customCursorCircle = document.getElementById('custom-cursor-circle');
+            const customCursorEraser = document.getElementById('custom-cursor-eraser');
 
             // Toolbar controls
             const colorPicker = document.getElementById('color-picker');
-            const penBtn = document.getElementById('pen-btn');
-            const eraserBtn = document.getElementById('eraser-btn');
             const brushSizeSlider = document.getElementById('brush-size');
             const brushSizeLabel = document.getElementById('brush-size-label');
             const clearBtn = document.getElementById('clear-btn');
+            
+            // Tool buttons
+            const toolButtons = [
+                { el: document.getElementById('pen-btn'), tool: 'pen' },
+                { el: document.getElementById('pan-btn'), tool: 'pan' },
+                { el: document.getElementById('eraser-btn'), tool: 'eraser' },
+                { el: document.getElementById('line-btn'), tool: 'line' },
+                { el: document.getElementById('rect-btn'), tool: 'rect' },
+                { el: document.getElementById('circle-btn'), tool: 'circle' },
+                { el: document.getElementById('triangle-btn'), tool: 'triangle' },
+            ];
+
+            // Background controls
+            const bgColorPicker = document.getElementById('bg-color-picker');
+            const bgPatternSelector = document.getElementById('bg-pattern');
             
             // Indicators & Modals
             const saveIndicator = document.getElementById('save-indicator');
@@ -154,69 +330,246 @@
             const cancelClearBtn = document.getElementById('cancel-clear');
             const confirmClearBtn = document.getElementById('confirm-clear');
 
-            // Drawing state
+            // --- STATE ---
+            let strokes = []; // The "source of truth" for all drawings
+            let currentPath = null; // The path currently being drawn
+            let viewOffset = { x: 0, y: 0 }; // Pan offset
+            let lastPanPos = { x: 0, y: 0 };
+            
             let isDrawing = false;
-            let lastX = 0;
-            let lastY = 0;
+            let isPanning = false;
+            let didDeleteInStroke = false; // For drag-to-erase
+            let wheelSaveTimer = null; // Timer for wheel save
+
             let currentColor = '#000000';
             let currentBrushSize = 5;
-            let lastUsedPenColor = '#000000'; // Remembers your color when switching to/from eraser
+            let currentTool = 'pen'; // 'pen', 'eraser', 'line', 'rect', 'circle', 'triangle', 'pan'
+            
+            let backgroundColor = '#FFFFFF';
+            let backgroundPattern = 'plain'; // 'plain', 'ruled', 'grid'
+
+            // REMOVED: State for cursor visibility
+            // let isMouseOnCanvas = false;
+
+            // --- Coordinate Conversion ---
+            function screenToWorld(screenX, screenY) {
+                return { x: screenX - viewOffset.x, y: screenY - viewOffset.y };
+            }
+            
+            function worldToScreen(worldX, worldY) {
+                return { x: worldX + viewOffset.x, y: worldY + viewOffset.y };
+            }
 
             // --- Canvas Setup ---
-            function resizeCanvas() {
-                // Save the current canvas content
-                const dataUrl = canvas.toDataURL();
+            
+            function drawBackground() {
+                // Fill background color
+                ctx.fillStyle = backgroundColor;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-                // Set canvas dimensions to fill the window
+                // Draw pattern
+                if (backgroundPattern === 'plain') return;
+
+                ctx.strokeStyle = '#E2E8F0'; // gray-200
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                
+                const lineSpacing = 30; // 30px
+                
+                // Calculate pattern start offset by pan
+                const startX = viewOffset.x % lineSpacing;
+                const startY = viewOffset.y % lineSpacing;
+
+                if (backgroundPattern === 'ruled') {
+                    for (let y = startY; y < canvas.height; y += lineSpacing) {
+                        ctx.moveTo(0, y);
+                        ctx.lineTo(canvas.width, y);
+                    }
+                } else if (backgroundPattern === 'grid') {
+                    for (let y = startY; y < canvas.height; y += lineSpacing) {
+                        ctx.moveTo(0, y);
+                        ctx.lineTo(canvas.width, y);
+                    }
+                    for (let x = startX; x < canvas.width; x += lineSpacing) {
+                        ctx.moveTo(x, 0);
+                        ctx.lineTo(x, canvas.height);
+                    }
+                }
+                ctx.stroke();
+            }
+
+            function resizeCanvas() {
                 canvas.width = window.innerWidth;
                 canvas.height = window.innerHeight;
-                
-                // Re-apply drawing settings
-                ctx.strokeStyle = currentColor;
-                ctx.lineWidth = currentBrushSize;
-                ctx.lineCap = 'round'; // Smooths line ends
-                ctx.lineJoin = 'round'; // Smooths line corners
-
-                // Restore the canvas content
-                loadCanvasFromData(dataUrl);
+                render(); // Re-draw everything on resize
             }
 
             // --- Local Storage ---
-            function loadCanvasFromData(dataUrl) {
-                if (!dataUrl) return;
-                const img = new Image();
-                img.src = dataUrl;
-                img.onload = () => {
-                    ctx.drawImage(img, 0, 0);
+            function showSaveIndicator() {
+                saveIndicator.style.opacity = '1';
+                setTimeout(() => {
+                    saveIndicator.style.opacity = '0';
+                }, 1500);
+            }
+
+            function saveViewOffset() {
+                try {
+                    localStorage.setItem('whiteboardViewOffset', JSON.stringify(viewOffset));
+                } catch (e) {
+                    console.error("Error saving view offset to localStorage", e);
+                }
+            }
+
+            function saveStrokesAndSettings() {
+                try {
+                    localStorage.setItem('whiteboardStrokes', JSON.stringify(strokes));
+                    localStorage.setItem('whiteboardBgColor', backgroundColor);
+                    localStorage.setItem('whiteboardBgPattern', backgroundPattern);
+                    showSaveIndicator();
+                } catch (e) {
+                    console.error("Error saving to localStorage", e);
                 }
             }
 
             function loadFromStorage() {
-                const dataUrl = localStorage.getItem('whiteboardData');
-                loadCanvasFromData(dataUrl);
+                // Load background settings
+                backgroundColor = localStorage.getItem('whiteboardBgColor') || '#FFFFFF';
+                backgroundPattern = localStorage.getItem('whiteboardBgPattern') || 'plain';
+                
+                // Update UI elements
+                bgColorPicker.value = backgroundColor;
+                bgPatternSelector.value = backgroundPattern;
+                // REMOVED: updateCursorColor(backgroundColor); // Update cursor color
+
+                // Load pan offset
+                viewOffset = JSON.parse(localStorage.getItem('whiteboardViewOffset')) || { x: 0, y: 0 };
+                
+                // Load drawing
+                const strokesData = localStorage.getItem('whiteboardStrokes');
+                if (strokesData) {
+                    strokes = JSON.parse(strokesData);
+                }
+                
+                render();
             }
 
-            function saveToStorage() {
-                try {
-                    const dataUrl = canvas.toDataURL();
-                    localStorage.setItem('whiteboardData', dataUrl);
+            // --- Shape Drawing Functions ---
+            
+            function drawStroke(stroke) {
+                ctx.strokeStyle = stroke.color;
+                ctx.lineWidth = stroke.size;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+
+                ctx.beginPath();
+                
+                switch (stroke.tool) {
+                    case 'pen':
+                        if (stroke.points.length < 2) return;
+                        ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
+                        for (let i = 1; i < stroke.points.length; i++) {
+                            ctx.lineTo(stroke.points[i].x, stroke.points[i].y);
+                        }
+                        break;
+                    case 'line':
+                        if (stroke.points.length < 2) return;
+                        ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
+                        ctx.lineTo(stroke.points[1].x, stroke.points[1].y);
+                        break;
+                    case 'rect':
+                        if (stroke.points.length < 2) return;
+                        const p1 = stroke.points[0];
+                        const p2 = stroke.points[1];
+                        ctx.strokeRect(p1.x, p1.y, p2.x - p1.x, p2.y - p1.y);
+                        break;
+                    case 'circle':
+                        if (stroke.points.length < 2) return;
+                        const center = stroke.points[0];
+                        const edge = stroke.points[1];
+                        const radius = Math.sqrt(Math.pow(edge.x - center.x, 2) + Math.pow(edge.y - center.y, 2));
+                        ctx.arc(center.x, center.y, radius, 0, 2 * Math.PI);
+                        break;
+                    case 'triangle':
+                        if (stroke.points.length < 2) return;
+                        const pA = stroke.points[0];
+                        const pB = stroke.points[1];
+                        ctx.moveTo(pA.x, pA.y);
+                        ctx.lineTo(pB.x, pB.y);
+                        ctx.lineTo(pA.x, pB.y);
+                        ctx.closePath();
+                        break;
+                }
+                
+                ctx.stroke();
+            }
+
+            // --- Main Render Loop ---
+            function render() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                drawBackground();
+                ctx.save();
+                ctx.translate(viewOffset.x, viewOffset.y);
+                strokes.forEach(drawStroke);
+                if (currentPath) {
+                    drawStroke(currentPath);
+                }
+                ctx.restore();
+            }
+
+            // --- Object Eraser Logic ---
+            
+            function getDistance(p1, p2) {
+                return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
+            }
+
+            function isPointNearStroke(worldPoint, stroke) {
+                const tolerance = (stroke.size / 2) + 5; // 5px tolerance
+                
+                switch (stroke.tool) {
+                    case 'pen':
+                        return stroke.points.some(p => getDistance(worldPoint, p) < tolerance);
                     
-                    // Show save indicator
-                    saveIndicator.style.opacity = '1';
-                    setTimeout(() => {
-                        saveIndicator.style.opacity = '0';
-                    }, 1500);
-                } catch (e) {
-                    console.error("Error saving to localStorage", e);
-                    if (e.name === 'QuotaExceededError') {
-                        // Handle storage full error (e.g., show a persistent error message)
+                    case 'line':
+                    case 'rect':
+                    case 'circle':
+                    case 'triangle':
+                        const p1 = stroke.points[0];
+                        const p2 = stroke.points[1];
+                        const minX = Math.min(p1.x, p2.x) - tolerance;
+                        const maxX = Math.max(p1.x, p2.x) + tolerance;
+                        const minY = Math.min(p1.y, p2.y) - tolerance;
+                        const maxY = Math.max(p1.y, p2.y) + tolerance;
+
+                        if (stroke.tool === 'circle') {
+                            const center = stroke.points[0];
+                            const radius = getDistance(stroke.points[0], stroke.points[1]);
+                            const distToCenter = getDistance(worldPoint, center);
+                            return Math.abs(distToCenter - radius) < tolerance;
+                        }
+
+                        return (worldPoint.x >= minX && worldPoint.x <= maxX &&
+                                worldPoint.y >= minY && worldPoint.y <= maxY);
+                }
+                return false;
+            }
+
+            function findAndRemoveStroke(worldPoint) {
+                let didDelete = false;
+                for (let i = strokes.length - 1; i >= 0; i--) {
+                    if (isPointNearStroke(worldPoint, strokes[i])) {
+                        strokes.splice(i, 1);
+                        didDelete = true;
+                        break;
                     }
                 }
+                if (didDelete) {
+                    render();
+                }
+                return didDelete;
             }
 
             // --- Drawing Functions ---
             
-            // Gets correct coordinates for mouse or touch
             function getCoords(e) {
                 if (e.touches && e.touches.length > 0) {
                     return { x: e.touches[0].clientX, y: e.touches[0].clientY };
@@ -225,128 +578,276 @@
             }
 
             function startDrawing(e) {
-                // Ignore if clicking on the toolbar
                 if (e.target.closest('#toolbar')) return;
-
                 e.preventDefault();
-                isDrawing = true;
-                const { x, y } = getCoords(e);
-                [lastX, lastY] = [x, y];
                 
-                // Draw a single dot for a click/tap
-                ctx.beginPath();
-                ctx.moveTo(lastX, lastY);
-                ctx.lineTo(lastX, lastY);
-                ctx.stroke();
+                const { x: screenX, y: screenY } = getCoords(e);
+                const worldPoint = screenToWorld(screenX, screenY);
+
+                if (currentTool === 'pan') {
+                    isPanning = true;
+                    lastPanPos = { x: screenX, y: screenY };
+                    canvas.classList.add('panning');
+                    return;
+                }
+
+                isDrawing = true;
+
+                if (currentTool === 'eraser') {
+                    didDeleteInStroke = false;
+                    if (findAndRemoveStroke(worldPoint)) {
+                        didDeleteInStroke = true;
+                    }
+                    return;
+                }
+                
+                currentPath = {
+                    id: Date.now(),
+                    tool: currentTool,
+                    color: currentColor,
+                    size: currentBrushSize,
+                    points: [worldPoint]
+                };
+
+                if (['line', 'rect', 'circle', 'triangle'].includes(currentTool)) {
+                    currentPath.points.push(worldPoint);
+                }
             }
 
             function draw(e) {
-                if (!isDrawing) return;
+                if (!isDrawing && !isPanning) return;
                 e.preventDefault();
-                const { x, y } = getCoords(e);
+                const { x: screenX, y: screenY } = getCoords(e);
 
-                ctx.beginPath();
-                ctx.moveTo(lastX, lastY);
-                ctx.lineTo(x, y);
-                ctx.stroke();
+                if (isPanning) {
+                    const dx = screenX - lastPanPos.x;
+                    const dy = screenY - lastPanPos.y;
+                    viewOffset.x += dx;
+                    viewOffset.y += dy;
+                    lastPanPos = { x: screenX, y: screenY };
+                    render();
+                    return;
+                }
 
-                [lastX, lastY] = [x, y];
+                if (isDrawing) {
+                    const worldPoint = screenToWorld(screenX, screenY);
+
+                    if (currentTool === 'eraser') {
+                        if (findAndRemoveStroke(worldPoint)) {
+                            didDeleteInStroke = true;
+                        }
+                        return;
+                    }
+                    
+                    if (currentPath) {
+                        switch (currentTool) {
+                            case 'pen':
+                                currentPath.points.push(worldPoint);
+                                break;
+                            case 'line':
+                            case 'rect':
+                            case 'circle':
+                            case 'triangle':
+                                currentPath.points[1] = worldPoint;
+                                break;
+                        }
+                        render();
+                    }
+                }
             }
 
             function stopDrawing() {
-                if (!isDrawing) return;
-                isDrawing = false;
-                ctx.beginPath(); // Close the current path
-                
-                // Save the drawing at the end of the stroke
-                saveToStorage();
+                if (isPanning) {
+                    isPanning = false;
+                    canvas.classList.remove('panning');
+                    saveViewOffset();
+                    showSaveIndicator();
+                }
+
+                if (isDrawing) {
+                    isDrawing = false;
+                    
+                    if (currentTool === 'eraser') {
+                        if (didDeleteInStroke) {
+                            saveStrokesAndSettings();
+                        }
+                        didDeleteInStroke = false;
+                        return;
+                    }
+
+                    if (currentPath) {
+                        if (currentPath.points.length > 1 || currentPath.tool === 'pen') {
+                            strokes.push(currentPath);
+                        }
+                        currentPath = null;
+                        saveStrokesAndSettings();
+                    }
+                }
             }
 
             // --- Toolbar Event Listeners ---
             
+            // MODIFIED: Centralized cursor logic
+            function updateActiveToolButton(activeTool) {
+                toolButtons.forEach(btn => {
+                    if (btn.tool === activeTool) {
+                        btn.el.classList.add('active');
+                    } else {
+                        btn.el.classList.remove('active');
+                    }
+                });
+                
+                // Set native cursor
+                if (activeTool === 'pan') {
+                    canvas.style.cursor = 'grab';
+                    canvas.classList.add('panning');
+                } else {
+                    canvas.style.cursor = 'none';
+                    canvas.classList.remove('panning');
+                }
+                
+                // Update custom cursor visibility
+                // REMOVED: updateCursorVisibility();
+                
+                // NEW: Hide both cursors. Mousemove will show the correct one.
+                customCursorCircle.style.display = 'none';
+                customCursorEraser.style.display = 'none';
+            }
+
+            toolButtons.forEach(btn => {
+                btn.el.addEventListener('click', () => {
+                    currentTool = btn.tool;
+                    updateActiveToolButton(currentTool);
+                });
+            });
+
             // Color Picker
             colorPicker.addEventListener('input', (e) => {
                 currentColor = e.target.value;
-                lastUsedPenColor = currentColor;
-                ctx.strokeStyle = currentColor;
-                penBtn.classList.add('bg-gray-200');
-                eraserBtn.classList.remove('bg-gray-200');
-            });
-
-            // Pen Button
-            penBtn.addEventListener('click', () => {
-                currentColor = lastUsedPenColor;
-                ctx.strokeStyle = currentColor;
-                penBtn.classList.add('bg-gray-200');
-                eraserBtn.classList.remove('bg-gray-200');
             });
             
-            // Eraser Button
-            eraserBtn.addEventListener('click', () => {
-                currentColor = '#FFFFFF'; // Set to background color
-                ctx.strokeStyle = currentColor;
-                eraserBtn.classList.add('bg-gray-200');
-                penBtn.classList.remove('bg-gray-200');
-            });
-
-            // Brush Size
+            // MODIFIED: Brush Size (updates circle cursor)
             brushSizeSlider.addEventListener('input', (e) => {
                 currentBrushSize = e.target.value;
                 brushSizeLabel.textContent = currentBrushSize;
-                ctx.lineWidth = currentBrushSize;
+                const cursorSize = Math.max(10, currentBrushSize / 2);
+                customCursorCircle.style.width = `${cursorSize}px`;
+                customCursorCircle.style.height = `${cursorSize}px`;
+            });
+
+            // MODIFIED: Background Color Picker
+            bgColorPicker.addEventListener('input', (e) => {
+                backgroundColor = e.target.value;
+                // REMOVED: updateCursorColor(backgroundColor);
+                render();
+                saveStrokesAndSettings();
+            });
+
+            // Background Pattern Selector
+            bgPatternSelector.addEventListener('change', (e) => {
+                backgroundPattern = e.target.value;
+                render();
+                saveStrokesAndSettings();
             });
 
             // Clear Button
             clearBtn.addEventListener('click', () => {
                 confirmModal.classList.remove('hidden');
-
             });
-
             cancelClearBtn.addEventListener('click', () => {
                 confirmModal.classList.add('hidden');
             });
-
             confirmClearBtn.addEventListener('click', () => {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                saveToStorage(); // Save the cleared state
+                strokes = [];
+                viewOffset = { x: 0, y: 0 };
+                render();
+                saveStrokesAndSettings();
+                saveViewOffset();
                 confirmModal.classList.add('hidden');
             });
 
             // --- Main Event Listeners ---
             
-            // Mouse events
             canvas.addEventListener('mousedown', startDrawing);
             canvas.addEventListener('mousemove', draw);
             canvas.addEventListener('mouseup', stopDrawing);
-            canvas.addEventListener('mouseout', stopDrawing); // Stop drawing if mouse leaves canvas
+            canvas.addEventListener('mouseout', stopDrawing);
 
-            // Touch events
             canvas.addEventListener('touchstart', startDrawing, { passive: false });
             canvas.addEventListener('touchmove', draw, { passive: false });
             canvas.addEventListener('touchend', stopDrawing);
             canvas.addEventListener('touchcancel', stopDrawing);
 
-            // Window resize
-            window.addEventListener('resize', resizeCanvas);
+            canvas.addEventListener('wheel', (e) => {
+                if (e.target.closest('#toolbar')) {
+                    return;
+                }
+                e.preventDefault();
+                viewOffset.x -= e.deltaX;
+                viewOffset.y -= e.deltaY;
+                render();
+                if (wheelSaveTimer) {
+                    clearTimeout(wheelSaveTimer);
+                }
+                wheelSaveTimer = setTimeout(() => {
+                    saveViewOffset();
+                    showSaveIndicator();
+                    wheelSaveTimer = null;
+                }, 500);
+            }, { passive: false });
+
+
+            // --- NEW/MODIFIED: Custom Cursor Logic ---
+            
+            // REMOVED: The updateCursorColor function
+            
+            // MODIFIED: This function now handles position AND visibility
+            document.addEventListener('mousemove', (e) => {
+                // 1. Move both cursors regardless of target
+                customCursorCircle.style.left = `${e.clientX}px`;
+                customCursorCircle.style.top = `${e.clientY}px`;
+                customCursorEraser.style.left = `${e.clientX}px`;
+                customCursorEraser.style.top = `${e.clientY}px`;
+
+                // 2. Check if mouse is over the canvas
+                if (e.target === canvas) {
+                    // 3. Show the correct cursor based on the tool
+                    if (currentTool === 'eraser') {
+                        customCursorCircle.style.display = 'none';
+                        customCursorEraser.style.display = 'block';
+                    } else if (currentTool !== 'pan') { // Pen, shapes
+                        customCursorCircle.style.display = 'block';
+                        customCursorEraser.style.display = 'none';
+                    } else { // Pan
+                        customCursorCircle.style.display = 'none';
+                        customCursorEraser.style.display = 'none';
+                    }
+                } else {
+                    // 4. If mouse is not on canvas (e.g., over toolbar), hide both
+                    customCursorCircle.style.display = 'none';
+                    customCursorEraser.style.display = 'none';
+                }
+            });
+            
+            // REMOVED: canvas.addEventListener('mouseenter', ...)
+            
+            // REMOVED: canvas.addEventListener('mouseleave', ...)
+            
+            // --- End Custom Cursor Logic ---
+
 
             // --- Initialization ---
-            // 1. Set initial canvas size
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-
-            // 2. Apply initial drawing settings
-            ctx.strokeStyle = currentColor;
-            ctx.lineWidth = currentBrushSize;
-            ctx.lineCap = 'round'; // Smooths line ends
-            ctx.lineJoin = 'round'; // Smooths line corners
             
-            // 3. Load previous drawing from local storage
             loadFromStorage();
+            
+            // Set initial active tool UI
+            // This will also call updateActiveToolButton() which hides cursors
+            updateActiveToolButton(currentTool); 
 
-            // 4. NOW add the resize listener
             window.addEventListener('resize', resizeCanvas);
-            // resizeCanvas();      // Set initial canvas size - REMOVED
-            // loadFromStorage();   // Load previous drawing from local storage - REMOVED
         });
     </script>
 </body>
+</html>
