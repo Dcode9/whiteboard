@@ -330,9 +330,23 @@
             window.addEventListener('resize', resizeCanvas);
 
             // --- Initialization ---
-            resizeCanvas();      // Set initial canvas size
-            loadFromStorage();   // Load previous drawing from local storage
+            // 1. Set initial canvas size
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            // 2. Apply initial drawing settings
+            ctx.strokeStyle = currentColor;
+            ctx.lineWidth = currentBrushSize;
+            ctx.lineCap = 'round'; // Smooths line ends
+            ctx.lineJoin = 'round'; // Smooths line corners
+            
+            // 3. Load previous drawing from local storage
+            loadFromStorage();
+
+            // 4. NOW add the resize listener
+            window.addEventListener('resize', resizeCanvas);
+            // resizeCanvas();      // Set initial canvas size - REMOVED
+            // loadFromStorage();   // Load previous drawing from local storage - REMOVED
         });
     </script>
 </body>
-</html>
