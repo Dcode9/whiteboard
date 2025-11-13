@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WebBoard - By Dhairya Shah</title>
+    <title>Minimalist Whiteboard</title>
     <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/Dcode9/whiteboard/dfcc6b7600fe1bf56dd763ea9715e9ad5363c227/WebBoard.png?v=2">
     <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -18,6 +18,7 @@
             },
         }
     </script>
+    
     <style>
         /* Basic styles for a smooth experience */
         body, html {
@@ -87,29 +88,31 @@
 
         #save-indicator {
             transition: opacity 0.5s ease-out;
+            background-color: #16a34a; /* green-600 */
         }
         
-        .popover input[type="color"] {
+        /* Custom color input */
+        input[type="color"] {
             -webkit-appearance: none;
             -moz-appearance: none;
             appearance: none;
-            width: 100%; /* w-full */
-            height: 2.5rem; /* h-10 */
+            width: 100%; /* Full width of container */
+            height: 40px; 
             padding: 0;
             border: none;
             border-radius: 0.375rem; 
             cursor: pointer;
             background-color: transparent;
         }
-        .popover input[type="color"]::-webkit-color-swatch-wrapper {
+        input[type="color"]::-webkit-color-swatch-wrapper {
             padding: 0;
             border-radius: 0.375rem;
         }
-        .popover input[type="color"]::-webkit-color-swatch {
+        input[type="color"]::-webkit-color-swatch {
             border: 2px solid #e2e8f0; 
             border-radius: 0.375rem;
         }
-        .popover input[type="color"]::-moz-color-swatch {
+        input[type="color"]::-moz-color-swatch {
             border: 2px solid #e2e8f0;
             border-radius: 0.375rem;
         }
@@ -138,9 +141,9 @@
             box-shadow: none;
         }
 
-        /* MODIFIED: Popover now uses 'fixed' positioning */
+        /* NEW: Popover styles */
         .popover {
-            display: none;
+            display: none; /* Hidden by default */
             position: fixed; /* Changed from absolute */
             background-color: white;
             border-radius: 0.5rem; /* rounded-lg */
@@ -148,46 +151,34 @@
             padding: 1rem; /* p-4 */
             z-index: 20;
             width: 280px; /* w-70 */
-            max-height: 70vh; /* Max height */
-            overflow-y: auto; /* Scroll if needed */
+            
+            /* Custom Scrollbar */
+            overflow-y: auto;
+            max-height: 70vh; /* Max height before scrolling */
         }
         
         .popover.active {
             display: block;
         }
         
-        /* NEW: Custom Scrollbar for Popovers */
+        /* Custom Scrollbar for Popovers */
         .popover::-webkit-scrollbar {
             width: 8px;
         }
         .popover::-webkit-scrollbar-track {
-            background: #f1f1f1;
+            background: #f1f5f9; /* gray-100 */
             border-radius: 10px;
         }
         .popover::-webkit-scrollbar-thumb {
-            background: #d1d5db; /* gray-300 */
+            background: #cbd5e1; /* gray-300 */
             border-radius: 10px;
         }
         .popover::-webkit-scrollbar-thumb:hover {
-            background: #9ca3af; /* gray-400 */
-        }
-        
-        /* NEW: Custom Scrollbar for Toolbar */
-        #toolbar::-webkit-scrollbar {
-            height: 8px;
-        }
-        #toolbar::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        #toolbar::-webkit-scrollbar-thumb {
-            background: #e5e7eb; /* gray-200 */
-            border-radius: 10px;
-        }
-        #toolbar::-webkit-scrollbar-thumb:hover {
-            background: #d1d5db; /* gray-300 */
+            background: #94a3b8; /* gray-400 */
         }
 
 
+        /* NEW: Styles for thickness input */
         .thickness-control {
             display: flex;
             align-items: center;
@@ -223,7 +214,8 @@
             background-color: #f3f4f6; /* hover:bg-gray-100 */
         }
 
-        /* Styles for compact mode */
+        /* NEW: Styles for compact mode */
+        /* These styles are applied when .compact-mode is present */
         .compact-mode .tool-btn {
             padding: 0.25rem; /* p-1 */
         }
@@ -235,69 +227,79 @@
             padding: 0.5rem; /* p-2 */
             gap: 0.25rem; /* gap-1 */
         }
-        #toolbar, .tool-btn, .tool-btn svg, #canvas-icon-preview {
+        /* Transition for smooth shrink/expand */
+        #toolbar, .tool-btn, .tool-btn svg {
             transition: all 0.15s ease-in-out;
         }
         
+        /* NEW: Custom scrollbar for toolbar */
+        #toolbar::-webkit-scrollbar {
+            height: 4px; /* Thinner scrollbar */
+        }
+        #toolbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        #toolbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1; /* gray-300 */
+            border-radius: 10px;
+        }
+        #toolbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; /* gray-400 */
+        }
+        
+        /* NEW: Preview box styles */
         .preview-box {
             width: 100%;
             height: 60px;
             background-color: #f3f4f6; /* bg-gray-100 */
+            border: 1px solid #e5e7eb; /* border-gray-200 */
             border-radius: 0.375rem; /* rounded-md */
             display: flex;
-            justify-content: center;
             align-items: center;
+            justify-content: center;
             overflow: hidden;
-            border: 1px solid #e5e7eb; /* border-gray-200 */
         }
-        
         #pen-preview {
-            width: 80%;
-            height: 5px; /* Default */
-            background-color: #000; /* Default */
-            border-radius: 999px; /* rounded-full */
-            transition: all 0.1s ease;
+            width: 100%;
+            height: 5px; /* Default height */
+            background-color: #000;
+            border-radius: 99px;
+            transition: height 0.1s ease;
         }
-        
         #eraser-preview {
-            width: 20px; /* Default */
-            height: 20px; /* Default */
-            background-color: #ccc; /* bg-gray-300 */
+            width: 20px; /* Default width */
+            height: 20px; /* Default height */
+            background-color: #9ca3af; /* bg-gray-400 */
             border-radius: 50%;
             transition: all 0.1s ease;
-            border: 2px dotted #9ca3af; /* border-gray-400 */
         }
 
     </style>
 </head>
 <body class="font-sans antialiased">
 
+    <!-- REMOVED: Login Wrapper -->
+
+    <!-- MODIFIED: Toolbar now visible by default -->
     <div id="toolbar-wrapper" class="fixed top-4 left-0 right-0 z-10 flex justify-center compact-mode">
+        <!-- MODIFIED: justify-start for correct scroll -->
         <div id="toolbar" class="bg-white rounded-lg shadow-xl p-3 flex items-center justify-start flex-nowrap gap-x-2 md:gap-x-4 select-none overflow-x-auto max-w-[95vw]">
             
-            <!-- Pen Tool -->
+            <!-- (All toolbar buttons: Pen, Eraser, Undo, Redo, Shapes...) -->
             <div id="pen-tool-wrapper" class="flex flex-col items-center">
                 <button id="pen-btn" class="tool-btn rounded-md active" title="Pen (1)">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 pointer-events-none" style="stroke: #000000;">
                         <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
                     </svg>
                 </button>
-                <!-- POPOVER MOVED (see below) -->
             </div>
-
-            <!-- Eraser Tool -->
             <div id="eraser-tool-wrapper" class="flex flex-col items-center">
                 <button id="eraser-btn" class="tool-btn rounded-md hover:bg-gray-200" title="Object Eraser (2)">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 pointer-events-none">
-                        <path d="M7 21H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h18a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4.27"/>
-                        <path d="M17 11.73C17 10.67 16.33 10 15 10s-2 .67-2 1.73S13.67 14 15 14s2-.67 2-1.73Z"/>
-                        <path d="M21.19 11.73c0-4.24-7.2-4.24-7.2 0C14 10.67 14.67 10 16 10s2 .67 2 1.73Z" transform="rotate(-30 16 11.73)"/>
+                        <path d="M7 21H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h18a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4.27"/><path d="M17 11.73C17 10.67 16.33 10 15 10s-2 .67-2 1.73S13.67 14 15 14s2-.67 2-1.73Z"/><path d="M21.19 11.73c0-4.24-7.2-4.24-7.2 0C14 10.67 14.67 10 16 10s2 .67 2 1.73Z" transform="rotate(-30 16 11.73)"/>
                     </svg>
                 </button>
-                <!-- POPOVER MOVED (see below) -->
             </div>
-
-            <!-- Undo Button -->
             <div class="flex flex-col items-center">
                 <button id="undo-btn" class="tool-btn rounded-md hover:bg-gray-200" title="Undo (Ctrl+Z)">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 pointer-events-none">
@@ -305,8 +307,6 @@
                     </svg>
                 </button>
             </div>
-
-            <!-- Redo Button -->
             <div class="flex flex-col items-center">
                 <button id="redo-btn" class="tool-btn rounded-md hover:bg-gray-200" title="Redo (Ctrl+Y)">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 pointer-events-none">
@@ -314,8 +314,6 @@
                     </svg>
                 </button>
             </div>
-
-            <!-- Line Tool -->
             <div class="flex flex-col items-center">
                 <button id="line-btn" class="tool-btn rounded-md hover:bg-gray-200" title="Line">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 pointer-events-none">
@@ -323,8 +321,6 @@
                     </svg>
                 </button>
             </div>
-            
-            <!-- Rectangle Tool -->
             <div class="flex flex-col items-center">
                 <button id="rect-btn" class="tool-btn rounded-md hover:bg-gray-200" title="Rectangle">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 pointer-events-none">
@@ -332,8 +328,6 @@
                     </svg>
                 </button>
             </div>
-
-            <!-- Circle Tool -->
             <div class="flex flex-col items-center">
                 <button id="circle-btn" class="tool-btn rounded-md hover:bg-gray-200" title="Circle">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 pointer-events-none">
@@ -341,8 +335,6 @@
                     </svg>
                 </button>
             </div>
-
-            <!-- Triangle Tool -->
             <div class="flex flex-col items-center">
                 <button id="triangle-btn" class="tool-btn rounded-md hover:bg-gray-200" title="Triangle">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 pointer-events-none">
@@ -350,31 +342,13 @@
                     </svg>
                 </button>
             </div>
-
-            <!-- Canvas Tool -->
             <div id="canvas-tool-wrapper" class="flex flex-col items-center">
                 <button id="canvas-btn" class="tool-btn rounded-md hover:bg-gray-200" title="Canvas Settings">
                     <svg id="canvas-icon-preview" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 pointer-events-none">
-                        <rect id="canvas-icon-bg" x="3" y="3" width="18" height="18" rx="2" ry="2" fill="#ffffff" stroke="#d1d5db" stroke-width="1.5"/>
-                        <g id="canvas-icon-ruled" style="display: none;" stroke="#d1d5db" stroke-width="1">
-                            <path d="M 6 8 L 18 8"></path>
-                            <path d="M 6 12 L 18 12"></path>
-                            <path d="M 6 16 L 18 16"></path>
-                        </g>
-                        <g id="canvas-icon-grid" style="display: none;" stroke="#d1d5db" stroke-width="1">
-                            <path d="M 8 6 L 8 18"></path>
-                            <path d="M 12 6 L 12 18"></path>
-                            <path d="M 16 6 L 16 18"></path>
-                            <path d="M 6 8 L 18 8"></path>
-                            <path d="M 6 12 L 18 12"></path>
-                            <path d="M 6 16 L 18 16"></path>
-                        </g>
+                        <rect id="canvas-icon-bg" x="3" y="3" width="18" height="18" rx="2" ry="2" fill="#ffffff" stroke="#d1d5db" stroke-width="1.5"/><g id="canvas-icon-ruled" style="display: none;" stroke="#d1d5db" stroke-width="1"><path d="M 6 8 L 18 8"></path><path d="M 6 12 L 18 12"></path><path d="M 6 16 L 18 16"></path></g><g id="canvas-icon-grid" style="display: none;" stroke="#d1d5db" stroke-width="1"><path d="M 8 6 L 8 18"></path><path d="M 12 6 L 12 18"></path><path d="M 16 6 L 16 18"></path><path d="M 6 8 L 18 8"></path><path d="M 6 12 L 18 12"></path><path d="M 6 16 L 18 16"></path></g>
                     </svg>
                 </button>
-                <!-- POPOVER MOVED (see below) -->
             </div>
-
-            <!-- Clear Canvas -->
             <div class="flex flex-col items-center">
                 <button id="clear-btn" class="tool-btn rounded-md hover:bg-red-100 text-red-600" title="Clear Canvas (Delete)">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7">
@@ -383,18 +357,17 @@
                 </button>
             </div>
             
+            <!-- REMOVED: Logout Button -->
+            
         </div>
     </div>
 
-    <!-- Save Indicator -->
-    <div id="save-indicator" class="fixed bottom-4 right-4 bg-green-600 text-white text-sm px-3 py-1 rounded-full shadow-lg opacity-0 select-none">
+    <!-- (Save Indicator) -->
+    <div id="save-indicator" class="fixed bottom-4 right-4 text-white text-sm px-3 py-1 rounded-full shadow-lg opacity-0 select-none">
         Saved!
     </div>
 
-    <!-- 
-      MODIFIED: POPOVERS ARE MOVED HERE 
-      They are now top-level elements, not inside the toolbar.
-    -->
+    <!-- (Popovers: Pen, Eraser, Canvas) -->
     <div id="pen-popover" class="popover">
         <div class="flex flex-col gap-4">
             <div class="flex flex-col items-center">
@@ -418,7 +391,6 @@
             </div>
         </div>
     </div>
-
     <div id="eraser-popover" class="popover">
         <div class="flex flex-col gap-4">
             <div class="flex flex-col items-center">
@@ -445,7 +417,6 @@
             </div>
         </div>
     </div>
-    
     <div id="canvas-popover" class="popover">
         <div class="flex flex-col gap-4">
             <div class="flex flex-col items-center">
@@ -463,8 +434,7 @@
         </div>
     </div>
 
-
-    <!-- Confirmation Modal (hidden by default) -->
+    <!-- (Confirmation Modal) -->
     <div id="confirm-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
         <div class="bg-white p-6 rounded-lg shadow-xl w-11/12 max-w-sm">
             <h3 class="text-lg font-medium mb-4">Clear Canvas?</h3>
@@ -476,9 +446,8 @@
         </div>
     </div>
 
-    <!-- Drawing Area -->
+    <!-- (Drawing Area & Cursors) -->
     <canvas id="whiteboard"></canvas>
-    
     <div id="custom-cursor-circle"></div>
     <div id="custom-cursor-eraser">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -486,922 +455,887 @@
         </svg>
     </div>
 
+    <!-- NEW: All script logic moved to end of body -->
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const canvas = document.getElementById('whiteboard');
-            const ctx = canvas.getContext('2d');
-            const toolbar = document.getElementById('toolbar');
-            const customCursorCircle = document.getElementById('custom-cursor-circle');
-            const customCursorEraser = document.getElementById('custom-cursor-eraser');
-            const toolbarWrapper = document.getElementById('toolbar-wrapper');
+    document.addEventListener('DOMContentLoaded', () => {
+        
+        // --- All app variables ---
+        const canvas = document.getElementById('whiteboard');
+        const ctx = canvas.getContext('2d');
+        const toolbar = document.getElementById('toolbar');
+        const customCursorCircle = document.getElementById('custom-cursor-circle');
+        const customCursorEraser = document.getElementById('custom-cursor-eraser');
+        const toolbarWrapper = document.getElementById('toolbar-wrapper');
 
-            // --- Tool Buttons ---
-            const penBtn = document.getElementById('pen-btn');
-            const eraserBtn = document.getElementById('eraser-btn');
-            const lineBtn = document.getElementById('line-btn');
-            const rectBtn = document.getElementById('rect-btn');
-            const circleBtn = document.getElementById('circle-btn');
-            const triangleBtn = document.getElementById('triangle-btn');
-            const undoBtn = document.getElementById('undo-btn');
-            const redoBtn = document.getElementById('redo-btn');
-            const clearBtn = document.getElementById('clear-btn');
-            
-            // --- Canvas Tool ---
-            const canvasBtn = document.getElementById('canvas-btn');
-            const canvasIconBg = document.getElementById('canvas-icon-bg');
-            const canvasIconRuled = document.getElementById('canvas-icon-ruled');
-            const canvasIconGrid = document.getElementById('canvas-icon-grid');
-            
-            // --- Popovers ---
-            const penPopover = document.getElementById('pen-popover');
-            const eraserPopover = document.getElementById('eraser-popover');
-            const canvasPopover = document.getElementById('canvas-popover');
-            
-            // --- Pen Popover Controls ---
-            const colorPicker = document.getElementById('color-picker');
-            const penThicknessControl = document.querySelector('.thickness-control[data-type="pen"]');
-            const penThicknessInput = penThicknessControl.querySelector('input[type="number"]');
-            const penSizeLabel = document.getElementById('pen-size-label');
-            const penPreview = document.getElementById('pen-preview');
-            
-            // --- Eraser Popover Controls ---
-            const eraserThicknessControl = document.querySelector('.thickness-control[data-type="eraser"]');
-            const eraserThicknessInput = eraserThicknessControl.querySelector('input[type="number"]');
-            const eraserSizeLabel = document.getElementById('eraser-size-label');
-            const objectEraserBtn = document.getElementById('object-eraser-btn');
-            const pixelEraserBtn = document.getElementById('pixel-eraser-btn');
-            const eraserPreview = document.getElementById('eraser-preview');
-            
-            // --- Canvas Popover Controls ---
-            const bgColorPicker = document.getElementById('bg-color-picker');
-            const bgPatternSelector = document.getElementById('bg-pattern');
-            
-            const toolButtons = [
-                { el: penBtn, tool: 'pen' },
-                { el: eraserBtn, tool: 'eraser' },
-                { el: lineBtn, tool: 'line' },
-                { el: rectBtn, tool: 'rect' },
-                { el: circleBtn, tool: 'circle' },
-                { el: triangleBtn, tool: 'triangle' },
-            ];
-            
-            // Indicators & Modals
-            const saveIndicator = document.getElementById('save-indicator');
-            const confirmModal = document.getElementById('confirm-modal');
-            const cancelClearBtn = document.getElementById('cancel-clear');
-            const confirmClearBtn = document.getElementById('confirm-clear');
+        // (Tool Buttons)
+        const penBtn = document.getElementById('pen-btn');
+        const eraserBtn = document.getElementById('eraser-btn');
+        const lineBtn = document.getElementById('line-btn');
+        const rectBtn = document.getElementById('rect-btn');
+        const circleBtn = document.getElementById('circle-btn');
+        const triangleBtn = document.getElementById('triangle-btn');
+        const undoBtn = document.getElementById('undo-btn');
+        const redoBtn = document.getElementById('redo-btn');
+        const clearBtn = document.getElementById('clear-btn');
+        
+        // (Canvas Tool)
+        const canvasBtn = document.getElementById('canvas-btn');
+        const canvasIconBg = document.getElementById('canvas-icon-bg');
+        const canvasIconRuled = document.getElementById('canvas-icon-ruled');
+        const canvasIconGrid = document.getElementById('canvas-icon-grid');
+        
+        // (Popovers)
+        const penPopover = document.getElementById('pen-popover');
+        const eraserPopover = document.getElementById('eraser-popover');
+        const canvasPopover = document.getElementById('canvas-popover');
+        
+        // (Pen Popover)
+        const colorPicker = document.getElementById('color-picker');
+        const penThicknessControl = document.querySelector('.thickness-control[data-type="pen"]');
+        const penThicknessInput = penThicknessControl.querySelector('input[type="number"]');
+        const penSizeLabel = document.getElementById('pen-size-label');
+        const penPreview = document.getElementById('pen-preview');
+        
+        // (Eraser Popover)
+        const eraserThicknessControl = document.querySelector('.thickness-control[data-type="eraser"]');
+        const eraserThicknessInput = eraserThicknessControl.querySelector('input[type="number"]');
+        const eraserSizeLabel = document.getElementById('eraser-size-label');
+        const objectEraserBtn = document.getElementById('object-eraser-btn');
+        const pixelEraserBtn = document.getElementById('pixel-eraser-btn');
+        const eraserPreview = document.getElementById('eraser-preview');
+        
+        // (Canvas Popover)
+        const bgColorPicker = document.getElementById('bg-color-picker');
+        const bgPatternSelector = document.getElementById('bg-pattern');
+        
+        const toolButtons = [
+            { el: penBtn, tool: 'pen' },
+            { el: eraserBtn, tool: 'eraser' },
+            { el: lineBtn, tool: 'line' },
+            { el: rectBtn, tool: 'rect' },
+            { el: circleBtn, tool: 'circle' },
+            { el: triangleBtn, tool: 'triangle' },
+        ];
+        
+        const saveIndicator = document.getElementById('save-indicator');
+        const confirmModal = document.getElementById('confirm-modal');
+        const cancelClearBtn = document.getElementById('cancel-clear');
+        const confirmClearBtn = document.getElementById('confirm-clear');
 
-            // --- STATE ---
-            let strokes = []; 
-            let currentPath = null; 
-            let undoStack = [];
-            let redoStack = [];
-            
-            let viewOffset = { x: 0, y: 0 };
-            let viewZoom = 1; // Zoom state
-            let lastPanPos = { x: 0, y: 0 };
-            
-            let isDrawing = false;
-            let isPanning = false;
-            let didDeleteInStroke = false;
-            let wheelSaveTimer = null; 
+        // --- (LOCAL STATE: same as before) ---
+        let strokes = []; 
+        let currentPath = null; 
+        let undoStack = [];
+        let redoStack = [];
+        
+        let viewOffset = { x: 0, y: 0 };
+        let viewZoom = 1; 
+        let lastPanPos = { x: 0, y: 0 };
+        
+        let isDrawing = false;
+        let isPanning = false;
+        let didDeleteInStroke = false;
+        let wheelSaveTimer = null; 
 
-            let currentColor = '#000000';
-            let currentBrushSize = 5;
-            let currentTool = 'pen'; 
-            let originalTool = 'pen'; 
-            
-            let currentEraserMode = 'object';
-            let currentEraserSize = 20;
-            
-            let backgroundColor = '#FFFFFF';
-            let backgroundPattern = 'plain';
-            
-            let isTwoFingerPanning = false;
-            let lastTouchMidpoint = { x: 0, y: 0 };
-            let lastTapTime = 0;
-            let isEraserGesture = false;
-            
-            // Zoom constants
-            const MIN_ZOOM = 0.1;
-            const MAX_ZOOM = 10.0;
-            const ZOOM_STEP = 0.1;
+        let currentColor = '#000000';
+        let currentBrushSize = 5;
+        let currentTool = 'pen'; 
+        let originalTool = 'pen'; 
+        
+        let currentEraserMode = 'object';
+        let currentEraserSize = 20;
+        
+        let backgroundColor = '#FFFFFF';
+        let backgroundPattern = 'plain';
+        
+        let isTwoFingerPanning = false;
+        let lastTouchMidpoint = { x: 0, y: 0 };
+        let lastTouchDistance = 0; // For pinch-zoom
+        let lastTapTime = 0;
+        let isEraserGesture = false;
+        
+        // NEW: Hold-to-erase state
+        let touchHoldTimer = null;
+        const TOUCH_HOLD_DURATION = 500; // 500ms
+        
+        const MIN_ZOOM = 0.1;
+        const MAX_ZOOM = 10.0;
+        const ZOOM_STEP = 0.1;
 
-            // --- Coordinate Conversion (NOW WITH ZOOM) ---
-            function screenToWorld(screenX, screenY) {
-                return { 
-                    x: (screenX - viewOffset.x) / viewZoom, 
-                    y: (screenY - viewOffset.y) / viewZoom 
-                };
-            }
-            
-            function worldToScreen(worldX, worldY) {
-                return { 
-                    x: worldX * viewZoom + viewOffset.x, 
-                    y: worldY * viewZoom + viewOffset.y 
-                };
-            }
+        // --- Coordinate Conversion (same) ---
+        function screenToWorld(screenX, screenY) {
+            return { 
+                x: (screenX - viewOffset.x) / viewZoom, 
+                y: (screenY - viewOffset.y) / viewZoom 
+            };
+        }
+        function worldToScreen(worldX, worldY) {
+            return { 
+                x: worldX * viewZoom + viewOffset.x, 
+                y: worldY * viewZoom + viewOffset.y 
+            };
+        }
 
-            // --- Canvas Setup ---
-            
-            function updateCanvasIconPreview() {
-                canvasIconBg.setAttribute('fill', backgroundColor);
-                canvasIconRuled.style.display = backgroundPattern === 'ruled' ? 'block' : 'none';
-                canvasIconGrid.style.display = backgroundPattern === 'grid' ? 'block' : 'none';
-                
-                const isDarkBg = (parseInt(backgroundColor.substr(1, 2), 16) * 0.299 + 
-                                  parseInt(backgroundColor.substr(3, 2), 16) * 0.587 + 
-                                  parseInt(backgroundColor.substr(5, 2), 16) * 0.114) < 186;
-                
-                const patternColor = isDarkBg ? '#FFFFFF' : '#d1d5db';
-                canvasIconRuled.setAttribute('stroke', patternColor);
-                canvasIconGrid.setAttribute('stroke', patternColor);
-            }
-            
-            function drawBackground() {
-                ctx.fillStyle = backgroundColor;
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-                if (backgroundPattern === 'plain') return;
-
-                ctx.strokeStyle = '#E2E8F0'; // gray-200
-                ctx.lineWidth = 1; // Always 1 pixel for grid lines
-                ctx.beginPath();
-                
-                const worldLineSpacing = 30; 
-                const screenLineSpacing = worldLineSpacing * viewZoom;
-                
-                // Only draw grid if lines are spaced > 5px apart
-                if (screenLineSpacing > 5) {
-                    const startX = viewOffset.x % screenLineSpacing;
-                    const startY = viewOffset.y % screenLineSpacing;
-
-                    if (backgroundPattern === 'ruled') {
-                        for (let y = startY; y < canvas.height; y += screenLineSpacing) {
-                            ctx.moveTo(0, y);
-                            ctx.lineTo(canvas.width, y);
-                        }
-                    } else if (backgroundPattern === 'grid') {
-                        for (let y = startY; y < canvas.height; y += screenLineSpacing) {
-                            ctx.moveTo(0, y);
-                            ctx.lineTo(canvas.width, y);
-                        }
-                        for (let x = startX; x < canvas.width; x += screenLineSpacing) {
-                            ctx.moveTo(x, 0);
-                            ctx.lineTo(x, canvas.height);
-                        }
+        // --- Canvas Setup (same) ---
+        function updateCanvasIconPreview() {
+            canvasIconBg.setAttribute('fill', backgroundColor);
+            canvasIconRuled.style.display = backgroundPattern === 'ruled' ? 'block' : 'none';
+            canvasIconGrid.style.display = backgroundPattern === 'grid' ? 'block' : 'none';
+            const isDarkBg = (parseInt(backgroundColor.substr(1, 2), 16) * 0.299 + 
+                              parseInt(backgroundColor.substr(3, 2), 16) * 0.587 + 
+                              parseInt(backgroundColor.substr(5, 2), 16) * 0.114) < 186;
+            const patternColor = isDarkBg ? '#FFFFFF' : '#d1d5db';
+            canvasIconRuled.setAttribute('stroke', patternColor);
+            canvasIconGrid.setAttribute('stroke', patternColor);
+        }
+        
+        function drawBackground() {
+            ctx.fillStyle = backgroundColor;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            if (backgroundPattern === 'plain') return;
+            ctx.strokeStyle = '#E2E8F0';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            const worldLineSpacing = 30; 
+            const screenLineSpacing = worldLineSpacing * viewZoom;
+            if (screenLineSpacing > 5) {
+                const startX = viewOffset.x % screenLineSpacing;
+                const startY = viewOffset.y % screenLineSpacing;
+                if (backgroundPattern === 'ruled') {
+                    for (let y = startY; y < canvas.height; y += screenLineSpacing) {
+                        ctx.moveTo(0, y);
+                        ctx.lineTo(canvas.width, y);
                     }
-                    ctx.stroke();
+                } else if (backgroundPattern === 'grid') {
+                    for (let y = startY; y < canvas.height; y += screenLineSpacing) {
+                        ctx.moveTo(0, y);
+                        ctx.lineTo(canvas.width, y);
+                    }
+                    for (let x = startX; x < canvas.width; x += screenLineSpacing) {
+                        ctx.moveTo(x, 0);
+                        ctx.lineTo(x, canvas.height);
+                    }
                 }
-            }
-
-            function resizeCanvas() {
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight;
-                render(); 
-            }
-
-            // --- Local Storage ---
-            function showSaveIndicator() {
-                saveIndicator.style.opacity = '1';
-                setTimeout(() => {
-                    saveIndicator.style.opacity = '0';
-                }, 1500);
-            }
-
-            function saveViewTransform() {
-                try {
-                    localStorage.setItem('whiteboardView', JSON.stringify({
-                        offset: viewOffset,
-                        zoom: viewZoom
-                    }));
-                } catch (e) {
-                    console.error("Error saving view transform to localStorage", e);
-                }
-            }
-
-            function saveStrokesAndSettings() {
-                try {
-                    localStorage.setItem('whiteboardStrokes', JSON.stringify(strokes));
-                    localStorage.setItem('whiteboardBgColor', backgroundColor);
-                    localStorage.setItem('whiteboardBgPattern', backgroundPattern);
-                    showSaveIndicator();
-                } catch (e) {
-                    console.error("Error saving to localStorage", e);
-                }
-            }
-
-            function loadFromStorage() {
-                backgroundColor = localStorage.getItem('whiteboardBgColor') || '#FFFFFF';
-                backgroundPattern = localStorage.getItem('whiteboardBgPattern') || 'plain';
-                
-                bgColorPicker.value = backgroundColor;
-                bgPatternSelector.value = backgroundPattern;
-                updateCanvasIconPreview();
-
-                const viewData = JSON.parse(localStorage.getItem('whiteboardView'));
-                if (viewData) {
-                    viewOffset = viewData.offset || { x: 0, y: 0 };
-                    viewZoom = viewData.zoom || 1;
-                } else {
-                    viewOffset = { x: 0, y: 0 };
-                    viewZoom = 1;
-                }
-                
-                const strokesData = localStorage.getItem('whiteboardStrokes');
-                if (strokesData) {
-                    strokes = JSON.parse(strokesData);
-                }
-                
-                undoStack = [];
-                redoStack = [];
-                updateUndoRedoButtons();
-                
-                render();
-            }
-            
-            // --- History (Undo/Redo) ---
-            
-            function addHistoryAction() {
-                redoStack = []; 
-                undoStack.push(JSON.stringify(strokes));
-                if (undoStack.length > 50) { 
-                    undoStack.shift();
-                }
-                updateUndoRedoButtons();
-            }
-            
-            function updateUndoRedoButtons() {
-                undoBtn.disabled = undoStack.length === 0;
-                redoBtn.disabled = redoStack.length === 0;
-            }
-            
-            function undo() {
-                if (undoStack.length === 0) return;
-                
-                redoStack.push(JSON.stringify(strokes));
-                strokes = JSON.parse(undoStack.pop());
-                
-                updateUndoRedoButtons();
-                render();
-                saveStrokesAndSettings();
-            }
-            
-            function redo() {
-                if (redoStack.length === 0) return;
-                
-                undoStack.push(JSON.stringify(strokes));
-                strokes = JSON.parse(redoStack.pop());
-                
-                updateUndoRedoButtons();
-                render();
-                saveStrokesAndSettings();
-            }
-
-            // --- Shape Drawing Functions ---
-            
-            function drawStroke(stroke) {
-                // Stroke size is in world units, so it scales with zoom
-                ctx.strokeStyle = stroke.color;
-                ctx.lineWidth = stroke.size;
-                ctx.lineCap = 'round';
-                ctx.lineJoin = 'round';
-
-                ctx.beginPath();
-                
-                switch (stroke.tool) {
-                    case 'pen':
-                        if (stroke.points.length < 2) return;
-                        ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
-                        for (let i = 1; i < stroke.points.length; i++) {
-                            ctx.lineTo(stroke.points[i].x, stroke.points[i].y);
-                        }
-                        break;
-                    case 'line':
-                        if (stroke.points.length < 2) return;
-                        ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
-                        ctx.lineTo(stroke.points[1].x, stroke.points[1].y);
-                        break;
-                    case 'rect':
-                        if (stroke.points.length < 2) return;
-                        const p1 = stroke.points[0];
-                        const p2 = stroke.points[1];
-                        ctx.strokeRect(p1.x, p1.y, p2.x - p1.x, p2.y - p1.y);
-                        break;
-                    case 'circle':
-                        if (stroke.points.length < 2) return;
-                        const center = stroke.points[0];
-                        const edge = stroke.points[1];
-                        const radius = Math.sqrt(Math.pow(edge.x - center.x, 2) + Math.pow(edge.y - center.y, 2));
-                        ctx.arc(center.x, center.y, radius, 0, 2 * Math.PI);
-                        break;
-                    case 'triangle':
-                        if (stroke.points.length < 2) return;
-                        const pA = stroke.points[0];
-                        const pB = stroke.points[1];
-                        ctx.moveTo(pA.x, pA.y);
-                        ctx.lineTo(pA.x, pB.y);
-                        ctx.lineTo(pB.x, pB.y);
-                        ctx.closePath();
-                        break;
-                }
-                
                 ctx.stroke();
             }
+        }
 
-            // --- Main Render Loop (NOW WITH ZOOM) ---
-            function render() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                drawBackground();
-                ctx.save();
-                ctx.translate(viewOffset.x, viewOffset.y);
-                ctx.scale(viewZoom, viewZoom);
-                strokes.forEach(drawStroke);
-                if (currentPath) {
-                    drawStroke(currentPath);
-                }
-                ctx.restore();
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            render(); 
+        }
+
+        // --- RE-IMPLEMENTED: Local Storage ---
+        function showSaveIndicator() {
+            saveIndicator.style.opacity = '1';
+            setTimeout(() => {
+                saveIndicator.style.opacity = '0';
+            }, 1500);
+        }
+        
+        function saveViewTransform() {
+            try {
+                localStorage.setItem('whiteboardView', JSON.stringify({ offset: viewOffset, zoom: viewZoom }));
+            } catch (e) {
+                console.error("Error saving view transform to localStorage", e);
             }
+        }
 
-            // --- Object Eraser Logic (NOW WITH ZOOM) ---
+        function saveStrokesAndSettings() {
+            try {
+                localStorage.setItem('whiteboardStrokes', JSON.stringify(strokes));
+                localStorage.setItem('whiteboardBgColor', backgroundColor);
+                localStorage.setItem('whiteboardBgPattern', backgroundPattern);
+                showSaveIndicator();
+            } catch (e) {
+                console.error("Error saving to localStorage", e);
+            }
+        }
+
+        function loadFromStorage() {
+            backgroundColor = localStorage.getItem('whiteboardBgColor') || '#FFFFFF';
+            backgroundPattern = localStorage.getItem('whiteboardBgPattern') || 'plain';
             
-            function getDistance(p1, p2) {
-                return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
+            bgColorPicker.value = backgroundColor;
+            bgPatternSelector.value = backgroundPattern;
+            updateCanvasIconPreview();
+
+            const viewDataStr = localStorage.getItem('whiteboardView');
+            if (viewDataStr) {
+                const viewData = JSON.parse(viewDataStr);
+                viewOffset = viewData.offset || { x: 0, y: 0 };
+                viewZoom = viewData.zoom || 1;
             }
-
-            function isPointNearStroke(worldPoint, stroke) {
-                // Tolerance is in world units
-                // 5 screen pixels converted to world units
-                const screenPixelTolerance = 5 / viewZoom; 
-                const tolerance = (currentEraserMode === 'object' ? currentEraserSize : stroke.size) + screenPixelTolerance;
-                
-                switch (stroke.tool) {
-                    case 'pen':
-                        return stroke.points.some(p => getDistance(worldPoint, p) < tolerance);
-                    
-                    case 'line':
-                    case 'rect':
-                    case 'circle':
-                    case 'triangle':
-                        const p1 = stroke.points[0];
-                        const p2 = stroke.points[1];
-                        const minX = Math.min(p1.x, p2.x) - tolerance;
-                        const maxX = Math.max(p1.x, p2.x) + tolerance;
-                        const minY = Math.min(p1.y, p2.y) - tolerance;
-                        const maxY = Math.max(p1.y, p2.y) + tolerance;
-
-                        if (stroke.tool === 'circle') {
-                            const center = stroke.points[0];
-                            const radius = getDistance(stroke.points[0], stroke.points[1]);
-                            const distToCenter = getDistance(worldPoint, center);
-                            return Math.abs(distToCenter - radius) < tolerance;
-                        }
-                        return (worldPoint.x >= minX && worldPoint.x <= maxX &&
-                                worldPoint.y >= minY && worldPoint.y <= maxY);
-                }
-                return false;
+            
+            const strokesData = localStorage.getItem('whiteboardStrokes');
+            if (strokesData) {
+                strokes = JSON.parse(strokesData);
             }
+            
+            undoStack = [];
+            redoStack = [];
+            updateUndoRedoButtons();
+            
+            render();
+        }
 
-            function findAndRemoveStroke(worldPoint) {
-                let didDelete = false;
-                for (let i = strokes.length - 1; i >= 0; i--) {
-                    if (isPointNearStroke(worldPoint, strokes[i])) {
-                        strokes.splice(i, 1);
-                        didDelete = true;
-                        break; 
+        // --- History (Undo/Redo) ---
+        function addHistoryAction() {
+            redoStack = []; 
+            undoStack.push(JSON.stringify(strokes));
+            if (undoStack.length > 50) { 
+                undoStack.shift();
+            }
+            updateUndoRedoButtons();
+        }
+        
+        function updateUndoRedoButtons() {
+            undoBtn.disabled = undoStack.length === 0;
+            redoBtn.disabled = redoStack.length === 0;
+        }
+        
+        function undo() {
+            if (undoStack.length === 0) return;
+            redoStack.push(JSON.stringify(strokes));
+            strokes = JSON.parse(undoStack.pop());
+            updateUndoRedoButtons();
+            render();
+            saveStrokesAndSettings(); // MODIFIED: Save on undo
+        }
+        
+        function redo() {
+            if (redoStack.length === 0) return;
+            undoStack.push(JSON.stringify(strokes));
+            strokes = JSON.parse(redoStack.pop());
+            updateUndoRedoButtons();
+            render();
+            saveStrokesAndSettings(); // MODIFIED: Save on redo
+        }
+
+        // --- Shape Drawing Functions (same) ---
+        function drawStroke(stroke) {
+            ctx.strokeStyle = stroke.color;
+            ctx.lineWidth = stroke.size;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.beginPath();
+            switch (stroke.tool) {
+                case 'pen':
+                    if (stroke.points.length < 2) return;
+                    ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
+                    for (let i = 1; i < stroke.points.length; i++) {
+                        ctx.lineTo(stroke.points[i].x, stroke.points[i].y);
                     }
-                }
-                if (didDelete) {
-                    render();
-                }
-                return didDelete;
+                    break;
+                case 'line':
+                    if (stroke.points.length < 2) return;
+                    ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
+                    ctx.lineTo(stroke.points[1].x, stroke.points[1].y);
+                    break;
+                case 'rect':
+                    if (stroke.points.length < 2) return;
+                    const p1 = stroke.points[0];
+                    const p2 = stroke.points[1];
+                    ctx.strokeRect(p1.x, p1.y, p2.x - p1.x, p2.y - p1.y);
+                    break;
+                case 'circle':
+                    if (stroke.points.length < 2) return;
+                    const center = stroke.points[0];
+                    const edge = stroke.points[1];
+                    const radius = Math.sqrt(Math.pow(edge.x - center.x, 2) + Math.pow(edge.y - center.y, 2));
+                    ctx.arc(center.x, center.y, radius, 0, 2 * Math.PI);
+                    break;
+                case 'triangle':
+                    if (stroke.points.length < 2) return;
+                    const pA = stroke.points[0];
+                    const pB = stroke.points[1];
+                    ctx.moveTo(pA.x, pA.y);
+                    ctx.lineTo(pA.x, pB.y);
+                    ctx.lineTo(pB.x, pB.y);
+                    ctx.closePath();
+                    break;
             }
+            ctx.stroke();
+        }
 
-            // --- Drawing Functions ---
-            
-            function getCoords(e) {
-                return { x: e.clientX, y: e.clientY };
+        // --- Main Render Loop (same) ---
+        function render() {
+            if (!ctx) return; // Guard against init errors
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawBackground();
+            ctx.save();
+            ctx.translate(viewOffset.x, viewOffset.y);
+            ctx.scale(viewZoom, viewZoom);
+            strokes.forEach(drawStroke);
+            if (currentPath) {
+                drawStroke(currentPath);
             }
+            ctx.restore();
+        }
 
-            function startDrawing(e) {
-                if (toolbarWrapper.classList.contains('sticky-expand')) {
-                    toolbarWrapper.classList.remove('sticky-expand');
-                    toolbarWrapper.classList.add('compact-mode');
-                }
-                // Close all popovers on canvas click
-                penPopover.classList.remove('active');
-                eraserPopover.classList.remove('active');
-                canvasPopover.classList.remove('active');
-
-                if (e.target.closest('#toolbar-wrapper') || isTwoFingerPanning || isEraserGesture) {
-                    if (!isEraserGesture) return;
-                }
-                
-                if (e.pointerType === 'mouse' && e.button !== 0) return;
-                
-                e.preventDefault();
-                
-                const { x: screenX, y: screenY } = getCoords(e);
-                const worldPoint = screenToWorld(screenX, screenY);
-
-                if (currentTool === 'pan') {
-                    isPanning = true;
-                    lastPanPos = { x: screenX, y: screenY };
-                    canvas.classList.add('panning');
-                    return;
-                }
-
-                isDrawing = true;
-
-                if (currentTool === 'eraser') {
-                    if (currentEraserMode === 'object') {
-                        addHistoryAction();
-                        didDeleteInStroke = false;
-                        if (findAndRemoveStroke(worldPoint)) {
-                            didDeleteInStroke = true;
-                        }
-                        return;
-                    } else { // Pixel eraser
-                        currentPath = {
-                            id: Date.now(),
-                            tool: 'pen', 
-                            color: backgroundColor, 
-                            size: currentEraserSize,
-                            points: [worldPoint]
-                        };
-                        return; 
+        // --- Object Eraser Logic (same) ---
+        function getDistance(p1, p2) {
+            return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
+        }
+        function isPointNearStroke(worldPoint, stroke) {
+            const screenPixelTolerance = 5 / viewZoom; 
+            const tolerance = (currentEraserMode === 'object' ? currentEraserSize : stroke.size) + screenPixelTolerance;
+            switch (stroke.tool) {
+                case 'pen':
+                    return stroke.points.some(p => getDistance(worldPoint, p) < tolerance);
+                case 'line':
+                case 'rect':
+                case 'circle':
+                case 'triangle':
+                    const p1 = stroke.points[0];
+                    const p2 = stroke.points[1];
+                    const minX = Math.min(p1.x, p2.x) - tolerance;
+                    const maxX = Math.max(p1.x, p2.x) + tolerance;
+                    const minY = Math.min(p1.y, p2.y) - tolerance;
+                    const maxY = Math.max(p1.y, p2.y) + tolerance;
+                    if (stroke.tool === 'circle') {
+                        const center = stroke.points[0];
+                        const radius = getDistance(stroke.points[0], stroke.points[1]);
+                        const distToCenter = getDistance(worldPoint, center);
+                        return Math.abs(distToCenter - radius) < tolerance;
                     }
-                }
-                
-                currentPath = {
-                    id: Date.now(),
-                    tool: currentTool,
-                    color: currentColor,
-                    size: currentBrushSize,
-                    points: [worldPoint]
-                };
-
-                if (['line', 'rect', 'circle', 'triangle'].includes(currentTool)) {
-                    currentPath.points.push(worldPoint);
+                    return (worldPoint.x >= minX && worldPoint.x <= maxX &&
+                            worldPoint.y >= minY && worldPoint.y <= maxY);
+            }
+            return false;
+        }
+        function findAndRemoveStroke(worldPoint) {
+            let didDelete = false;
+            for (let i = strokes.length - 1; i >= 0; i--) {
+                if (isPointNearStroke(worldPoint, strokes[i])) {
+                    strokes.splice(i, 1);
+                    didDelete = true;
+                    break; 
                 }
             }
-
-            function draw(e) {
-                if ((!isDrawing && !isPanning) || isTwoFingerPanning) return;
-                e.preventDefault();
-                
-                const { x: screenX, y: screenY } = getCoords(e);
-
-                if (isPanning) {
-                    const dx = screenX - lastPanPos.x;
-                    const dy = screenY - lastPanPos.y;
-                    viewOffset.x += dx;
-                    viewOffset.y += dy;
-                    lastPanPos = { x: screenX, y: screenY };
-                    render();
-                    return;
-                }
-
-                if (isDrawing) {
-                    const worldPoint = screenToWorld(screenX, screenY);
-
-                    if (currentTool === 'eraser') {
-                        if (currentEraserMode === 'object') {
-                            if (findAndRemoveStroke(worldPoint)) {
-                                didDeleteInStroke = true;
-                            }
-                        } else { // Pixel eraser
-                            if (currentPath) {
-                                currentPath.points.push(worldPoint);
-                                render();
-                            }
-                        }
-                        return;
-                    }
-                    
-                    if (currentPath) {
-                        switch (currentTool) {
-                            case 'pen':
-                                currentPath.points.push(worldPoint);
-                                break;
-                            case 'line':
-                            case 'rect':
-                            case 'circle':
-                            case 'triangle':
-                                currentPath.points[1] = worldPoint;
-                                break;
-                        }
-                        render();
-                    }
-                }
-            }
-
-            function stopDrawing() {
-                if (isPanning) {
-                    isPanning = false;
-                    canvas.classList.remove('panning');
-                    saveViewTransform();
-                    showSaveIndicator();
-                }
-
-                if (isDrawing) {
-                    isDrawing = false;
-                    
-                    if (currentTool === 'eraser') {
-                        if (currentEraserMode === 'object') {
-                            if (didDeleteInStroke) {
-                                saveStrokesAndSettings();
-                            }
-                            didDeleteInStroke = false;
-                        } else { // Pixel eraser
-                            if (currentPath && currentPath.points.length > 1) {
-                                addHistoryAction();
-                                strokes.push(currentPath);
-                                render(); // Render
-                                saveStrokesAndSettings();
-                            } else if (currentPath && currentPath.points.length === 1) {
-                                currentPath.points.push({ x: currentPath.points[0].x + (0.5 / viewZoom), y: currentPath.points[0].y + (0.5 / viewZoom) });
-                                addHistoryAction();
-                                strokes.push(currentPath);
-                                render(); // Render the dot
-                                saveStrokesAndSettings();
-                            }
-                            currentPath = null;
-                        }
-                    } else if (currentPath) {
-                        // Dot logic
-                        if (currentPath.tool === 'pen' && currentPath.points.length === 1) {
-                            currentPath.points.push({ x: currentPath.points[0].x + (0.5 / viewZoom), y: currentPath.points[0].y + (0.5 / viewZoom) });
-                        }
-                        
-                        if (currentPath.points.length > 1) {
-                            addHistoryAction();
-                            strokes.push(currentPath);
-                            render(); // FIXED: Render dot immediately
-                            saveStrokesAndSettings();
-                        }
-                        currentPath = null;
-                    }
-                }
-            }
-
-            // --- Toolbar Event Listeners ---
-            
-            function updateActiveToolButton(activeTool) {
-                toolButtons.forEach(btn => {
-                    if (btn.tool === activeTool) {
-                        btn.el.classList.add('active');
-                    } else {
-                        btn.el.classList.remove('active');
-                    }
-                });
-                
-                if (activeTool === 'pan') {
-                    canvas.style.cursor = 'grab';
-                    canvas.classList.add('panning');
-                } else {
-                    canvas.style.cursor = 'none';
-                    canvas.classList.remove('panning');
-                }
-                
-                customCursorCircle.style.display = 'none';
-                customCursorEraser.style.display = 'none';
-            }
-            
-            // NEW: Function to position popovers
-            function positionPopover(popover, buttonRect) {
-                const popoverWidth = popover.offsetWidth;
-                
-                let top = buttonRect.bottom + 12; // 12px margin
-                let left = buttonRect.left + (buttonRect.width / 2) - (popoverWidth / 2);
-                
-                // Clamp to viewport
-                left = Math.max(16, left); // 1rem left padding
-                if (left + popoverWidth > window.innerWidth - 16) {
-                    left = window.innerWidth - 16 - popoverWidth; // 1rem right padding
-                }
-                
-                popover.style.top = `${top}px`;
-                popover.style.left = `${left}px`;
-                popover.style.transform = 'none'; // Remove any old transform
-            }
-            
-            // MODIFIED: Pen Button Click
-            penBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const wasActive = penPopover.classList.contains('active');
-                
-                // Close other popovers
-                eraserPopover.classList.remove('active');
-                canvasPopover.classList.remove('active');
-                
-                if (wasActive) {
-                    penPopover.classList.remove('active');
-                } else {
-                    penPopover.classList.add('active'); // Add active first to get offsetWidth
-                    const btnRect = penBtn.getBoundingClientRect();
-                    positionPopover(penPopover, btnRect);
-                }
-                
-                currentTool = 'pen';
-                originalTool = 'pen';
-                updateActiveToolButton('pen');
-            });
-            
-            // MODIFIED: Eraser Button Click
-            eraserBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const wasActive = eraserPopover.classList.contains('active');
-
-                // Close other popovers
-                penPopover.classList.remove('active');
-                canvasPopover.classList.remove('active');
-
-                if (wasActive) {
-                    eraserPopover.classList.remove('active');
-                } else {
-                    eraserPopover.classList.add('active');
-                    const btnRect = eraserBtn.getBoundingClientRect();
-                    positionPopover(eraserPopover, btnRect);
-                }
-                
-                currentTool = 'eraser';
-                originalTool = 'eraser';
-                updateActiveToolButton('eraser');
-            });
-            
-            // MODIFIED: Canvas Button Click
-            canvasBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const wasActive = canvasPopover.classList.contains('active');
-
-                // Close other popovers
-                penPopover.classList.remove('active');
-                eraserPopover.classList.remove('active');
-
-                if (wasActive) {
-                    canvasPopover.classList.remove('active');
-                } else {
-                    canvasPopover.classList.add('active');
-                    const btnRect = canvasBtn.getBoundingClientRect();
-                    positionPopover(canvasPopover, btnRect);
-                }
-            });
-
-            [lineBtn, rectBtn, circleBtn, triangleBtn].forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const tool = toolButtons.find(b => b.el === btn).tool;
-                    currentTool = tool;
-                    originalTool = tool;
-                    updateActiveToolButton(tool);
-                    penPopover.classList.remove('active');
-                    eraserPopover.classList.remove('active');
-                    canvasPopover.classList.remove('active');
-                });
-            });
-            
-            undoBtn.addEventListener('click', undo);
-            redoBtn.addEventListener('click', redo);
-
-            colorPicker.addEventListener('input', (e) => {
-                currentColor = e.target.value;
-                penBtn.querySelector('svg').style.stroke = currentColor;
-                penPreview.style.backgroundColor = currentColor;
-            });
-            
-            function updatePenCursorSize() {
-                // Scale cursor size with zoom
-                const cursorSize = Math.max(10, (currentBrushSize * viewZoom) / 2);
-                customCursorCircle.style.width = `${cursorSize}px`;
-                customCursorCircle.style.height = `${cursorSize}px`;
-            }
-            
-            function setupThicknessControl(controlEl) {
-                const input = controlEl.querySelector('input[type="number"]');
-                const decBtn = controlEl.querySelector('[data-action="decrease"]');
-                const incBtn = controlEl.querySelector('[data-action="increase"]');
-                const type = controlEl.dataset.type;
-                
-                const updateSize = (newSize) => {
-                    newSize = Math.max(1, Math.min(newSize, 500));
-                    input.value = newSize;
-                    if (type === 'pen') {
-                        currentBrushSize = newSize;
-                        penSizeLabel.textContent = `${newSize}px`;
-                        updatePenCursorSize();
-                        penPreview.style.height = `${Math.min(currentBrushSize, 40)}px`;
-                    } else { // eraser
-                        currentEraserSize = newSize;
-                        eraserSizeLabel.textContent = `${newSize}px`;
-                        const previewSize = Math.min(currentEraserSize, 40);
-                        eraserPreview.style.width = `${previewSize}px`;
-                        eraserPreview.style.height = `${previewSize}px`;
-                    }
-                };
-                
-                input.addEventListener('input', () => updateSize(parseInt(input.value) || 1));
-                input.addEventListener('change', () => updateSize(parseInt(input.value) || 1));
-                decBtn.addEventListener('click', () => updateSize(parseInt(input.value) - 1));
-                incBtn.addEventListener('click', () => updateSize(parseInt(input.value) + 1));
-                
-                updateSize(parseInt(input.value));
-            }
-            
-            setupThicknessControl(penThicknessControl);
-            setupThicknessControl(eraserThicknessControl);
-            
-            objectEraserBtn.addEventListener('click', () => {
-                currentEraserMode = 'object';
-                objectEraserBtn.classList.add('bg-blue-100', 'text-blue-700');
-                objectEraserBtn.classList.remove('bg-white', 'text-gray-700', 'hover:bg-gray-50');
-                pixelEraserBtn.classList.add('bg-white', 'text-gray-700', 'hover:bg-gray-50');
-                pixelEraserBtn.classList.remove('bg-blue-100', 'text-blue-700');
-            });
-            
-            pixelEraserBtn.addEventListener('click', () => {
-                currentEraserMode = 'pixel';
-                pixelEraserBtn.classList.add('bg-blue-100', 'text-blue-700');
-                pixelEraserBtn.classList.remove('bg-white', 'text-gray-700', 'hover:bg-gray-50');
-                objectEraserBtn.classList.add('bg-white', 'text-gray-700', 'hover:bg-gray-50');
-                objectEraserBtn.classList.remove('bg-blue-100', 'text-blue-700');
-            });
-
-            bgColorPicker.addEventListener('input', (e) => {
-                backgroundColor = e.target.value;
-                updateCanvasIconPreview();
+            if (didDelete) {
                 render();
-                saveStrokesAndSettings();
-            });
+            }
+            return didDelete;
+        }
 
-            bgPatternSelector.addEventListener('change', (e) => {
-                backgroundPattern = e.target.value;
-                updateCanvasIconPreview();
-                render();
-                saveStrokesAndSettings();
-            });
-
-            clearBtn.addEventListener('click', () => {
-                confirmModal.classList.remove('hidden');
-            });
-            cancelClearBtn.addEventListener('click', () => {
-                confirmModal.classList.add('hidden');
-            });
-            confirmClearBtn.addEventListener('click', () => {
-                if (strokes.length > 0) {
-                    addHistoryAction();
-                }
-                strokes = [];
-                viewOffset = { x: 0, y: 0 };
-                viewZoom = 1; // Reset zoom
-                render();
-                saveStrokesAndSettings();
-                saveViewTransform();
-                confirmModal.classList.add('hidden');
-            });
+        // --- Drawing Functions (same) ---
+        function getCoords(e) {
+            return { x: e.clientX, y: e.clientY };
+        }
+        
+        // MODIFIED: startDrawing for hold-to-erase
+        function startDrawing(e) {
+            if (toolbarWrapper.classList.contains('sticky-expand')) {
+                toolbarWrapper.classList.remove('sticky-expand');
+                toolbarWrapper.classList.add('compact-mode');
+            }
+            penPopover.classList.remove('active');
+            eraserPopover.classList.remove('active');
+            canvasPopover.classList.remove('active');
             
-            document.addEventListener('pointerdown', (e) => {
-                if (!e.target.closest('#toolbar-wrapper') && !e.target.closest('.popover')) {
-                    penPopover.classList.remove('active');
-                    eraserPopover.classList.remove('active');
-                    canvasPopover.classList.remove('active');
-                    
-                    if (!toolbarWrapper.classList.contains('sticky-expand')) {
-                        toolbarWrapper.classList.add('compact-mode');
-                    }
-                }
-            });
-
-            // --- Main Event Listeners ---
+            if (e.target.closest('#toolbar-wrapper') || isTwoFingerPanning) {
+                return;
+            }
             
-            function handlePointerDown(e) {
-                const now = Date.now();
-                // Double-tap/click logic
-                if (now - lastTapTime < 300 && !e.target.closest('#toolbar-wrapper')) {
+            // Start touch-hold timer
+            if (e.pointerType === 'touch') {
+                touchHoldTimer = setTimeout(() => {
                     isEraserGesture = true;
                     originalTool = currentTool;
                     currentTool = 'eraser';
-                }
-                lastTapTime = now;
-                startDrawing(e);
-            }
+                    
+                    // Manually start drawing as eraser
+                    const { x: screenX, y: screenY } = getCoords(e);
+                    const worldPoint = screenToWorld(screenX, screenY);
+                    isDrawing = true;
+                    addHistoryAction();
+                    didDeleteInStroke = false;
+                    if (findAndRemoveStroke(worldPoint)) {
+                        didDeleteInStroke = true;
+                    }
 
-            function handlePointerUp() {
-                stopDrawing();
-                if (isEraserGesture) {
-                    isEraserGesture = false;
-                    currentTool = originalTool;
-                }
+                }, TOUCH_HOLD_DURATION);
             }
             
-            canvas.addEventListener('pointerdown', handlePointerDown);
-            document.addEventListener('pointermove', draw);
-            document.addEventListener('pointerup', handlePointerUp);
-            document.addEventListener('pointercancel', handlePointerUp);
+            if (isEraserGesture) return; // Already handled by hold
+            if (e.pointerType === 'mouse' && e.button !== 0) return;
+            e.preventDefault();
             
-            canvas.addEventListener('touchstart', (e) => {
-                if (e.touches.length === 2) {
-                    e.preventDefault(); 
-                    isTwoFingerPanning = true;
-                    isDrawing = false;
-                    isPanning = false;
-                    
-                    lastTouchMidpoint = {
-                        x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
-                        y: (e.touches[0].clientY + e.touches[1].clientY) / 2,
-                    };
+            const { x: screenX, y: screenY } = getCoords(e);
+            const worldPoint = screenToWorld(screenX, screenY);
+            if (currentTool === 'pan') {
+                isPanning = true;
+                lastPanPos = { x: screenX, y: screenY };
+                canvas.classList.add('panning');
+                return;
+            }
+            isDrawing = true;
+            if (currentTool === 'eraser') {
+                if (currentEraserMode === 'object') {
+                    addHistoryAction();
+                    didDeleteInStroke = false;
+                    if (findAndRemoveStroke(worldPoint)) {
+                        didDeleteInStroke = true;
+                    }
+                    return;
+                } else { // Pixel eraser
+                    currentPath = { id: Date.now(), tool: 'pen', color: backgroundColor, size: currentEraserSize, points: [worldPoint] };
+                    return; 
                 }
-            }, { passive: false });
-
-            canvas.addEventListener('touchmove', (e) => {
-                if (isTwoFingerPanning && e.touches.length === 2) {
-                    e.preventDefault();
-                    const newMidpoint = {
-                        x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
-                        y: (e.touches[0].clientY + e.touches[1].clientY) / 2,
-                    };
-                    
-                    const deltaX = newMidpoint.x - lastTouchMidpoint.x;
-                    const deltaY = newMidpoint.y - lastTouchMidpoint.y;
-                    
-                    viewOffset.x += deltaX;
-                    viewOffset.y += deltaY;
-                    
-                    lastTouchMidpoint = newMidpoint;
+            }
+            currentPath = { id: Date.now(), tool: currentTool, color: currentColor, size: currentBrushSize, points: [worldPoint] };
+            if (['line', 'rect', 'circle', 'triangle'].includes(currentTool)) {
+                currentPath.points.push(worldPoint);
+            }
+        }
+        
+        // MODIFIED: draw for hold-to-erase
+        function draw(e) {
+            // If we move, it's not a "hold"
+            if (touchHoldTimer) {
+                clearTimeout(touchHoldTimer);
+                touchHoldTimer = null;
+            }
+            
+            if ((!isDrawing && !isPanning) || isTwoFingerPanning) return;
+            e.preventDefault();
+            
+            const { x: screenX, y: screenY } = getCoords(e);
+            if (isPanning) {
+                const dx = screenX - lastPanPos.x;
+                const dy = screenY - lastPanPos.y;
+                viewOffset.x += dx;
+                viewOffset.y += dy;
+                lastPanPos = { x: screenX, y: screenY };
+                render();
+                return;
+            }
+            if (isDrawing) {
+                const worldPoint = screenToWorld(screenX, screenY);
+                if (currentTool === 'eraser') {
+                    if (currentEraserMode === 'object') {
+                        if (findAndRemoveStroke(worldPoint)) {
+                            didDeleteInStroke = true;
+                        }
+                    } else { // Pixel eraser
+                        if (currentPath) {
+                            currentPath.points.push(worldPoint);
+                            render();
+                        }
+                    }
+                    return;
+                }
+                if (currentPath) {
+                    switch (currentTool) {
+                        case 'pen':
+                            currentPath.points.push(worldPoint);
+                            break;
+                        case 'line':
+                        case 'rect':
+                        case 'circle':
+                        case 'triangle':
+                            currentPath.points[1] = worldPoint;
+                            break;
+                    }
                     render();
                 }
-            }, { passive: false });
+            }
+        }
 
-            canvas.addEventListener('touchend', (e) => {
-                if (isTwoFingerPanning) {
-                    isTwoFingerPanning = false;
-                    saveViewTransform();
-                    showSaveIndicator();
+        // MODIFIED: stopDrawing for hold-to-erase and local saving
+        function stopDrawing() {
+            if (touchHoldTimer) {
+                clearTimeout(touchHoldTimer);
+                touchHoldTimer = null;
+            }
+
+            if (isPanning) {
+                isPanning = false;
+                canvas.classList.remove('panning');
+                saveViewTransform(); // Save new view offset
+            }
+            if (isDrawing) {
+                isDrawing = false;
+                let didChange = false;
+                if (currentTool === 'eraser') {
+                    if (currentEraserMode === 'object') {
+                        if (didDeleteInStroke) {
+                            didChange = true;
+                        }
+                        didDeleteInStroke = false;
+                    } else { // Pixel eraser
+                        if (currentPath && currentPath.points.length > 1) {
+                            addHistoryAction();
+                            strokes.push(currentPath);
+                            didChange = true;
+                        } else if (currentPath && currentPath.points.length === 1) {
+                            currentPath.points.push({ x: currentPath.points[0].x + (0.5 / viewZoom), y: currentPath.points[0].y + (0.5 / viewZoom) });
+                            addHistoryAction();
+                            strokes.push(currentPath);
+                            didChange = true;
+                        }
+                        currentPath = null;
+                    }
+                } else if (currentPath) {
+                    if (currentPath.tool === 'pen' && currentPath.points.length === 1) {
+                        currentPath.points.push({ x: currentPath.points[0].x + (0.5 / viewZoom), y: currentPath.points[0].y + (0.5 / viewZoom) });
+                    }
+                    if (currentPath.points.length > 1) {
+                        addHistoryAction();
+                        strokes.push(currentPath);
+                        didChange = true;
+                    }
+                    currentPath = null;
+                }
+                
+                if (didChange) {
+                    render();
+                    saveStrokesAndSettings(); // Save new stroke/erase
+                }
+            }
+            
+            // Reset gesture
+            if (isEraserGesture) {
+                isEraserGesture = false;
+                currentTool = originalTool;
+            }
+        }
+
+        // --- Toolbar Event Listeners (same) ---
+        function updateActiveToolButton(activeTool) {
+            toolButtons.forEach(btn => {
+                if (btn.tool === activeTool) {
+                    btn.el.classList.add('active');
+                } else {
+                    btn.el.classList.remove('active');
                 }
             });
+            if (activeTool === 'pan') {
+                canvas.style.cursor = 'grab';
+                canvas.classList.add('panning');
+            } else {
+                canvas.style.cursor = 'none';
+                canvas.classList.remove('panning');
+            }
+            customCursorCircle.style.display = 'none';
+            customCursorEraser.style.display = 'none';
+        }
+        
+        function positionPopover(popover, buttonRect) {
+            const popoverWidth = popover.offsetWidth;
+            let top = buttonRect.bottom + 12; 
+            let left = buttonRect.left + (buttonRect.width / 2) - (popoverWidth / 2);
+            left = Math.max(16, left);
+            if (left + popoverWidth > window.innerWidth - 16) {
+                left = window.innerWidth - 16 - popoverWidth;
+            }
+            popover.style.top = `${top}px`;
+            popover.style.left = `${left}px`;
+            popover.style.transform = 'none';
+        }
+        
+        penBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const wasActive = penPopover.classList.contains('active');
+            eraserPopover.classList.remove('active');
+            canvasPopover.classList.remove('active');
+            if (wasActive) {
+                penPopover.classList.remove('active');
+            } else {
+                penPopover.classList.add('active');
+                const btnRect = penBtn.getBoundingClientRect();
+                positionPopover(penPopover, btnRect);
+            }
+            currentTool = 'pen';
+            originalTool = 'pen';
+            updateActiveToolButton('pen');
+        });
+        
+        eraserBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const wasActive = eraserPopover.classList.contains('active');
+            penPopover.classList.remove('active');
+            canvasPopover.classList.remove('active');
+            if (wasActive) {
+                eraserPopover.classList.remove('active');
+            } else {
+                eraserPopover.classList.add('active');
+                const btnRect = eraserBtn.getBoundingClientRect();
+                positionPopover(eraserPopover, btnRect);
+            }
+            currentTool = 'eraser';
+            originalTool = 'eraser';
+            updateActiveToolButton('eraser');
+        });
+        
+        canvasBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const wasActive = canvasPopover.classList.contains('active');
+            penPopover.classList.remove('active');
+            eraserPopover.classList.remove('active');
+            if (wasActive) {
+                canvasPopover.classList.remove('active');
+            } else {
+                canvasPopover.classList.add('active');
+                const btnRect = canvasBtn.getBoundingClientRect();
+                positionPopover(canvasPopover, btnRect);
+            }
+        });
 
-            // Wheel listener for Pan AND Zoom
-            canvas.addEventListener('wheel', (e) => {
-                if (e.target.closest('#toolbar-wrapper')) return;
+        [lineBtn, rectBtn, circleBtn, triangleBtn].forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tool = toolButtons.find(b => b.el === btn).tool;
+                currentTool = tool;
+                originalTool = tool;
+                updateActiveToolButton(tool);
+                penPopover.classList.remove('active');
+                eraserPopover.classList.remove('active');
+                canvasPopover.classList.remove('active');
+            });
+        });
+        
+        undoBtn.addEventListener('click', undo);
+        redoBtn.addEventListener('click', redo);
+
+        colorPicker.addEventListener('input', (e) => {
+            currentColor = e.target.value;
+            penBtn.querySelector('svg').style.stroke = currentColor;
+            penPreview.style.backgroundColor = currentColor;
+        });
+        
+        function updatePenCursorSize() {
+            const cursorSize = Math.max(10, (currentBrushSize * viewZoom) / 2);
+            customCursorCircle.style.width = `${cursorSize}px`;
+            customCursorCircle.style.height = `${cursorSize}px`;
+        }
+        
+        function setupThicknessControl(controlEl) {
+            const input = controlEl.querySelector('input[type="number"]');
+            const decBtn = controlEl.querySelector('[data-action="decrease"]');
+            const incBtn = controlEl.querySelector('[data-action="increase"]');
+            const type = controlEl.dataset.type;
+            const updateSize = (newSize) => {
+                newSize = Math.max(1, Math.min(newSize, 500));
+                input.value = newSize;
+                if (type === 'pen') {
+                    currentBrushSize = newSize;
+                    penSizeLabel.textContent = `${newSize}px`;
+                    updatePenCursorSize();
+                    penPreview.style.height = `${Math.min(currentBrushSize, 40)}px`;
+                } else { // eraser
+                    currentEraserSize = newSize;
+                    eraserSizeLabel.textContent = `${newSize}px`;
+                    const previewSize = Math.min(currentEraserSize, 40);
+                    eraserPreview.style.width = `${previewSize}px`;
+                    eraserPreview.style.height = `${previewSize}px`;
+                }
+            };
+            input.addEventListener('input', () => updateSize(parseInt(input.value) || 1));
+            input.addEventListener('change', () => updateSize(parseInt(input.value) || 1));
+            decBtn.addEventListener('click', () => updateSize(parseInt(input.value) - 1));
+            incBtn.addEventListener('click', () => updateSize(parseInt(input.value) + 1));
+            updateSize(parseInt(input.value));
+        }
+        setupThicknessControl(penThicknessControl);
+        setupThicknessControl(eraserThicknessControl);
+        
+        objectEraserBtn.addEventListener('click', () => {
+            currentEraserMode = 'object';
+            objectEraserBtn.classList.add('bg-blue-100', 'text-blue-700');
+            objectEraserBtn.classList.remove('bg-white', 'text-gray-700', 'hover:bg-gray-50');
+            pixelEraserBtn.classList.add('bg-white', 'text-gray-700', 'hover:bg-gray-50');
+            pixelEraserBtn.classList.remove('bg-blue-100', 'text-blue-700');
+        });
+        pixelEraserBtn.addEventListener('click', () => {
+            currentEraserMode = 'pixel';
+            pixelEraserBtn.classList.add('bg-blue-100', 'text-blue-700');
+            pixelEraserBtn.classList.remove('bg-white', 'text-gray-700', 'hover:bg-gray-50');
+            objectEraserBtn.classList.add('bg-white', 'text-gray-700', 'hover:bg-gray-50');
+            objectEraserBtn.classList.remove('bg-blue-100', 'text-blue-700');
+        });
+
+        // MODIFIED: Background changes
+        bgColorPicker.addEventListener('input', (e) => {
+            backgroundColor = e.target.value;
+            updateCanvasIconPreview();
+            render();
+            saveStrokesAndSettings();
+        });
+        bgPatternSelector.addEventListener('change', (e) => {
+            backgroundPattern = e.target.value;
+            updateCanvasIconPreview();
+            render();
+            saveStrokesAndSettings();
+        });
+
+        // MODIFIED: Clear button
+        clearBtn.addEventListener('click', () => {
+            confirmModal.classList.remove('hidden');
+        });
+        cancelClearBtn.addEventListener('click', () => {
+            confirmModal.classList.add('hidden');
+        });
+        confirmClearBtn.addEventListener('click', () => {
+            if (strokes.length > 0) {
+                addHistoryAction();
+            }
+            strokes = [];
+            viewOffset = { x: 0, y: 0 };
+            viewZoom = 1; 
+            render();
+            saveStrokesAndSettings(); // Save the cleared state
+            saveViewTransform();
+            confirmModal.classList.add('hidden');
+        });
+        
+        document.addEventListener('pointerdown', (e) => {
+            if (!e.target.closest('#toolbar-wrapper') && !e.target.closest('.popover')) {
+                penPopover.classList.remove('active');
+                eraserPopover.classList.remove('active');
+                canvasPopover.classList.remove('active');
+                if (!toolbarWrapper.classList.contains('sticky-expand')) {
+                    toolbarWrapper.classList.add('compact-mode');
+                }
+            }
+        });
+
+        // --- Main Event Listeners (same) ---
+        function handlePointerDown(e) {
+            const now = Date.now();
+            // MODIFIED: Double-tap-to-erase is now MOUSE ONLY
+            if (e.pointerType === 'mouse' && now - lastTapTime < 300 && !e.target.closest('#toolbar-wrapper')) {
+                isEraserGesture = true;
+                originalTool = currentTool;
+                currentTool = 'eraser';
+            }
+            lastTapTime = now;
+            startDrawing(e);
+        }
+        function handlePointerUp() {
+            stopDrawing();
+            // isEraserGesture is now reset inside stopDrawing()
+        }
+        canvas.addEventListener('pointerdown', handlePointerDown);
+        document.addEventListener('pointermove', draw);
+        document.addEventListener('pointerup', handlePointerUp);
+        document.addEventListener('pointercancel', handlePointerUp);
+        
+        // MODIFIED: Touch events for 2-finger pan AND zoom
+        canvas.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 2) {
+                e.preventDefault(); 
+                isTwoFingerPanning = true;
+                isDrawing = false; 
+                isPanning = false; 
+                
+                lastTouchMidpoint = {
+                    x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
+                    y: (e.touches[0].clientY + e.touches[1].clientY) / 2,
+                };
+                lastTouchDistance = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+            }
+        }, { passive: false });
+
+        canvas.addEventListener('touchmove', (e) => {
+            if (isTwoFingerPanning && e.touches.length === 2) {
                 e.preventDefault();
                 
-                if (e.ctrlKey) {
-                    // Zooming
-                    const delta = -Math.sign(e.deltaY) * ZOOM_STEP;
-                    const newZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, viewZoom + delta));
-                    
-                    const screenX = e.clientX;
-                    const screenY = e.clientY;
-                    
-                    const worldPoint = screenToWorld(screenX, screenY);
-                    
-                    viewZoom = newZoom;
-                    
-                    viewOffset.x = screenX - worldPoint.x * viewZoom;
-                    viewOffset.y = screenY - worldPoint.y * viewZoom;
-                    
-                    updatePenCursorSize();
+                // Pan
+                const newMidpoint = {
+                    x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
+                    y: (e.touches[0].clientY + e.touches[1].clientY) / 2,
+                };
+                const deltaX = newMidpoint.x - lastTouchMidpoint.x;
+                const deltaY = newMidpoint.y - lastTouchMidpoint.y;
+                viewOffset.x += deltaX;
+                viewOffset.y += deltaY;
+                lastTouchMidpoint = newMidpoint;
+                
+                // Zoom
+                const newTouchDistance = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+                const deltaDistance = newTouchDistance - lastTouchDistance;
+                
+                // Use a slower zoom factor for touch
+                const zoomFactor = 1 + (deltaDistance / 100) * (ZOOM_STEP * 5);
+                const newZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, viewZoom * zoomFactor));
+                
+                const screenX = newMidpoint.x;
+                const screenY = newMidpoint.y;
+                const worldPoint = screenToWorld(screenX, screenY);
+                viewZoom = newZoom;
+                viewOffset.x = screenX - worldPoint.x * viewZoom;
+                viewOffset.y = screenY - worldPoint.y * viewZoom;
 
-                } else {
-                    // Panning (simultaneous)
-                    viewOffset.x -= e.deltaX;
-                    viewOffset.y -= e.deltaY;
-                }
+                lastTouchDistance = newTouchDistance;
+                updatePenCursorSize();
                 
                 render();
-                
-                if (wheelSaveTimer) {
-                    clearTimeout(wheelSaveTimer);
-                }
-                wheelSaveTimer = setTimeout(() => {
-                    saveViewTransform();
-                    showSaveIndicator();
-                    wheelSaveTimer = null;
-                }, 500);
-            }, { passive: false });
+            }
+        }, { passive: false });
 
+        canvas.addEventListener('touchend', (e) => {
+            if (isTwoFingerPanning) {
+                isTwoFingerPanning = false;
+                saveViewTransform(); // Save new view offset
+            }
+        });
 
-            // --- Custom Cursor Logic ---
-            document.addEventListener('pointermove', (e) => {
-                const clientX = e.clientX;
-                const clientY = e.clientY;
-                customCursorCircle.style.left = `${clientX}px`;
-                customCursorCircle.style.top = `${clientY}px`;
-                customCursorEraser.style.left = `${clientX}px`;
-                customCursorEraser.style.top = `${clientY}px`;
+        // MODIFIED: Wheel listener
+        canvas.addEventListener('wheel', (e) => {
+            if (e.target.closest('#toolbar-wrapper')) return;
+            e.preventDefault();
+            if (e.ctrlKey) {
+                // Zoom
+                const delta = -Math.sign(e.deltaY) * ZOOM_STEP;
+                const newZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, viewZoom + delta));
+                const screenX = e.clientX;
+                const screenY = e.clientY;
+                const worldPoint = screenToWorld(screenX, screenY);
+                viewZoom = newZoom;
+                viewOffset.x = screenX - worldPoint.x * viewZoom;
+                viewOffset.y = screenY - worldPoint.y * viewZoom;
+                updatePenCursorSize();
+            } else {
+                // Pan
+                viewOffset.x -= e.deltaX;
+                viewOffset.y -= e.deltaY;
+            }
+            render();
+            if (wheelSaveTimer) {
+                clearTimeout(wheelSaveTimer);
+            }
+            wheelSaveTimer = setTimeout(() => {
+                saveViewTransform(); // Save new view/zoom
+                wheelSaveTimer = null;
+            }, 500);
+        }, { passive: false });
 
-                if (e.pointerType === 'mouse') {
-                    if (e.target === canvas) {
-                        if (currentTool === 'eraser') {
-                            customCursorCircle.style.display = 'none';
-                            customCursorEraser.style.display = 'block'; // TYPO FIXED
-                        } else if (currentTool !== 'pan') {
-                            customCursorCircle.style.display = 'block';
-                            customCursorEraser.style.display = 'none';
-                        } else { 
-                            customCursorCircle.style.display = 'none';
-                            customCursorEraser.style.display = 'none';
-                        }
-                    } else {
+        // --- Custom Cursor Logic (FIXED) ---
+        document.addEventListener('pointermove', (e) => {
+            const clientX = e.clientX;
+            const clientY = e.clientY;
+            customCursorCircle.style.left = `${clientX}px`;
+            customCursorCircle.style.top = `${clientY}px`;
+            customCursorEraser.style.left = `${clientX}px`;
+            customCursorEraser.style.top = `${clientY}px`;
+
+            if (e.pointerType === 'mouse') {
+                if (e.target === canvas) {
+                    if (currentTool === 'eraser') {
+                        customCursorCircle.style.display = 'none';
+                        customCursorEraser.style.display = 'block'; // <<< CRITICAL FIX
+                    } else if (currentTool !== 'pan') {
+                        customCursorCircle.style.display = 'block';
+                        customCursorEraser.style.display = 'none';
+                    } else { 
                         customCursorCircle.style.display = 'none';
                         customCursorEraser.style.display = 'none';
                     }
@@ -1409,85 +1343,88 @@
                     customCursorCircle.style.display = 'none';
                     customCursorEraser.style.display = 'none';
                 }
-            });
-            
-            document.addEventListener('mouseleave', () => {
+            } else {
                 customCursorCircle.style.display = 'none';
                 customCursorEraser.style.display = 'none';
-            });
-            
-            // --- Keyboard Shortcuts ---
-            document.addEventListener('keydown', (e) => {
-                if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
-
-                if (e.ctrlKey || e.metaKey) {
-                    if (e.key === 'z') {
-                        e.preventDefault();
-                        undo();
-                    } else if (e.key === 'y') {
-                        e.preventDefault();
-                        redo();
-                    }
-                } else if (e.key === '1') {
-                    e.preventDefault();
-                    currentTool = 'pen';
-                    originalTool = 'pen';
-                    updateActiveToolButton('pen');
-                    eraserPopover.classList.remove('active');
-                    canvasPopover.classList.remove('active');
-                } else if (e.key === '2') {
-                    e.preventDefault();
-                    currentTool = 'eraser';
-                    originalTool = 'eraser';
-                    updateActiveToolButton('eraser');
-                    penPopover.classList.remove('active');
-                    canvasPopover.classList.remove('active');
-                } else if (e.key === 'Delete') {
-                    e.preventDefault();
-                    confirmModal.classList.remove('hidden');
-                }
-            });
-            
-            // --- Toolbar Expand/Shrink Logic ---
-            toolbarWrapper.addEventListener('mouseenter', () => {
-                toolbarWrapper.classList.remove('compact-mode');
-            });
-            
-            toolbarWrapper.addEventListener('mouseleave', () => {
-                if (!toolbarWrapper.classList.contains('sticky-expand')) {
-                    toolbarWrapper.classList.add('compact-mode');
-                }
-            });
-
-            toolbarWrapper.addEventListener('pointerdown', (e) => {
-                toolbarWrapper.classList.add('sticky-expand');
-                e.stopPropagation(); 
-            });
-
-
-            // --- Initialization ---
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            
-            loadFromStorage();
-            
-            updateActiveToolButton(currentTool); 
-            updateUndoRedoButtons();
-
-            penThicknessInput.value = currentBrushSize;
-            eraserThicknessInput.value = currentEraserSize;
-            
-            setupThicknessControl(penThicknessControl);
-            setupThicknessControl(eraserThicknessControl);
-            
-            penBtn.querySelector('svg').style.stroke = currentColor;
-            penPreview.style.backgroundColor = currentColor;
-
-            window.addEventListener('resize', resizeCanvas);
-            
-            // FIX: Manually update pen cursor size on load
-            updatePenCursorSize();
+            }
         });
+        
+        document.addEventListener('mouseleave', () => {
+            customCursorCircle.style.display = 'none';
+            customCursorEraser.style.display = 'none';
+        });
+        
+        // --- Keyboard Shortcuts (FIXED) ---
+        document.addEventListener('keydown', (e) => {
+            // <<< CRITICAL FIX
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
+
+            if (e.ctrlKey || e.metaKey) {
+                if (e.key === 'z') {
+                    e.preventDefault();
+                    undo();
+                } else if (e.key === 'y') {
+                    e.preventDefault();
+                    redo();
+                }
+            } else if (e.key === '1') {
+                e.preventDefault();
+                currentTool = 'pen';
+                originalTool = 'pen';
+                updateActiveToolButton('pen');
+                eraserPopover.classList.remove('active');
+                canvasPopover.classList.remove('active');
+            } else if (e.key === '2') {
+                e.preventDefault();
+                currentTool = 'eraser';
+                originalTool = 'eraser';
+                updateActiveToolButton('eraser');
+                penPopover.classList.remove('active');
+                canvasPopover.classList.remove('active');
+            } else if (e.key === 'Delete') {
+                e.preventDefault();
+                confirmModal.classList.remove('hidden');
+            }
+        });
+        
+        // --- Toolbar Expand/Shrink Logic (same) ---
+        toolbarWrapper.addEventListener('mouseenter', () => {
+            toolbarWrapper.classList.remove('compact-mode');
+        });
+        toolbarWrapper.addEventListener('mouseleave', () => {
+            if (!toolbarWrapper.classList.contains('sticky-expand')) {
+                toolbarWrapper.classList.add('compact-mode');
+            }
+        });
+        toolbarWrapper.addEventListener('pointerdown', (e) => {
+            toolbarWrapper.classList.add('sticky-expand');
+            e.stopPropagation(); 
+        });
+
+        // --- Initialization ---
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        loadFromStorage();
+        
+        updateActiveToolButton(currentTool); 
+        updateUndoRedoButtons(); // Init button state
+
+        // Set initial sizes in UI
+        penThicknessInput.value = currentBrushSize;
+        penSizeLabel.textContent = `${currentBrushSize}px`;
+        eraserThicknessInput.value = currentEraserSize;
+        eraserSizeLabel.textContent = `${currentEraserSize}px`;
+        penBtn.querySelector('svg').style.stroke = currentColor;
+        penPreview.style.backgroundColor = currentColor;
+        penPreview.style.height = `${Math.min(currentBrushSize, 40)}px`;
+        const eraserPreviewSize = Math.min(currentEraserSize, 40);
+        eraserPreview.style.width = `${eraserPreviewSize}px`;
+        eraserPreview.style.height = `${eraserPreviewSize}px`;
+
+
+        window.addEventListener('resize', resizeCanvas);
+    });
     </script>
 </body>
 </html>
