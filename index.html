@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minimalist Whiteboard</title>
+    <title>WebBoard - By Dhairya Shah</title>
     <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/Dcode9/whiteboard/dfcc6b7600fe1bf56dd763ea9715e9ad5363c227/WebBoard.png?v=2">
     <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -138,14 +138,10 @@
             box-shadow: none;
         }
 
-        /* MODIFIED: Popover position (pops UP) */
+        /* MODIFIED: Popover now uses 'fixed' positioning */
         .popover {
             display: none;
-            position: absolute;
-            bottom: 100%; /* Position ABOVE the button */
-            left: 50%;
-            transform: translateX(-50%);
-            margin-bottom: 12px; /* Space from toolbar */
+            position: fixed; /* Changed from absolute */
             background-color: white;
             border-radius: 0.5rem; /* rounded-lg */
             box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
@@ -160,7 +156,7 @@
             display: block;
         }
         
-        /* NEW: Custom Scrollbar */
+        /* NEW: Custom Scrollbar for Popovers */
         .popover::-webkit-scrollbar {
             width: 8px;
         }
@@ -174,6 +170,21 @@
         }
         .popover::-webkit-scrollbar-thumb:hover {
             background: #9ca3af; /* gray-400 */
+        }
+        
+        /* NEW: Custom Scrollbar for Toolbar */
+        #toolbar::-webkit-scrollbar {
+            height: 8px;
+        }
+        #toolbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        #toolbar::-webkit-scrollbar-thumb {
+            background: #e5e7eb; /* gray-200 */
+            border-radius: 10px;
+        }
+        #toolbar::-webkit-scrollbar-thumb:hover {
+            background: #d1d5db; /* gray-300 */
         }
 
 
@@ -265,39 +276,17 @@
         <div id="toolbar" class="bg-white rounded-lg shadow-xl p-3 flex items-center justify-start flex-nowrap gap-x-2 md:gap-x-4 select-none overflow-x-auto max-w-[95vw]">
             
             <!-- Pen Tool -->
-            <div id="pen-tool-wrapper" class="flex flex-col items-center relative">
+            <div id="pen-tool-wrapper" class="flex flex-col items-center">
                 <button id="pen-btn" class="tool-btn rounded-md active" title="Pen (1)">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 pointer-events-none" style="stroke: #000000;">
                         <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
                     </svg>
                 </button>
-                <div id="pen-popover" class="popover">
-                    <div class="flex flex-col gap-4">
-                        <div class="flex flex-col items-center">
-                            <label class="text-sm font-medium text-gray-700 mb-2">Preview</label>
-                            <div class="preview-box">
-                                <div id="pen-preview"></div>
-                            </div>
-                        </div>
-                        <div class="flex flex-col items-center">
-                            <label class="text-sm font-medium text-gray-700 mb-2">Brush Color</label>
-                            <input type="color" id="color-picker" value="#000000" title="Brush Color">
-                        </div>
-                        <div class="flex flex-col items-center">
-                            <label class="text-sm font-medium text-gray-700 mb-2">Thickness</label>
-                            <div class="thickness-control" data-type="pen">
-                                <button data-action="decrease" title="Decrease size">-</button>
-                                <input type="number" class="th-input" min="1" max="500" value="5">
-                                <button data-action="increase" title="Increase size">+</button>
-                            </div>
-                            <span id="pen-size-label" class="text-xs text-gray-500 mt-1">5px</span>
-                        </div>
-                    </div>
-                </div>
+                <!-- POPOVER MOVED (see below) -->
             </div>
 
             <!-- Eraser Tool -->
-            <div id="eraser-tool-wrapper" class="flex flex-col items-center relative">
+            <div id="eraser-tool-wrapper" class="flex flex-col items-center">
                 <button id="eraser-btn" class="tool-btn rounded-md hover:bg-gray-200" title="Object Eraser (2)">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 pointer-events-none">
                         <path d="M7 21H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h18a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4.27"/>
@@ -305,32 +294,7 @@
                         <path d="M21.19 11.73c0-4.24-7.2-4.24-7.2 0C14 10.67 14.67 10 16 10s2 .67 2 1.73Z" transform="rotate(-30 16 11.73)"/>
                     </svg>
                 </button>
-                <div id="eraser-popover" class="popover">
-                    <div class="flex flex-col gap-4">
-                        <div class="flex flex-col items-center">
-                            <label class="text-sm font-medium text-gray-700 mb-2">Preview</label>
-                            <div class="preview-box">
-                                <div id="eraser-preview"></div>
-                            </div>
-                        </div>
-                        <div class="flex flex-col items-center">
-                            <label class="text-sm font-medium text-gray-700 mb-2">Eraser Mode</label>
-                            <div class="flex w-full rounded-md shadow-sm">
-                                <button id="object-eraser-btn" class="w-1/2 rounded-l-md px-4 py-2 text-sm font-medium border border-gray-300 bg-blue-100 text-blue-700">Object</button>
-                                <button id="pixel-eraser-btn" class="w-1/2 rounded-r-md px-4 py-2 text-sm font-medium border border-gray-300 bg-white text-gray-700 hover:bg-gray-50">Pixel</button>
-                            </div>
-                        </div>
-                        <div class="flex flex-col items-center">
-                            <label class="text-sm font-medium text-gray-700 mb-2">Thickness</label>
-                            <div class="thickness-control" data-type="eraser">
-                                <button data-action="decrease" title="Decrease size">-</button>
-                                <input type="number" class="th-input" min="1" max="500" value="20">
-                                <button data-action="increase" title="Increase size">+</button>
-                            </div>
-                            <span id="eraser-size-label" class="text-xs text-gray-500 mt-1">20px</span>
-                        </div>
-                    </div>
-                </div>
+                <!-- POPOVER MOVED (see below) -->
             </div>
 
             <!-- Undo Button -->
@@ -388,7 +352,7 @@
             </div>
 
             <!-- Canvas Tool -->
-            <div id="canvas-tool-wrapper" class="flex flex-col items-center relative">
+            <div id="canvas-tool-wrapper" class="flex flex-col items-center">
                 <button id="canvas-btn" class="tool-btn rounded-md hover:bg-gray-200" title="Canvas Settings">
                     <svg id="canvas-icon-preview" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 pointer-events-none">
                         <rect id="canvas-icon-bg" x="3" y="3" width="18" height="18" rx="2" ry="2" fill="#ffffff" stroke="#d1d5db" stroke-width="1.5"/>
@@ -407,22 +371,7 @@
                         </g>
                     </svg>
                 </button>
-                <div id="canvas-popover" class="popover">
-                    <div class="flex flex-col gap-4">
-                        <div class="flex flex-col items-center">
-                            <label class="text-sm font-medium text-gray-700 mb-2">Background Color</label>
-                            <input type="color" id="bg-color-picker" value="#FFFFFF" title="Background Color (for new canvas)">
-                        </div>
-                        <div class="flex flex-col items-center">
-                            <label class="text-sm font-medium text-gray-700 mb-2">Background Pattern</label>
-                            <select id="bg-pattern" class="w-full text-sm border border-gray-300 rounded-md p-2" title="Background Pattern (for new canvas)">
-                                <option value="plain">Plain</option>
-                                <option value="ruled">Ruled</option>
-                                <option value="grid">Grid</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
+                <!-- POPOVER MOVED (see below) -->
             </div>
 
             <!-- Clear Canvas -->
@@ -441,6 +390,79 @@
     <div id="save-indicator" class="fixed bottom-4 right-4 bg-green-600 text-white text-sm px-3 py-1 rounded-full shadow-lg opacity-0 select-none">
         Saved!
     </div>
+
+    <!-- 
+      MODIFIED: POPOVERS ARE MOVED HERE 
+      They are now top-level elements, not inside the toolbar.
+    -->
+    <div id="pen-popover" class="popover">
+        <div class="flex flex-col gap-4">
+            <div class="flex flex-col items-center">
+                <label class="text-sm font-medium text-gray-700 mb-2">Preview</label>
+                <div class="preview-box">
+                    <div id="pen-preview"></div>
+                </div>
+            </div>
+            <div class="flex flex-col items-center">
+                <label class="text-sm font-medium text-gray-700 mb-2">Brush Color</label>
+                <input type="color" id="color-picker" value="#000000" title="Brush Color">
+            </div>
+            <div class="flex flex-col items-center">
+                <label class="text-sm font-medium text-gray-700 mb-2">Thickness</label>
+                <div class="thickness-control" data-type="pen">
+                    <button data-action="decrease" title="Decrease size">-</button>
+                    <input type="number" class="th-input" min="1" max="500" value="5">
+                    <button data-action="increase" title="Increase size">+</button>
+                </div>
+                <span id="pen-size-label" class="text-xs text-gray-500 mt-1">5px</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="eraser-popover" class="popover">
+        <div class="flex flex-col gap-4">
+            <div class="flex flex-col items-center">
+                <label class="text-sm font-medium text-gray-700 mb-2">Preview</label>
+                <div class="preview-box">
+                    <div id="eraser-preview"></div>
+                </div>
+            </div>
+            <div class="flex flex-col items-center">
+                <label class="text-sm font-medium text-gray-700 mb-2">Eraser Mode</label>
+                <div class="flex w-full rounded-md shadow-sm">
+                    <button id="object-eraser-btn" class="w-1/2 rounded-l-md px-4 py-2 text-sm font-medium border border-gray-300 bg-blue-100 text-blue-700">Object</button>
+                    <button id="pixel-eraser-btn" class="w-1/2 rounded-r-md px-4 py-2 text-sm font-medium border border-gray-300 bg-white text-gray-700 hover:bg-gray-50">Pixel</button>
+                </div>
+            </div>
+            <div class="flex flex-col items-center">
+                <label class="text-sm font-medium text-gray-700 mb-2">Thickness</label>
+                <div class="thickness-control" data-type="eraser">
+                    <button data-action="decrease" title="Decrease size">-</button>
+                    <input type="number" class="th-input" min="1" max="500" value="20">
+                    <button data-action="increase" title="Increase size">+</button>
+                </div>
+                <span id="eraser-size-label" class="text-xs text-gray-500 mt-1">20px</span>
+            </div>
+        </div>
+    </div>
+    
+    <div id="canvas-popover" class="popover">
+        <div class="flex flex-col gap-4">
+            <div class="flex flex-col items-center">
+                <label class="text-sm font-medium text-gray-700 mb-2">Background Color</label>
+                <input type="color" id="bg-color-picker" value="#FFFFFF" title="Background Color (for new canvas)">
+            </div>
+            <div class="flex flex-col items-center">
+                <label class="text-sm font-medium text-gray-700 mb-2">Background Pattern</label>
+                <select id="bg-pattern" class="w-full text-sm border border-gray-300 rounded-md p-2" title="Background Pattern (for new canvas)">
+                    <option value="plain">Plain</option>
+                    <option value="ruled">Ruled</option>
+                    <option value="grid">Grid</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
 
     <!-- Confirmation Modal (hidden by default) -->
     <div id="confirm-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
@@ -486,7 +508,6 @@
             
             // --- Canvas Tool ---
             const canvasBtn = document.getElementById('canvas-btn');
-            const canvasPopover = document.getElementById('canvas-popover');
             const canvasIconBg = document.getElementById('canvas-icon-bg');
             const canvasIconRuled = document.getElementById('canvas-icon-ruled');
             const canvasIconGrid = document.getElementById('canvas-icon-grid');
@@ -494,6 +515,7 @@
             // --- Popovers ---
             const penPopover = document.getElementById('pen-popover');
             const eraserPopover = document.getElementById('eraser-popover');
+            const canvasPopover = document.getElementById('canvas-popover');
             
             // --- Pen Popover Controls ---
             const colorPicker = document.getElementById('color-picker');
@@ -536,7 +558,7 @@
             let redoStack = [];
             
             let viewOffset = { x: 0, y: 0 };
-            let viewZoom = 1; // NEW: Zoom state
+            let viewZoom = 1; // Zoom state
             let lastPanPos = { x: 0, y: 0 };
             
             let isDrawing = false;
@@ -560,7 +582,7 @@
             let lastTapTime = 0;
             let isEraserGesture = false;
             
-            // NEW: Zoom constants
+            // Zoom constants
             const MIN_ZOOM = 0.1;
             const MAX_ZOOM = 10.0;
             const ZOOM_STEP = 0.1;
@@ -866,11 +888,12 @@
                     toolbarWrapper.classList.remove('sticky-expand');
                     toolbarWrapper.classList.add('compact-mode');
                 }
+                // Close all popovers on canvas click
                 penPopover.classList.remove('active');
                 eraserPopover.classList.remove('active');
                 canvasPopover.classList.remove('active');
 
-                if (e.target.closest('#toolbar') || isTwoFingerPanning || isEraserGesture) {
+                if (e.target.closest('#toolbar-wrapper') || isTwoFingerPanning || isEraserGesture) {
                     if (!isEraserGesture) return;
                 }
                 
@@ -994,7 +1017,7 @@
                             if (currentPath && currentPath.points.length > 1) {
                                 addHistoryAction();
                                 strokes.push(currentPath);
-                                render(); // Render the dot
+                                render(); // Render
                                 saveStrokesAndSettings();
                             } else if (currentPath && currentPath.points.length === 1) {
                                 currentPath.points.push({ x: currentPath.points[0].x + (0.5 / viewZoom), y: currentPath.points[0].y + (0.5 / viewZoom) });
@@ -1006,9 +1029,8 @@
                             currentPath = null;
                         }
                     } else if (currentPath) {
-                        // MODIFIED: Dot logic fixed
+                        // Dot logic
                         if (currentPath.tool === 'pen' && currentPath.points.length === 1) {
-                            // Make a tiny line to represent a dot
                             currentPath.points.push({ x: currentPath.points[0].x + (0.5 / viewZoom), y: currentPath.points[0].y + (0.5 / viewZoom) });
                         }
                         
@@ -1046,28 +1068,84 @@
                 customCursorEraser.style.display = 'none';
             }
             
-            penBtn.addEventListener('click', () => {
+            // NEW: Function to position popovers
+            function positionPopover(popover, buttonRect) {
+                const popoverWidth = popover.offsetWidth;
+                
+                let top = buttonRect.bottom + 12; // 12px margin
+                let left = buttonRect.left + (buttonRect.width / 2) - (popoverWidth / 2);
+                
+                // Clamp to viewport
+                left = Math.max(16, left); // 1rem left padding
+                if (left + popoverWidth > window.innerWidth - 16) {
+                    left = window.innerWidth - 16 - popoverWidth; // 1rem right padding
+                }
+                
+                popover.style.top = `${top}px`;
+                popover.style.left = `${left}px`;
+                popover.style.transform = 'none'; // Remove any old transform
+            }
+            
+            // MODIFIED: Pen Button Click
+            penBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const wasActive = penPopover.classList.contains('active');
+                
+                // Close other popovers
+                eraserPopover.classList.remove('active');
+                canvasPopover.classList.remove('active');
+                
+                if (wasActive) {
+                    penPopover.classList.remove('active');
+                } else {
+                    penPopover.classList.add('active'); // Add active first to get offsetWidth
+                    const btnRect = penBtn.getBoundingClientRect();
+                    positionPopover(penPopover, btnRect);
+                }
+                
                 currentTool = 'pen';
                 originalTool = 'pen';
                 updateActiveToolButton('pen');
-                penPopover.classList.toggle('active');
-                eraserPopover.classList.remove('active');
-                canvasPopover.classList.remove('active');
             });
             
-            eraserBtn.addEventListener('click', () => {
+            // MODIFIED: Eraser Button Click
+            eraserBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const wasActive = eraserPopover.classList.contains('active');
+
+                // Close other popovers
+                penPopover.classList.remove('active');
+                canvasPopover.classList.remove('active');
+
+                if (wasActive) {
+                    eraserPopover.classList.remove('active');
+                } else {
+                    eraserPopover.classList.add('active');
+                    const btnRect = eraserBtn.getBoundingClientRect();
+                    positionPopover(eraserPopover, btnRect);
+                }
+                
                 currentTool = 'eraser';
                 originalTool = 'eraser';
                 updateActiveToolButton('eraser');
-                eraserPopover.classList.toggle('active');
-                penPopover.classList.remove('active');
-                canvasPopover.classList.remove('active');
             });
             
-            canvasBtn.addEventListener('click', () => {
-                canvasPopover.classList.toggle('active');
+            // MODIFIED: Canvas Button Click
+            canvasBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const wasActive = canvasPopover.classList.contains('active');
+
+                // Close other popovers
                 penPopover.classList.remove('active');
                 eraserPopover.classList.remove('active');
+
+                if (wasActive) {
+                    canvasPopover.classList.remove('active');
+                } else {
+                    canvasPopover.classList.add('active');
+                    const btnRect = canvasBtn.getBoundingClientRect();
+                    positionPopover(canvasPopover, btnRect);
+                }
             });
 
             [lineBtn, rectBtn, circleBtn, triangleBtn].forEach(btn => {
@@ -1091,8 +1169,8 @@
                 penPreview.style.backgroundColor = currentColor;
             });
             
-            // NEW: Function to update pen cursor size based on zoom
             function updatePenCursorSize() {
+                // Scale cursor size with zoom
                 const cursorSize = Math.max(10, (currentBrushSize * viewZoom) / 2);
                 customCursorCircle.style.width = `${cursorSize}px`;
                 customCursorCircle.style.height = `${cursorSize}px`;
@@ -1110,7 +1188,7 @@
                     if (type === 'pen') {
                         currentBrushSize = newSize;
                         penSizeLabel.textContent = `${newSize}px`;
-                        updatePenCursorSize(); // Use new function
+                        updatePenCursorSize();
                         penPreview.style.height = `${Math.min(currentBrushSize, 40)}px`;
                     } else { // eraser
                         currentEraserSize = newSize;
@@ -1182,7 +1260,7 @@
             });
             
             document.addEventListener('pointerdown', (e) => {
-                if (!e.target.closest('#toolbar-wrapper')) {
+                if (!e.target.closest('#toolbar-wrapper') && !e.target.closest('.popover')) {
                     penPopover.classList.remove('active');
                     eraserPopover.classList.remove('active');
                     canvasPopover.classList.remove('active');
@@ -1197,8 +1275,8 @@
             
             function handlePointerDown(e) {
                 const now = Date.now();
-                // MODIFIED: Removed pointerType check for double-tap
-                if (now - lastTapTime < 300 && !e.target.closest('#toolbar')) {
+                // Double-tap/click logic
+                if (now - lastTapTime < 300 && !e.target.closest('#toolbar-wrapper')) {
                     isEraserGesture = true;
                     originalTool = currentTool;
                     currentTool = 'eraser';
@@ -1261,9 +1339,9 @@
                 }
             });
 
-            // MODIFIED: Wheel listener for Pan AND Zoom
+            // Wheel listener for Pan AND Zoom
             canvas.addEventListener('wheel', (e) => {
-                if (e.target.closest('#toolbar')) return;
+                if (e.target.closest('#toolbar-wrapper')) return;
                 e.preventDefault();
                 
                 if (e.ctrlKey) {
@@ -1274,20 +1352,17 @@
                     const screenX = e.clientX;
                     const screenY = e.clientY;
                     
-                    // Get world point before zoom
                     const worldPoint = screenToWorld(screenX, screenY);
                     
-                    // Update zoom
                     viewZoom = newZoom;
                     
-                    // Update offset to keep world point at the same screen point
                     viewOffset.x = screenX - worldPoint.x * viewZoom;
                     viewOffset.y = screenY - worldPoint.y * viewZoom;
                     
-                    updatePenCursorSize(); // Update cursor size on zoom
+                    updatePenCursorSize();
 
                 } else {
-                    // Panning (MODIFIED: now handles simultaneous scroll)
+                    // Panning (simultaneous)
                     viewOffset.x -= e.deltaX;
                     viewOffset.y -= e.deltaY;
                 }
@@ -1318,7 +1393,7 @@
                     if (e.target === canvas) {
                         if (currentTool === 'eraser') {
                             customCursorCircle.style.display = 'none';
-                            customCursorEraser.style.display = 'block';
+                            customCursorEraser.style.display = 'block'; // TYPO FIXED
                         } else if (currentTool !== 'pan') {
                             customCursorCircle.style.display = 'block';
                             customCursorEraser.style.display = 'none';
@@ -1343,7 +1418,7 @@
             
             // --- Keyboard Shortcuts ---
             document.addEventListener('keydown', (e) => {
-                if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.TagextEvent === 'TEXTAREA') return;
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
 
                 if (e.ctrlKey || e.metaKey) {
                     if (e.key === 'z') {
@@ -1367,7 +1442,7 @@
                     updateActiveToolButton('eraser');
                     penPopover.classList.remove('active');
                     canvasPopover.classList.remove('active');
-                } else if (e.key === 'Delete') { // NEW
+                } else if (e.key === 'Delete') {
                     e.preventDefault();
                     confirmModal.classList.remove('hidden');
                 }
@@ -1409,6 +1484,9 @@
             penPreview.style.backgroundColor = currentColor;
 
             window.addEventListener('resize', resizeCanvas);
+            
+            // FIX: Manually update pen cursor size on load
+            updatePenCursorSize();
         });
     </script>
 </body>
