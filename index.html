@@ -279,11 +279,25 @@
     <script src="https://accounts.google.com/gsi/client" async defer onload="onGoogleLibraryLoad()"></script>
 </head>
 <body class="font-sans antialiased">
+    
+    <!-- MODIFIED: Auth buttons moved out of toolbar wrapper -->
+    <!-- Google Sign-In Button Container -->
+    <div id="buttonDiv" style="  position: fixed;  top: 16px;  right: 16px;  display: flex;  align-items: center;  z-index: 100;"></div>
+    <!-- Auth Status Display -->
+    <div id="authStatus" style="  position: fixed;  top: 16px;  right: 16px;  color: #333;  font-size: 14px;  font-family: Arial, sans-serif;  display: none;  z-index: 100;  align-items: center;  gap: 10px;  background: white; padding: 6px 12px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);">
+        <span id="userEmail"></span>
+        <button onclick="signOut()" style="    padding: 4px 12px;    background: #f44336;    color: white;    border: none;    border-radius: 4px;    cursor: pointer;    font-size: 12px;  ">Sign Out</button>
+    </div>
+    <!-- Save Drawing Button -->
+    <button id="save-drawing-btn" onclick="promptSaveDrawing()" style="  position: fixed;  top: 72px;  right: 16px;  padding: 8px 16px;  background: #2196F3;  color: white;  border: none;  border-radius: 8px;  cursor: pointer;  font-family: Arial, sans-serif;  font-size: 14px;  display: none;  z-index: 100; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);">
+        Save to Cloud
+    </button>
 
-    <!-- MODIFIED: Toolbar now visible by default -->
-    <div id="toolbar-wrapper" class="fixed top-4 left-0 right-0 z-10 flex justify-center compact-mode">
-        <!-- MODIFIED: justify-start for correct scroll -->
-        <div id="toolbar" class="relative bg-white rounded-lg shadow-xl p-3 flex items-center justify-start flex-nowrap gap-x-2 md:gap-x-4 select-none overflow-x-auto max-w-[95vw]">
+
+    <!-- MODIFIED: Toolbar wrapper no longer full-width -->
+    <div id="toolbar-wrapper" class="fixed top-4 left-0 right-0 z-10 flex justify-center compact-mode pointer-events-none">
+        <!-- MODIFIED: justify-start for correct scroll, pointer-events-auto -->
+        <div id="toolbar" class="relative bg-white rounded-lg shadow-xl p-3 flex items-center justify-start flex-nowrap gap-x-2 md:gap-x-4 select-none overflow-x-auto max-w-[95vw] pointer-events-auto">
             
             <!-- (All toolbar buttons: Pen, Eraser, Undo, Redo, Shapes...) -->
             <div id="pen-tool-wrapper" class="flex flex-col items-center">
@@ -357,15 +371,7 @@
                 </button>
             </div>
             
-            <!-- Google Sign-In Button Container -->
-            <div id="buttonDiv" style="  position: absolute;  top: 12px;  right: 16px;  display: flex;  align-items: center;  z-index: 100;"></div>
-            <!-- Auth Status Display -->
-            <div id="authStatus" style="  position: absolute;  top: 12px;  right: 280px;  color: #666;  font-size: 14px;  font-family: Arial, sans-serif;  display: none;  z-index: 100;  align-items: center;  gap: 10px;">
-                <span id="userEmail"></span>
-                <button onclick="signOut()" style="    padding: 4px 12px;    background: #f44336;    color: white;    border: none;    border-radius: 4px;    cursor: pointer;    font-size: 12px;  ">Sign Out</button>
-            </div>
-            <!-- Save Drawing Button -->
-            <button id="save-drawing-btn" onclick="promptSaveDrawing()" style="  position: absolute;  top: 12px;  right: 380px;  padding: 8px 16px;  background: #2196F3;  color: white;  border: none;  border-radius: 4px;  cursor: pointer;  font-family: Arial, sans-serif;  font-size: 14px;  display: none;  z-index: 100;">Save to Cloud</button>
+            <!-- MODIFIED: Auth buttons removed from here -->
             
         </div>
     </div>
@@ -1213,7 +1219,7 @@
         });
         
         document.addEventListener('pointerdown', (e) => {
-            if (!e.target.closest('#toolbar-wrapper') && !e.target.closest('.popover')) {
+            if (!e.target.closest('#toolbar-wrapper') && !e.target.closest('.popover') && !e.target.closest('#buttonDiv') && !e.target.closest('#authStatus') && !e.target.closest('#save-drawing-btn')) {
                 penPopover.classList.remove('active');
                 eraserPopover.classList.remove('active');
                 canvasPopover.classList.remove('active');
@@ -1436,13 +1442,19 @@
         eraserPreview.style.width = `${eraserPreviewSize}px`;
         eraserPreview.style.height = `${eraserPreviewSize}px`;
 
-
         window.addEventListener('resize', resizeCanvas);
+        
+        // MODIFIED: Auth init moved inside DOMContentLoaded
+        initAuthStatus();
     });
 
     // ===== GOOGLE SIGN-IN INTEGRATION =====
     // MODIFIED: This function is now correctly called by the script tag's onload event
     window.onGoogleLibraryLoad = function () {
+      if (typeof google === 'undefined' || !google.accounts) {
+           console.error("Google library not loaded.");
+           return;
+      }
       google.accounts.id.initialize({
         client_id: '738761882830-g349jf9u5t09f2lii1n0n05mlqkabdgj.apps.googleusercontent.com',
         callback: handleCredentialResponse,
@@ -1608,7 +1620,7 @@
     }
     
     // Call after DOM is ready
-    initAuthStatus();
+    // initAuthStatus(); // <-- This was the line I moved inside DOMContentLoaded
         
     </script>
 </body>
