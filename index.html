@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minimalist Whiteboard</title>
+    <title>WebBoard - By Dhairya Shah</title>
     <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/Dcode9/whiteboard/dfcc6b7600fe1bf56dd763ea9715e9ad5363c227/WebBoard.png?v=2">
     <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -371,8 +371,6 @@
                 </button>
             </div>
             
-            <!-- MODIFIED: Auth buttons removed from here -->
-            
         </div>
     </div>
 
@@ -471,6 +469,180 @@
 
     <!-- NEW: All script logic moved to end of body -->
     <script>
+    
+    // ===== MOVED: GOOGLE SIGN-IN INTEGRATION =====
+    // All auth functions are defined first, so they exist when called.
+    window.onGoogleLibraryLoad = function () {
+      if (typeof google === 'undefined' || !google.accounts) {
+           console.error("Google library not loaded.");
+           return;
+      }
+      google.accounts.id.initialize({
+        client_id: '738761882830-g349jf9u5t09f2lii1n0n05mlqkabdgj.apps.googleusercontent.com',
+        callback: handleCredentialResponse,
+        auto_select: false
+      });
+    
+      google.accounts.id.renderButton(
+        document.getElementById('buttonDiv'),
+        {
+           theme: 'outline',
+           size: 'large',
+          locale: 'en'
+        }
+      );
+    };
+    
+    async function handleCredentialResponse(response) {
+      try {
+        const result = await fetch('/api/auth/google', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            code: response.credential
+          })
+        });
+    
+        const data = await result.json();
+        
+        localStorage.setItem('authToken', data.token);
+        localStorage.setItem('userId', data.userId || 'user');
+        
+        showNotification('Signed in successfully!', 'success');
+        updateAuthUI();
+        loadUserDrawings();
+          
+      } catch (error) {
+        console.error('Sign-in error:', error);
+        showNotification('Sign-in failed. Please try again.', 'error');
+      }
+    }
+    
+    function showNotification(message, type) {
+      const notif = document.createElement('div');
+      notif.className = `notification notification-${type}`;
+      notif.textContent = message;
+      notif.style.cssText = `
+        position: fixed;
+        top: 80px;
+        right: 20px;
+        background: ${type === 'success' ? '#4CAF50' : '#f44336'};
+        color: white;
+        padding: 12px 24px;
+        border-radius: 4px;
+        z-index: 10000;
+        font-family: Arial, sans-serif;
+        font-weight: 500;
+      `;
+      document.body.appendChild(notif);
+      setTimeout(() => notif.remove(), 3000);
+    }
+    
+    function updateAuthUI() {
+      const token = localStorage.getItem('authToken');
+      const userId = localStorage.getItem('userId');
+        
+      if (token && userId) {
+        document.getElementById('buttonDiv').style.display = 'none';
+        document.getElementById('authStatus').style.display = 'flex';
+        document.getElementById('save-drawing-btn').style.display = 'block';
+        document.getElementById('userEmail').textContent = userId;
+      } else {
+        document.getElementById('buttonDiv').style.display = 'flex';
+        document.getElementById('authStatus').style.display = 'none';
+        document.getElementById('save-drawing-btn').style.display = 'none';
+      }
+    }
+    
+    function signOut() {
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('userId');
+      updateAuthUI();
+      showNotification('Signed out', 'success');
+    }
+    
+    function promptSaveDrawing() {
+      const title = prompt('Enter a title for your drawing:', `Drawing-${new Date().toLocaleDateString()}`);
+      if (title) {
+        saveDrawing(title);
+      }
+    }
+    
+    async function saveDrawing(title) {
+      const token = localStorage.getItem('authToken');
+      const userId = localStorage.getItem('userId');
+        
+      if (!token || !userId) {
+        showNotification('Please sign in first', 'error');
+        return;
+      }
+      
+      // MODIFIED: Save the full vector/JSON data, not a PNG
+      const drawingData = {
+        strokes: JSON.parse(localStorage.getItem('whiteboardStrokes') || '[]'),
+        view: JSON.parse(localStorage.getItem('whiteboardView') || '{}'),
+        settings: {
+            bgColor: localStorage.getItem('whiteboardBgColor') || '#FFFFFF',
+            bgPattern: localStorage.getItem('whiteboardBgPattern') || 'plain'
+        }
+      };
+        
+      try {
+        const result = await fetch('/api/drawings/save', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            drawingData: JSON.stringify(drawingData), // Send the JSON data as a string
+            title: title || `Drawing-${new Date().toISOString()}`,
+            userId: userId
+          })
+        });
+    
+        const data = await result.json();
+    
+        if (data.success) {
+          showNotification(`Drawing saved!`, 'success');
+        } else {
+          showNotification('Failed to save drawing', 'error');
+        }
+      } catch (error) {
+        console.error('Save error:', error);
+        showNotification('Failed to save drawing', 'error');
+      }
+    }
+    
+    async function loadUserDrawings() {
+      const token = localStorage.getItem('authToken');
+      const userId = localStorage.getItem('userId');
+        
+      if (!token || !userId) return;
+        
+      try {
+        const response = await fetch(`/api/drawings/list?userId=${userId}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+            
+        const drawings = await response.json();
+        console.log('User drawings:', drawings);
+      } catch (error) {
+        console.error('Error loading drawings:', error);
+      }
+    }
+    
+    // Check auth status on page load
+    function initAuthStatus() {
+      updateAuthUI();
+    }
+    // ===== END GOOGLE SIGN-IN =====
+
+
     document.addEventListener('DOMContentLoaded', () => {
         
          // Call after DOM is ready
@@ -1430,7 +1602,7 @@
         
         loadFromStorage();
         
-        updateActiveToolButton(currentTool); 
+        updateActiveToolButton(currentTool); S
         updateUndoRedoButtons(); // Init button state
 
         // Set initial sizes in UI
@@ -1448,178 +1620,7 @@
 
         window.addEventListener('resize', resizeCanvas);
     });
-
-    // ===== GOOGLE SIGN-IN INTEGRATION =====
-    // MODIFIED: This function is now correctly called by the script tag's onload event
-    window.onGoogleLibraryLoad = function () {
-      if (typeof google === 'undefined' || !google.accounts) {
-           console.error("Google library not loaded.");
-           return;
-      }
-      google.accounts.id.initialize({
-        client_id: '738761882830-g349jf9u5t09f2lii1n0n05mlqkabdgj.apps.googleusercontent.com',
-        callback: handleCredentialResponse,
-        auto_select: false
-      });
-    
-      google.accounts.id.renderButton(
-        document.getElementById('buttonDiv'),
-        {
-           theme: 'outline',
-           size: 'large',
-          locale: 'en'
-        }
-      );
-    };
-    
-    async function handleCredentialResponse(response) {
-      try {
-        const result = await fetch('/api/auth/google', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            code: response.credential
-          })
-        });
-    
-        const data = await result.json();
         
-        localStorage.setItem('authToken', data.token);
-        localStorage.setItem('userId', data.userId || 'user');
-        
-        showNotification('Signed in successfully!', 'success');
-        updateAuthUI();
-        loadUserDrawings();
-          
-      } catch (error) {
-        console.error('Sign-in error:', error);
-        showNotification('Sign-in failed. Please try again.', 'error');
-      }
-    }
-    
-    function showNotification(message, type) {
-      const notif = document.createElement('div');
-      notif.className = `notification notification-${type}`;
-      notif.textContent = message;
-      notif.style.cssText = `
-        position: fixed;
-        top: 80px;
-        right: 20px;
-        background: ${type === 'success' ? '#4CAF50' : '#f44336'};
-        color: white;
-        padding: 12px 24px;
-        border-radius: 4px;
-        z-index: 10000;
-        font-family: Arial, sans-serif;
-        font-weight: 500;
-      `;
-      document.body.appendChild(notif);
-      setTimeout(() => notif.remove(), 3000);
-    }
-    
-    function updateAuthUI() {
-      const token = localStorage.getItem('authToken');
-      const userId = localStorage.getItem('userId');
-        
-      if (token && userId) {
-        document.getElementById('buttonDiv').style.display = 'none';
-        document.getElementById('authStatus').style.display = 'flex';
-        document.getElementById('save-drawing-btn').style.display = 'block';
-        document.getElementById('userEmail').textContent = userId;
-      } else {
-        document.getElementById('buttonDiv').style.display = 'flex';
-        document.getElementById('authStatus').style.display = 'none';
-        document.getElementById('save-drawing-btn').style.display = 'none';
-      }
-    }
-    
-    function signOut() {
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('userId');
-      updateAuthUI();
-      showNotification('Signed out', 'success');
-    }
-    
-    function promptSaveDrawing() {
-      const title = prompt('Enter a title for your drawing:', `Drawing-${new Date().toLocaleDateString()}`);
-      if (title) {
-        saveDrawing(title);
-      }
-    }
-    
-    async function saveDrawing(title) {
-      const token = localStorage.getItem('authToken');
-      const userId = localStorage.getItem('userId');
-        
-      if (!token || !userId) {
-        showNotification('Please sign in first', 'error');
-        return;
-      }
-      
-      // MODIFIED: Save the full vector/JSON data, not a PNG
-      const drawingData = {
-        strokes: JSON.parse(localStorage.getItem('whiteboardStrokes') || '[]'),
-        view: JSON.parse(localStorage.getItem('whiteboardView') || '{}'),
-        settings: {
-            bgColor: localStorage.getItem('whiteboardBgColor') || '#FFFFFF',
-            bgPattern: localStorage.getItem('whiteboardBgPattern') || 'plain'
-        }
-      };
-        
-      try {
-        const result = await fetch('/api/drawings/save', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            drawingData: JSON.stringify(drawingData), // Send the JSON data as a string
-            title: title || `Drawing-${new Date().toISOString()}`,
-            userId: userId
-          })
-        });
-    
-        const data = await result.json();
-    
-        if (data.success) {
-          showNotification(`Drawing saved!`, 'success');
-        } else {
-          showNotification('Failed to save drawing', 'error');
-        }
-      } catch (error) {
-        console.error('Save error:', error);
-        showNotification('Failed to save drawing', 'error');
-      }
-    }
-    
-    async function loadUserDrawings() {
-      const token = localStorage.getItem('authToken');
-      const userId = localStorage.getItem('userId');
-        
-      if (!token || !userId) return;
-        
-      try {
-        const response = await fetch(`/api/drawings/list?userId=${userId}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-            
-        const drawings = await response.json();
-        console.log('User drawings:', drawings);
-      } catch (error) {
-        console.error('Error loading drawings:', error);
-      }
-    }
-    
-    // Check auth status on page load
-    function initAuthStatus() {
-      updateAuthUI();
-    }
-    
     </script>
 </body>
 </html>
