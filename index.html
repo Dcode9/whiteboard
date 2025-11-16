@@ -473,6 +473,9 @@
     <script>
     document.addEventListener('DOMContentLoaded', () => {
         
+         // Call after DOM is ready
+        initAuthStatus();
+        
         // --- All app variables ---
         const canvas = document.getElementById('whiteboard');
         const ctx = canvas.getContext('2d');
@@ -1442,10 +1445,8 @@
         eraserPreview.style.width = `${eraserPreviewSize}px`;
         eraserPreview.style.height = `${eraserPreviewSize}px`;
 
+
         window.addEventListener('resize', resizeCanvas);
-        
-        // MODIFIED: Auth init moved inside DOMContentLoaded
-        initAuthStatus();
     });
 
     // ===== GOOGLE SIGN-IN INTEGRATION =====
@@ -1619,9 +1620,6 @@
       updateAuthUI();
     }
     
-    // Call after DOM is ready
-    // initAuthStatus(); // <-- This was the line I moved inside DOMContentLoaded
-        
     </script>
 </body>
 </html>
