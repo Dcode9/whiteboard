@@ -24,8 +24,6 @@
     }
   ],
   "env": {
-    "GOOGLE_CLIENT_ID": "@google_client_id",
-    "GOOGLE_CLIENT_SECRET": "@google_client_secret",
     "GITHUB_TOKEN": "@github_token",
     "JWT_SECRET": "@jwt_secret",
     "REDIRECT_URI": "@redirect_uri"
