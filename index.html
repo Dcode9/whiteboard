@@ -276,11 +276,9 @@
 
     </style>
     <!-- Google Sign-In Library -->
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="https://accounts.google.com/gsi/client" async defer onload="onGoogleLibraryLoad()"></script>
 </head>
 <body class="font-sans antialiased">
-
-    <!-- REMOVED: Login Wrapper -->
 
     <!-- MODIFIED: Toolbar now visible by default -->
     <div id="toolbar-wrapper" class="fixed top-4 left-0 right-0 z-10 flex justify-center compact-mode">
@@ -561,7 +559,6 @@
         let isTwoFingerPanning = false;
         let lastTouchMidpoint = { x: 0, y: 0 };
         let lastTouchDistance = 0; // For pinch-zoom
-        // REMOVED: lastTapTime
         let isEraserGesture = false;
         
         // NEW: Hold-to-erase state
@@ -1186,6 +1183,8 @@
             render();
             saveStrokesAndSettings();
         });
+        
+        // FIXED TYPO: e.targe.value -> e.target.value
         bgPatternSelector.addEventListener('change', (e) => {
             backgroundPattern = e.target.value;
             updateCanvasIconPreview();
@@ -1442,6 +1441,7 @@
     });
 
     // ===== GOOGLE SIGN-IN INTEGRATION =====
+    // MODIFIED: This function is now correctly called by the script tag's onload event
     window.onGoogleLibraryLoad = function () {
       google.accounts.id.initialize({
         client_id: '738761882830-g349jf9u5t09f2lii1n0n05mlqkabdgj.apps.googleusercontent.com',
@@ -1545,20 +1545,15 @@
         return;
       }
       
-      const canvas = document.getElementById('whiteboard');
-      //
-      // IMPORTANT: This now saves the *strokes* and *view* not a PNG
-      //
+      // MODIFIED: Save the full vector/JSON data, not a PNG
       const drawingData = {
-        strokes: localStorage.getItem('whiteboardStrokes') || '[]',
-        view: localStorage.getItem('whiteboardView') || '{}',
+        strokes: JSON.parse(localStorage.getItem('whiteboardStrokes') || '[]'),
+        view: JSON.parse(localStorage.getItem('whiteboardView') || '{}'),
         settings: {
             bgColor: localStorage.getItem('whiteboardBgColor') || '#FFFFFF',
             bgPattern: localStorage.getItem('whiteboardBgPattern') || 'plain'
         }
       };
-
-      //const drawingData = canvas.toDataURL('image/png'); // OLD
         
       try {
         const result = await fetch('/api/drawings/save', {
@@ -1602,8 +1597,6 @@
             
         const drawings = await response.json();
         console.log('User drawings:', drawings);
-        // You would add logic here to show a list of drawings
-        // and load one when clicked.
       } catch (error) {
         console.error('Error loading drawings:', error);
       }
