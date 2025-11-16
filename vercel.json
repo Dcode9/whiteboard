@@ -22,10 +22,5 @@
       "dest": "/index.html",
       "status": 200
     }
-  ],
-  "env": {
-    "GITHUB_TOKEN": "@github_token",
-    "JWT_SECRET": "@jwt_secret",
-    "REDIRECT_URI": "@redirect_uri"
-  }
+  ]
 }
