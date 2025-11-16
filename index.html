@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WebBoard - By Dhairya Shah</title>
+    <title>Minimalist Whiteboard</title>
     <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/Dcode9/whiteboard/dfcc6b7600fe1bf56dd763ea9715e9ad5363c227/WebBoard.png?v=2">
     <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -275,6 +275,8 @@
         }
 
     </style>
+    <!-- Google Sign-In Library -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body class="font-sans antialiased">
 
@@ -283,7 +285,7 @@
     <!-- MODIFIED: Toolbar now visible by default -->
     <div id="toolbar-wrapper" class="fixed top-4 left-0 right-0 z-10 flex justify-center compact-mode">
         <!-- MODIFIED: justify-start for correct scroll -->
-        <div id="toolbar" class="bg-white rounded-lg shadow-xl p-3 flex items-center justify-start flex-nowrap gap-x-2 md:gap-x-4 select-none overflow-x-auto max-w-[95vw]">
+        <div id="toolbar" class="relative bg-white rounded-lg shadow-xl p-3 flex items-center justify-start flex-nowrap gap-x-2 md:gap-x-4 select-none overflow-x-auto max-w-[95vw]">
             
             <!-- (All toolbar buttons: Pen, Eraser, Undo, Redo, Shapes...) -->
             <div id="pen-tool-wrapper" class="flex flex-col items-center">
@@ -357,7 +359,15 @@
                 </button>
             </div>
             
-            <!-- REMOVED: Logout Button -->
+            <!-- Google Sign-In Button Container -->
+            <div id="buttonDiv" style="  position: absolute;  top: 12px;  right: 16px;  display: flex;  align-items: center;  z-index: 100;"></div>
+            <!-- Auth Status Display -->
+            <div id="authStatus" style="  position: absolute;  top: 12px;  right: 280px;  color: #666;  font-size: 14px;  font-family: Arial, sans-serif;  display: none;  z-index: 100;  align-items: center;  gap: 10px;">
+                <span id="userEmail"></span>
+                <button onclick="signOut()" style="    padding: 4px 12px;    background: #f44336;    color: white;    border: none;    border-radius: 4px;    cursor: pointer;    font-size: 12px;  ">Sign Out</button>
+            </div>
+            <!-- Save Drawing Button -->
+            <button id="save-drawing-btn" onclick="promptSaveDrawing()" style="  position: absolute;  top: 12px;  right: 380px;  padding: 8px 16px;  background: #2196F3;  color: white;  border: none;  border-radius: 4px;  cursor: pointer;  font-family: Arial, sans-serif;  font-size: 14px;  display: none;  z-index: 100;">Save to Cloud</button>
             
         </div>
     </div>
@@ -551,7 +561,7 @@
         let isTwoFingerPanning = false;
         let lastTouchMidpoint = { x: 0, y: 0 };
         let lastTouchDistance = 0; // For pinch-zoom
-        let lastTapTime = 0;
+        // REMOVED: lastTapTime
         let isEraserGesture = false;
         
         // NEW: Hold-to-erase state
@@ -663,14 +673,27 @@
 
             const viewDataStr = localStorage.getItem('whiteboardView');
             if (viewDataStr) {
-                const viewData = JSON.parse(viewDataStr);
-                viewOffset = viewData.offset || { x: 0, y: 0 };
-                viewZoom = viewData.zoom || 1;
+                try {
+                    const viewData = JSON.parse(viewDataStr);
+                    if (viewData) {
+                        viewOffset = viewData.offset || { x: 0, y: 0 };
+                        viewZoom = viewData.zoom || 1;
+                    }
+                } catch (e) {
+                    console.error("Failed to parse view data from localStorage", e);
+                    viewOffset = { x: 0, y: 0 };
+                    viewZoom = 1;
+                }
             }
             
             const strokesData = localStorage.getItem('whiteboardStrokes');
             if (strokesData) {
-                strokes = JSON.parse(strokesData);
+                 try {
+                    strokes = JSON.parse(strokesData);
+                 } catch (e) {
+                    console.error("Failed to parse strokes from localStorage", e);
+                    strokes = [];
+                 }
             }
             
             undoStack = [];
@@ -1202,20 +1225,13 @@
         });
 
         // --- Main Event Listeners (same) ---
+        
+        // REMOVED: Double-tap logic from handlePointerDown
         function handlePointerDown(e) {
-            const now = Date.now();
-            // MODIFIED: Double-tap-to-erase is now MOUSE ONLY
-            if (e.pointerType === 'mouse' && now - lastTapTime < 300 && !e.target.closest('#toolbar-wrapper')) {
-                isEraserGesture = true;
-                originalTool = currentTool;
-                currentTool = 'eraser';
-            }
-            lastTapTime = now;
             startDrawing(e);
         }
         function handlePointerUp() {
             stopDrawing();
-            // isEraserGesture is now reset inside stopDrawing()
         }
         canvas.addEventListener('pointerdown', handlePointerDown);
         document.addEventListener('pointermove', draw);
@@ -1331,7 +1347,7 @@
                 if (e.target === canvas) {
                     if (currentTool === 'eraser') {
                         customCursorCircle.style.display = 'none';
-                        customCursorEraser.style.display = 'block'; // <<< CRITICAL FIX
+                        customCursorEraser.style.display = 'block';
                     } else if (currentTool !== 'pan') {
                         customCursorCircle.style.display = 'block';
                         customCursorEraser.style.display = 'none';
@@ -1356,7 +1372,6 @@
         
         // --- Keyboard Shortcuts (FIXED) ---
         document.addEventListener('keydown', (e) => {
-            // <<< CRITICAL FIX
             if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
 
             if (e.ctrlKey || e.metaKey) {
@@ -1425,6 +1440,183 @@
 
         window.addEventListener('resize', resizeCanvas);
     });
+
+    // ===== GOOGLE SIGN-IN INTEGRATION =====
+    window.onGoogleLibraryLoad = function () {
+      google.accounts.id.initialize({
+        client_id: '738761882830-g349jf9u5t09f2lii1n0n05mlqkabdgj.apps.googleusercontent.com',
+        callback: handleCredentialResponse,
+        auto_select: false
+      });
+    
+      google.accounts.id.renderButton(
+        document.getElementById('buttonDiv'),
+        {
+           theme: 'outline',
+           size: 'large',
+          locale: 'en'
+        }
+      );
+    };
+    
+    async function handleCredentialResponse(response) {
+      try {
+        const result = await fetch('/api/auth/google', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            code: response.credential
+          })
+        });
+    
+        const data = await result.json();
+        
+        localStorage.setItem('authToken', data.token);
+        localStorage.setItem('userId', data.userId || 'user');
+        
+        showNotification('Signed in successfully!', 'success');
+        updateAuthUI();
+        loadUserDrawings();
+          
+      } catch (error) {
+        console.error('Sign-in error:', error);
+        showNotification('Sign-in failed. Please try again.', 'error');
+      }
+    }
+    
+    function showNotification(message, type) {
+      const notif = document.createElement('div');
+      notif.className = `notification notification-${type}`;
+      notif.textContent = message;
+      notif.style.cssText = `
+        position: fixed;
+        top: 80px;
+        right: 20px;
+        background: ${type === 'success' ? '#4CAF50' : '#f44336'};
+        color: white;
+        padding: 12px 24px;
+        border-radius: 4px;
+        z-index: 10000;
+        font-family: Arial, sans-serif;
+        font-weight: 500;
+      `;
+      document.body.appendChild(notif);
+      setTimeout(() => notif.remove(), 3000);
+    }
+    
+    function updateAuthUI() {
+      const token = localStorage.getItem('authToken');
+      const userId = localStorage.getItem('userId');
+        
+      if (token && userId) {
+        document.getElementById('buttonDiv').style.display = 'none';
+        document.getElementById('authStatus').style.display = 'flex';
+        document.getElementById('save-drawing-btn').style.display = 'block';
+        document.getElementById('userEmail').textContent = userId;
+      } else {
+        document.getElementById('buttonDiv').style.display = 'flex';
+        document.getElementById('authStatus').style.display = 'none';
+        document.getElementById('save-drawing-btn').style.display = 'none';
+      }
+    }
+    
+    function signOut() {
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('userId');
+      updateAuthUI();
+      showNotification('Signed out', 'success');
+    }
+    
+    function promptSaveDrawing() {
+      const title = prompt('Enter a title for your drawing:', `Drawing-${new Date().toLocaleDateString()}`);
+      if (title) {
+        saveDrawing(title);
+      }
+    }
+    
+    async function saveDrawing(title) {
+      const token = localStorage.getItem('authToken');
+      const userId = localStorage.getItem('userId');
+        
+      if (!token || !userId) {
+        showNotification('Please sign in first', 'error');
+        return;
+      }
+      
+      const canvas = document.getElementById('whiteboard');
+      //
+      // IMPORTANT: This now saves the *strokes* and *view* not a PNG
+      //
+      const drawingData = {
+        strokes: localStorage.getItem('whiteboardStrokes') || '[]',
+        view: localStorage.getItem('whiteboardView') || '{}',
+        settings: {
+            bgColor: localStorage.getItem('whiteboardBgColor') || '#FFFFFF',
+            bgPattern: localStorage.getItem('whiteboardBgPattern') || 'plain'
+        }
+      };
+
+      //const drawingData = canvas.toDataURL('image/png'); // OLD
+        
+      try {
+        const result = await fetch('/api/drawings/save', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            drawingData: JSON.stringify(drawingData), // Send the JSON data as a string
+            title: title || `Drawing-${new Date().toISOString()}`,
+            userId: userId
+          })
+        });
+    
+        const data = await result.json();
+    
+        if (data.success) {
+          showNotification(`Drawing saved!`, 'success');
+        } else {
+          showNotification('Failed to save drawing', 'error');
+        }
+      } catch (error) {
+        console.error('Save error:', error);
+        showNotification('Failed to save drawing', 'error');
+      }
+    }
+    
+    async function loadUserDrawings() {
+      const token = localStorage.getItem('authToken');
+      const userId = localStorage.getItem('userId');
+        
+      if (!token || !userId) return;
+        
+      try {
+        const response = await fetch(`/api/drawings/list?userId=${userId}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+            
+        const drawings = await response.json();
+        console.log('User drawings:', drawings);
+        // You would add logic here to show a list of drawings
+        // and load one when clicked.
+      } catch (error) {
+        console.error('Error loading drawings:', error);
+      }
+    }
+    
+    // Check auth status on page load
+    function initAuthStatus() {
+      updateAuthUI();
+    }
+    
+    // Call after DOM is ready
+    initAuthStatus();
+        
     </script>
 </body>
 </html>
