@@ -9,16 +9,71 @@
     <!-- GLOBAL ERROR HANDLER: Displays errors on screen to help debug blank deployments -->
     <script>
         window.onerror = function(msg, url, line, col, error) {
-            const errorBox = document.getElementById('global-error-box');
+            var errorBox = document.getElementById('global-error-box');
             if (errorBox) {
                 errorBox.style.display = 'block';
-                errorBox.innerHTML += `<div><strong>Error:</strong> ${msg}<br><small>${url}:${line}</small></div><hr style="margin:5px 0;border-color:rgba(255,255,255,0.3)">`;
+                errorBox.innerHTML += '<div><strong>Error:</strong> ' + msg + '<br><small>' + url + ':' + line + '</small></div><hr style="margin:5px 0;border-color:rgba(255,255,255,0.3)">';
             }
-            // Also log to console
             console.error("Global Error:", msg, error);
+            // Hide loading screen if error occurs so we can see the error
+            var loader = document.getElementById('app-loading');
+            if(loader) loader.style.display = 'none';
             return false;
         };
     </script>
+
+    <!-- CRITICAL CSS: Inline styles for Loading Screen & Error Box (No Tailwind Dependency) -->
+    <style>
+        /* Spinner Animation */
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Loading Overlay - Pure CSS to ensure it renders before external scripts */
+        #app-loading {
+            position: fixed;
+            inset: 0;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #f3f4f6;
+            z-index: 2147483647; /* Max Z-Index */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: sans-serif;
+            color: #4b5563;
+            transition: opacity 0.3s ease-out;
+        }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e5e7eb; /* Light grey */
+            border-top: 4px solid #3b82f6; /* Blue */
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 16px;
+        }
+
+        /* Error Box Style */
+        #global-error-box {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: #ef4444;
+            color: white;
+            padding: 1rem;
+            z-index: 2147483648; /* Above loading screen */
+            font-family: monospace;
+            font-size: 14px;
+            max-height: 50vh;
+            overflow: auto;
+            border-bottom: 2px solid #7f1d1d;
+        }
+    </style>
 
     <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -27,7 +82,6 @@
         window.onload = function() {
             if (!window.tailwind) {
                 console.warn("Tailwind CSS failed to load via CDN.");
-                // We could add fallback CSS here if strictly necessary
             }
         }
         tailwind.config = {
@@ -294,42 +348,6 @@
             border-radius: 50%;
             transition: all 0.1s ease;
         }
-
-        /* Error Box Style */
-        #global-error-box {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            background-color: #ef4444;
-            color: white;
-            padding: 1rem;
-            z-index: 10000;
-            font-family: monospace;
-            font-size: 14px;
-            max-height: 50vh;
-            overflow: auto;
-            border-bottom: 2px solid #7f1d1d;
-        }
-
-        /* Loading Overlay */
-        #app-loading {
-            position: fixed;
-            inset: 0;
-            background-color: #f3f4f6;
-            z-index: 9998;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-family: sans-serif;
-            color: #4b5563;
-        }
-        #app-loading.hidden {
-            display: none;
-        }
-
     </style>
 </head>
 <body class="font-sans antialiased">
@@ -337,14 +355,11 @@
     <!-- Debug Error Box -->
     <div id="global-error-box"></div>
 
-    <!-- Loading Screen -->
+    <!-- Loading Screen (Pure HTML/CSS) -->
     <div id="app-loading">
-        <svg class="animate-spin h-10 w-10 text-blue-500 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
-        <h2 class="text-xl font-semibold">Loading Whiteboard...</h2>
-        <p class="text-sm mt-2">If this takes too long, check the URL or console.</p>
+        <div class="loading-spinner"></div>
+        <h2 style="font-size: 1.25rem; font-weight: 600;">Loading Whiteboard...</h2>
+        <p style="font-size: 0.875rem; margin-top: 0.5rem;">Init...</p>
     </div>
     
     <!-- Auth buttons -->
@@ -540,6 +555,16 @@
     
     // ===== Consolidated Application Logic =====
     
+    // Safety Timeout: If app doesn't load in 5 seconds, hide loader anyway so user can see what's wrong (or right)
+    setTimeout(function() {
+        var loader = document.getElementById('app-loading');
+        if (loader && loader.style.display !== 'none') {
+            console.warn("Loading timeout reached. Forcing loader hide.");
+            loader.style.opacity = '0';
+            setTimeout(function() { loader.style.display = 'none'; }, 300);
+        }
+    }, 5000);
+
     // --- Authentication ---
     
     window.initGoogleAuth = function() {
@@ -641,7 +666,10 @@
             // Remove loading screen after 500ms (debounce)
             setTimeout(() => {
                 const loader = document.getElementById('app-loading');
-                if(loader) loader.classList.add('hidden');
+                if(loader) {
+                    loader.style.opacity = '0';
+                    setTimeout(() => { loader.style.display = 'none'; }, 300);
+                }
             }, 500);
 
             initAuthStatus();
