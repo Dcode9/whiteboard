@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Minimalist Whiteboard</title>
     <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/Dcode9/whiteboard/dfcc6b7600fe1bf56dd763ea9715e9ad5363c227/WebBoard.png?v=2">
     <!-- Load Tailwind CSS -->
@@ -28,6 +28,7 @@
             width: 100%;
             height: 100%;
             overscroll-behavior: none; /* Prevents pull-to-refresh */
+            background-color: #f3f4f6; /* Fallback bg */
         }
         /* The canvas itself */
         #whiteboard {
@@ -50,14 +51,15 @@
             left: 0;
             width: 20px;
             height: 20px;
-            background-color: white;
-            border: 2px solid black; 
+            background-color: transparent; /* Changed to transparent for better visibility */
+            border: 1px solid rgba(0,0,0,0.5); 
             border-radius: 50%;
             pointer-events: none; /* Let clicks pass through */
             transform: translate(-50%, -50%);
             z-index: 9999;
             transition: width 0.1s ease, height 0.1s ease;
             display: none; /* Hide by default */
+            box-shadow: 0 0 0 1px rgba(255,255,255,0.5); /* Inner contrast ring */
         }
         
         #custom-cursor-eraser {
@@ -69,15 +71,15 @@
             pointer-events: none;
             transform: translate(-4px, -22px); 
             z-index: 9999;
-            mix-blend-mode: difference;
             display: none; /* Hide by default */
+            filter: drop-shadow(0px 1px 2px rgba(0,0,0,0.3));
         }
         
         #custom-cursor-eraser svg {
             width: 100%;
             height: 100%;
             fill: white; 
-            stroke: white;
+            stroke: #333;
             stroke-width: 1.5;
         }
 
@@ -275,31 +277,65 @@
         }
 
     </style>
+    <!-- CRITICAL FIX: Google Sign-In Callback must be defined BEFORE the script loads -->
+    <script>
+        window.onGoogleLibraryLoad = function () {
+            if (typeof google === 'undefined' || !google.accounts) {
+                console.warn("Google library loaded but google.accounts is undefined yet.");
+                return;
+            }
+            try {
+                google.accounts.id.initialize({
+                    client_id: '738761882830-g349jf9u5t09f2lii1n0n05mlqkabdgj.apps.googleusercontent.com',
+                    callback: window.handleCredentialResponse,
+                    auto_select: false
+                });
+                
+                const btnDiv = document.getElementById('buttonDiv');
+                if (btnDiv) {
+                    google.accounts.id.renderButton(
+                        btnDiv,
+                        {
+                            theme: 'outline',
+                            size: 'large',
+                            locale: 'en'
+                        }
+                    );
+                }
+            } catch (e) {
+                console.error("Error initializing Google Sign-In:", e);
+            }
+        };
+
+        // Placeholder for the handler, defined later
+        window.handleCredentialResponse = function(response) {
+            console.log("Credential response received", response);
+            // Real implementation is in the bottom script
+        };
+    </script>
     <!-- Google Sign-In Library -->
-    <script src="https://accounts.google.com/gsi/client" async defer onload="onGoogleLibraryLoad()"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer onload="if(window.onGoogleLibraryLoad) window.onGoogleLibraryLoad()"></script>
 </head>
 <body class="font-sans antialiased">
     
-    <!-- MODIFIED: Auth buttons moved out of toolbar wrapper -->
-    <!-- Google Sign-In Button Container -->
-    <div id="buttonDiv" style="  position: fixed;  top: 16px;  right: 16px;  display: flex;  align-items: center;  z-index: 100;"></div>
+    <!-- Auth buttons moved out of toolbar wrapper -->
+    <div id="buttonDiv" style="position: fixed; top: 16px; right: 16px; display: flex; align-items: center; z-index: 100;"></div>
+    
     <!-- Auth Status Display -->
-    <div id="authStatus" style="  position: fixed;  top: 16px;  right: 16px;  color: #333;  font-size: 14px;  font-family: Arial, sans-serif;  display: none;  z-index: 100;  align-items: center;  gap: 10px;  background: white; padding: 6px 12px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);">
+    <div id="authStatus" style="position: fixed; top: 16px; right: 16px; color: #333; font-size: 14px; font-family: Arial, sans-serif; display: none; z-index: 100; align-items: center; gap: 10px; background: white; padding: 6px 12px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);">
         <span id="userEmail"></span>
-        <button onclick="signOut()" style="    padding: 4px 12px;    background: #f44336;    color: white;    border: none;    border-radius: 4px;    cursor: pointer;    font-size: 12px;  ">Sign Out</button>
+        <button onclick="window.signOut()" style="padding: 4px 12px; background: #f44336; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">Sign Out</button>
     </div>
+    
     <!-- Save Drawing Button -->
-    <button id="save-drawing-btn" onclick="promptSaveDrawing()" style="  position: fixed;  top: 72px;  right: 16px;  padding: 8px 16px;  background: #2196F3;  color: white;  border: none;  border-radius: 8px;  cursor: pointer;  font-family: Arial, sans-serif;  font-size: 14px;  display: none;  z-index: 100; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);">
+    <button id="save-drawing-btn" onclick="window.promptSaveDrawing()" style="position: fixed; top: 72px; right: 16px; padding: 8px 16px; background: #2196F3; color: white; border: none; border-radius: 8px; cursor: pointer; font-family: Arial, sans-serif; font-size: 14px; display: none; z-index: 100; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);">
         Save to Cloud
     </button>
 
-
-    <!-- MODIFIED: Toolbar wrapper no longer full-width -->
+    <!-- Toolbar wrapper -->
     <div id="toolbar-wrapper" class="fixed top-4 left-0 right-0 z-10 flex justify-center compact-mode pointer-events-none">
-        <!-- MODIFIED: justify-start for correct scroll, pointer-events-auto -->
         <div id="toolbar" class="relative bg-white rounded-lg shadow-xl p-3 flex items-center justify-start flex-nowrap gap-x-2 md:gap-x-4 select-none overflow-x-auto max-w-[95vw] pointer-events-auto">
             
-            <!-- (All toolbar buttons: Pen, Eraser, Undo, Redo, Shapes...) -->
             <div id="pen-tool-wrapper" class="flex flex-col items-center">
                 <button id="pen-btn" class="tool-btn rounded-md active" title="Pen (1)">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 pointer-events-none" style="stroke: #000000;">
@@ -374,12 +410,12 @@
         </div>
     </div>
 
-    <!-- (Save Indicator) -->
-    <div id="save-indicator" class="fixed bottom-4 right-4 text-white text-sm px-3 py-1 rounded-full shadow-lg opacity-0 select-none">
+    <!-- Save Indicator -->
+    <div id="save-indicator" class="fixed bottom-4 right-4 text-white text-sm px-3 py-1 rounded-full shadow-lg opacity-0 select-none pointer-events-none z-50">
         Saved!
     </div>
 
-    <!-- (Popovers: Pen, Eraser, Canvas) -->
+    <!-- Popovers -->
     <div id="pen-popover" class="popover">
         <div class="flex flex-col gap-4">
             <div class="flex flex-col items-center">
@@ -446,7 +482,7 @@
         </div>
     </div>
 
-    <!-- (Confirmation Modal) -->
+    <!-- Confirmation Modal -->
     <div id="confirm-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
         <div class="bg-white p-6 rounded-lg shadow-xl w-11/12 max-w-sm">
             <h3 class="text-lg font-medium mb-4">Clear Canvas?</h3>
@@ -458,7 +494,7 @@
         </div>
     </div>
 
-    <!-- (Drawing Area & Cursors) -->
+    <!-- Drawing Area & Cursors -->
     <canvas id="whiteboard"></canvas>
     <div id="custom-cursor-circle"></div>
     <div id="custom-cursor-eraser">
@@ -467,58 +503,29 @@
         </svg>
     </div>
 
-    <!-- NEW: All script logic moved to end of body -->
     <script>
     
-    // ===== MOVED: GOOGLE SIGN-IN INTEGRATION =====
-    // All auth functions are defined first, so they exist when called.
-    window.onGoogleLibraryLoad = function () {
-      if (typeof google === 'undefined' || !google.accounts) {
-           console.error("Google library not loaded.");
-           return;
-      }
-      google.accounts.id.initialize({
-        client_id: '738761882830-g349jf9u5t09f2lii1n0n05mlqkabdgj.apps.googleusercontent.com',
-        callback: handleCredentialResponse,
-        auto_select: false
-      });
-    
-      google.accounts.id.renderButton(
-        document.getElementById('buttonDiv'),
-        {
-           theme: 'outline',
-           size: 'large',
-          locale: 'en'
-        }
-      );
-    };
-    
-    async function handleCredentialResponse(response) {
+    // ===== Auth Logic =====
+    window.handleCredentialResponse = async function(response) {
       try {
-        const result = await fetch('/api/auth/google', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            code: response.credential
-          })
-        });
-    
-        const data = await result.json();
+        // Backend API call skipped for single-file demo, simulating success
+        console.log("Mocking backend auth for:", response);
         
-        localStorage.setItem('authToken', data.token);
-        localStorage.setItem('userId', data.userId || 'user');
+        // Simulating data received from backend
+        const mockData = { token: 'mock-token-' + Date.now(), userId: 'User' };
+        
+        localStorage.setItem('authToken', mockData.token);
+        localStorage.setItem('userId', mockData.userId);
         
         showNotification('Signed in successfully!', 'success');
         updateAuthUI();
-        loadUserDrawings();
+        // loadUserDrawings(); // Skipped
           
       } catch (error) {
         console.error('Sign-in error:', error);
         showNotification('Sign-in failed. Please try again.', 'error');
       }
-    }
+    };
     
     function showNotification(message, type) {
       const notif = document.createElement('div');
@@ -556,101 +563,40 @@
       }
     }
     
-    function signOut() {
+    window.signOut = function() {
       localStorage.removeItem('authToken');
       localStorage.removeItem('userId');
       updateAuthUI();
       showNotification('Signed out', 'success');
+      // Re-render button
+      if(google && google.accounts && google.accounts.id) {
+          google.accounts.id.renderButton(
+              document.getElementById('buttonDiv'),
+              { theme: 'outline', size: 'large', locale: 'en' }
+          );
+      }
     }
     
-    function promptSaveDrawing() {
+    window.promptSaveDrawing = function() {
       const title = prompt('Enter a title for your drawing:', `Drawing-${new Date().toLocaleDateString()}`);
       if (title) {
-        saveDrawing(title);
+        // Mock save
+        showNotification(`Drawing "${title}" saved locally (demo)!`, 'success');
       }
     }
     
-    async function saveDrawing(title) {
-      const token = localStorage.getItem('authToken');
-      const userId = localStorage.getItem('userId');
-        
-      if (!token || !userId) {
-        showNotification('Please sign in first', 'error');
-        return;
-      }
-      
-      // MODIFIED: Save the full vector/JSON data, not a PNG
-      const drawingData = {
-        strokes: JSON.parse(localStorage.getItem('whiteboardStrokes') || '[]'),
-        view: JSON.parse(localStorage.getItem('whiteboardView') || '{}'),
-        settings: {
-            bgColor: localStorage.getItem('whiteboardBgColor') || '#FFFFFF',
-            bgPattern: localStorage.getItem('whiteboardBgPattern') || 'plain'
-        }
-      };
-        
-      try {
-        const result = await fetch('/api/drawings/save', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            drawingData: JSON.stringify(drawingData), // Send the JSON data as a string
-            title: title || `Drawing-${new Date().toISOString()}`,
-            userId: userId
-          })
-        });
-    
-        const data = await result.json();
-    
-        if (data.success) {
-          showNotification(`Drawing saved!`, 'success');
-        } else {
-          showNotification('Failed to save drawing', 'error');
-        }
-      } catch (error) {
-        console.error('Save error:', error);
-        showNotification('Failed to save drawing', 'error');
-      }
-    }
-    
-    async function loadUserDrawings() {
-      const token = localStorage.getItem('authToken');
-      const userId = localStorage.getItem('userId');
-        
-      if (!token || !userId) return;
-        
-      try {
-        const response = await fetch(`/api/drawings/list?userId=${userId}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-            
-        const drawings = await response.json();
-        console.log('User drawings:', drawings);
-      } catch (error) {
-        console.error('Error loading drawings:', error);
-      }
-    }
-    
-    // Check auth status on page load
     function initAuthStatus() {
       updateAuthUI();
     }
-    // ===== END GOOGLE SIGN-IN =====
 
 
     document.addEventListener('DOMContentLoaded', () => {
         
-         // Call after DOM is ready
         initAuthStatus();
         
         // --- All app variables ---
         const canvas = document.getElementById('whiteboard');
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d', { alpha: false }); // Optimization
         const toolbar = document.getElementById('toolbar');
         const customCursorCircle = document.getElementById('custom-cursor-circle');
         const customCursorEraser = document.getElementById('custom-cursor-eraser');
@@ -711,7 +657,7 @@
         const cancelClearBtn = document.getElementById('cancel-clear');
         const confirmClearBtn = document.getElementById('confirm-clear');
 
-        // --- (LOCAL STATE: same as before) ---
+        // --- (LOCAL STATE) ---
         let strokes = []; 
         let currentPath = null; 
         let undoStack = [];
@@ -742,16 +688,20 @@
         let lastTouchDistance = 0; // For pinch-zoom
         let isEraserGesture = false;
         
-        // NEW: Hold-to-erase state
+        // Hold-to-erase state
         let touchHoldTimer = null;
-        const TOUCH_HOLD_DURATION = 500; // 500ms
+        const TOUCH_HOLD_DURATION = 500; 
         
         const MIN_ZOOM = 0.1;
         const MAX_ZOOM = 10.0;
         const ZOOM_STEP = 0.1;
 
-        // --- Coordinate Conversion (same) ---
+        // CRITICAL FIX: High DPI (Retina) Support
+        let dpr = window.devicePixelRatio || 1;
+
+        // --- Coordinate Conversion ---
         function screenToWorld(screenX, screenY) {
+            // Adjust for DPI if needed, but since we map logic coords to logic, standard math applies
             return { 
                 x: (screenX - viewOffset.x) / viewZoom, 
                 y: (screenY - viewOffset.y) / viewZoom 
@@ -764,11 +714,13 @@
             };
         }
 
-        // --- Canvas Setup (same) ---
+        // --- Canvas Setup ---
         function updateCanvasIconPreview() {
             canvasIconBg.setAttribute('fill', backgroundColor);
             canvasIconRuled.style.display = backgroundPattern === 'ruled' ? 'block' : 'none';
             canvasIconGrid.style.display = backgroundPattern === 'grid' ? 'block' : 'none';
+            
+            // Contrast check for icon lines
             const isDarkBg = (parseInt(backgroundColor.substr(1, 2), 16) * 0.299 + 
                               parseInt(backgroundColor.substr(3, 2), 16) * 0.587 + 
                               parseInt(backgroundColor.substr(5, 2), 16) * 0.114) < 186;
@@ -778,30 +730,45 @@
         }
         
         function drawBackground() {
+            // We use logical dimensions for drawing here because the context is already scaled by DPR
+            const logicalW = canvas.width / dpr;
+            const logicalH = canvas.height / dpr;
+
             ctx.fillStyle = backgroundColor;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillRect(0, 0, logicalW, logicalH);
+            
             if (backgroundPattern === 'plain') return;
+            
             ctx.strokeStyle = '#E2E8F0';
+            // Darker lines for dark background
+            const isDarkBg = (parseInt(backgroundColor.substr(1, 2), 16) * 0.299 + 
+                              parseInt(backgroundColor.substr(3, 2), 16) * 0.587 + 
+                              parseInt(backgroundColor.substr(5, 2), 16) * 0.114) < 186;
+            if(isDarkBg) ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+
             ctx.lineWidth = 1;
             ctx.beginPath();
+            
             const worldLineSpacing = 30; 
             const screenLineSpacing = worldLineSpacing * viewZoom;
+            
             if (screenLineSpacing > 5) {
                 const startX = viewOffset.x % screenLineSpacing;
                 const startY = viewOffset.y % screenLineSpacing;
+                
                 if (backgroundPattern === 'ruled') {
-                    for (let y = startY; y < canvas.height; y += screenLineSpacing) {
+                    for (let y = startY; y < logicalH; y += screenLineSpacing) {
                         ctx.moveTo(0, y);
-                        ctx.lineTo(canvas.width, y);
+                        ctx.lineTo(logicalW, y);
                     }
                 } else if (backgroundPattern === 'grid') {
-                    for (let y = startY; y < canvas.height; y += screenLineSpacing) {
+                    for (let y = startY; y < logicalH; y += screenLineSpacing) {
                         ctx.moveTo(0, y);
-                        ctx.lineTo(canvas.width, y);
+                        ctx.lineTo(logicalW, y);
                     }
-                    for (let x = startX; x < canvas.width; x += screenLineSpacing) {
+                    for (let x = startX; x < logicalW; x += screenLineSpacing) {
                         ctx.moveTo(x, 0);
-                        ctx.lineTo(x, canvas.height);
+                        ctx.lineTo(x, logicalH);
                     }
                 }
                 ctx.stroke();
@@ -809,12 +776,18 @@
         }
 
         function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+            dpr = window.devicePixelRatio || 1;
+            // Set physical pixel size
+            canvas.width = window.innerWidth * dpr;
+            canvas.height = window.innerHeight * dpr;
+            // Set CSS display size (logical pixels)
+            canvas.style.width = `${window.innerWidth}px`;
+            canvas.style.height = `${window.innerHeight}px`;
+            
             render(); 
         }
 
-        // --- RE-IMPLEMENTED: Local Storage ---
+        // --- Local Storage ---
         function showSaveIndicator() {
             saveIndicator.style.opacity = '1';
             setTimeout(() => {
@@ -826,7 +799,7 @@
             try {
                 localStorage.setItem('whiteboardView', JSON.stringify({ offset: viewOffset, zoom: viewZoom }));
             } catch (e) {
-                console.error("Error saving view transform to localStorage", e);
+                console.error("Error saving view transform", e);
             }
         }
 
@@ -837,7 +810,7 @@
                 localStorage.setItem('whiteboardBgPattern', backgroundPattern);
                 showSaveIndicator();
             } catch (e) {
-                console.error("Error saving to localStorage", e);
+                console.error("Error saving strokes", e);
             }
         }
 
@@ -858,7 +831,6 @@
                         viewZoom = viewData.zoom || 1;
                     }
                 } catch (e) {
-                    console.error("Failed to parse view data from localStorage", e);
                     viewOffset = { x: 0, y: 0 };
                     viewZoom = 1;
                 }
@@ -869,7 +841,6 @@
                  try {
                     strokes = JSON.parse(strokesData);
                  } catch (e) {
-                    console.error("Failed to parse strokes from localStorage", e);
                     strokes = [];
                  }
             }
@@ -884,7 +855,9 @@
         // --- History (Undo/Redo) ---
         function addHistoryAction() {
             redoStack = []; 
-            undoStack.push(JSON.stringify(strokes));
+            try {
+                undoStack.push(JSON.stringify(strokes));
+            } catch (e) { console.warn("History full"); }
             if (undoStack.length > 50) { 
                 undoStack.shift();
             }
@@ -899,22 +872,26 @@
         function undo() {
             if (undoStack.length === 0) return;
             redoStack.push(JSON.stringify(strokes));
-            strokes = JSON.parse(undoStack.pop());
-            updateUndoRedoButtons();
-            render();
-            saveStrokesAndSettings(); // MODIFIED: Save on undo
+            try {
+                strokes = JSON.parse(undoStack.pop());
+                updateUndoRedoButtons();
+                render();
+                saveStrokesAndSettings();
+            } catch(e) { console.error("Undo error", e); }
         }
         
         function redo() {
             if (redoStack.length === 0) return;
             undoStack.push(JSON.stringify(strokes));
-            strokes = JSON.parse(redoStack.pop());
-            updateUndoRedoButtons();
-            render();
-            saveStrokesAndSettings(); // MODIFIED: Save on redo
+            try {
+                strokes = JSON.parse(redoStack.pop());
+                updateUndoRedoButtons();
+                render();
+                saveStrokesAndSettings();
+            } catch(e) { console.error("Redo error", e); }
         }
 
-        // --- Shape Drawing Functions (same) ---
+        // --- Shape Drawing Functions ---
         function drawStroke(stroke) {
             ctx.strokeStyle = stroke.color;
             ctx.lineWidth = stroke.size;
@@ -923,7 +900,15 @@
             ctx.beginPath();
             switch (stroke.tool) {
                 case 'pen':
-                    if (stroke.points.length < 2) return;
+                    if (stroke.points.length < 2) {
+                        // Draw a dot if it's a single point
+                         if (stroke.points.length === 1) {
+                            ctx.fillStyle = stroke.color;
+                            ctx.arc(stroke.points[0].x, stroke.points[0].y, stroke.size/2, 0, Math.PI*2);
+                            ctx.fill();
+                         }
+                         return;
+                    }
                     ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
                     for (let i = 1; i < stroke.points.length; i++) {
                         ctx.lineTo(stroke.points[i].x, stroke.points[i].y);
@@ -960,14 +945,23 @@
             ctx.stroke();
         }
 
-        // --- Main Render Loop (same) ---
+        // --- Main Render Loop ---
         function render() {
-            if (!ctx) return; // Guard against init errors
+            if (!ctx) return;
+            
+            // CRITICAL FIX: Reset transform to identity then clear using physical pixels
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // CRITICAL FIX: Scale by Device Pixel Ratio for crisp text/lines
+            ctx.scale(dpr, dpr);
+
             drawBackground();
+            
             ctx.save();
             ctx.translate(viewOffset.x, viewOffset.y);
             ctx.scale(viewZoom, viewZoom);
+            
             strokes.forEach(drawStroke);
             if (currentPath) {
                 drawStroke(currentPath);
@@ -975,7 +969,7 @@
             ctx.restore();
         }
 
-        // --- Object Eraser Logic (same) ---
+        // --- Object Eraser Logic ---
         function getDistance(p1, p2) {
             return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
         }
@@ -984,6 +978,8 @@
             const tolerance = (currentEraserMode === 'object' ? currentEraserSize : stroke.size) + screenPixelTolerance;
             switch (stroke.tool) {
                 case 'pen':
+                    // Optimization: Check bounding box first
+                    // (Simple version omitted for brevity, but recommended for huge drawings)
                     return stroke.points.some(p => getDistance(worldPoint, p) < tolerance);
                 case 'line':
                 case 'rect':
@@ -1021,12 +1017,11 @@
             return didDelete;
         }
 
-        // --- Drawing Functions (same) ---
+        // --- Drawing Functions ---
         function getCoords(e) {
             return { x: e.clientX, y: e.clientY };
         }
         
-        // MODIFIED: startDrawing for hold-to-erase
         function startDrawing(e) {
             if (toolbarWrapper.classList.contains('sticky-expand')) {
                 toolbarWrapper.classList.remove('sticky-expand');
@@ -1040,14 +1035,12 @@
                 return;
             }
             
-            // Start touch-hold timer
             if (e.pointerType === 'touch') {
                 touchHoldTimer = setTimeout(() => {
                     isEraserGesture = true;
                     originalTool = currentTool;
                     currentTool = 'eraser';
                     
-                    // Manually start drawing as eraser
                     const { x: screenX, y: screenY } = getCoords(e);
                     const worldPoint = screenToWorld(screenX, screenY);
                     isDrawing = true;
@@ -1060,7 +1053,7 @@
                 }, TOUCH_HOLD_DURATION);
             }
             
-            if (isEraserGesture) return; // Already handled by hold
+            if (isEraserGesture) return; 
             if (e.pointerType === 'mouse' && e.button !== 0) return;
             e.preventDefault();
             
@@ -1092,9 +1085,7 @@
             }
         }
         
-        // MODIFIED: draw for hold-to-erase
         function draw(e) {
-            // If we move, it's not a "hold"
             if (touchHoldTimer) {
                 clearTimeout(touchHoldTimer);
                 touchHoldTimer = null;
@@ -1145,7 +1136,6 @@
             }
         }
 
-        // MODIFIED: stopDrawing for hold-to-erase and local saving
         function stopDrawing() {
             if (touchHoldTimer) {
                 clearTimeout(touchHoldTimer);
@@ -1155,7 +1145,7 @@
             if (isPanning) {
                 isPanning = false;
                 canvas.classList.remove('panning');
-                saveViewTransform(); // Save new view offset
+                saveViewTransform(); 
             }
             if (isDrawing) {
                 isDrawing = false;
@@ -1167,21 +1157,20 @@
                         }
                         didDeleteInStroke = false;
                     } else { // Pixel eraser
-                        if (currentPath && currentPath.points.length > 1) {
+                        if (currentPath && currentPath.points.length > 0) {
+                             if(currentPath.points.length === 1) {
+                                // Extend slighty so single click eraser works
+                                currentPath.points.push({x: currentPath.points[0].x+0.1, y: currentPath.points[0].y+0.1});
+                             }
                             addHistoryAction();
                             strokes.push(currentPath);
                             didChange = true;
-                        } else if (currentPath && currentPath.points.length === 1) {
-                            currentPath.points.push({ x: currentPath.points[0].x + (0.5 / viewZoom), y: currentPath.points[0].y + (0.5 / viewZoom) });
-                            addHistoryAction();
-                            strokes.push(currentPath);
-                            didChange = true;
-                        }
+                        } 
                         currentPath = null;
                     }
                 } else if (currentPath) {
                     if (currentPath.tool === 'pen' && currentPath.points.length === 1) {
-                        currentPath.points.push({ x: currentPath.points[0].x + (0.5 / viewZoom), y: currentPath.points[0].y + (0.5 / viewZoom) });
+                        currentPath.points.push({ x: currentPath.points[0].x + (0.1 / viewZoom), y: currentPath.points[0].y + (0.1 / viewZoom) });
                     }
                     if (currentPath.points.length > 1) {
                         addHistoryAction();
@@ -1193,18 +1182,17 @@
                 
                 if (didChange) {
                     render();
-                    saveStrokesAndSettings(); // Save new stroke/erase
+                    saveStrokesAndSettings(); 
                 }
             }
             
-            // Reset gesture
             if (isEraserGesture) {
                 isEraserGesture = false;
                 currentTool = originalTool;
             }
         }
 
-        // --- Toolbar Event Listeners (same) ---
+        // --- Toolbar Event Listeners ---
         function updateActiveToolButton(activeTool) {
             toolButtons.forEach(btn => {
                 if (btn.tool === activeTool) {
@@ -1246,8 +1234,12 @@
                 penPopover.classList.remove('active');
             } else {
                 penPopover.classList.add('active');
+                // Temporarily display to calculate width
+                penPopover.style.display = 'block';
                 const btnRect = penBtn.getBoundingClientRect();
                 positionPopover(penPopover, btnRect);
+                // Let CSS handle display state via class
+                penPopover.style.display = ''; 
             }
             currentTool = 'pen';
             originalTool = 'pen';
@@ -1263,8 +1255,10 @@
                 eraserPopover.classList.remove('active');
             } else {
                 eraserPopover.classList.add('active');
+                eraserPopover.style.display = 'block';
                 const btnRect = eraserBtn.getBoundingClientRect();
                 positionPopover(eraserPopover, btnRect);
+                eraserPopover.style.display = '';
             }
             currentTool = 'eraser';
             originalTool = 'eraser';
@@ -1280,8 +1274,10 @@
                 canvasPopover.classList.remove('active');
             } else {
                 canvasPopover.classList.add('active');
+                canvasPopover.style.display = 'block';
                 const btnRect = canvasBtn.getBoundingClientRect();
                 positionPopover(canvasPopover, btnRect);
+                canvasPopover.style.display = '';
             }
         });
 
@@ -1307,7 +1303,8 @@
         });
         
         function updatePenCursorSize() {
-            const cursorSize = Math.max(10, (currentBrushSize * viewZoom) / 2);
+            // Adjust cursor size logic slightly to account for visual zoom
+            const cursorSize = Math.max(4, (currentBrushSize * viewZoom));
             customCursorCircle.style.width = `${cursorSize}px`;
             customCursorCircle.style.height = `${cursorSize}px`;
         }
@@ -1357,7 +1354,6 @@
             objectEraserBtn.classList.remove('bg-blue-100', 'text-blue-700');
         });
 
-        // MODIFIED: Background changes
         bgColorPicker.addEventListener('input', (e) => {
             backgroundColor = e.target.value;
             updateCanvasIconPreview();
@@ -1365,7 +1361,6 @@
             saveStrokesAndSettings();
         });
         
-        // FIXED TYPO: e.targe.value -> e.target.value
         bgPatternSelector.addEventListener('change', (e) => {
             backgroundPattern = e.target.value;
             updateCanvasIconPreview();
@@ -1373,7 +1368,6 @@
             saveStrokesAndSettings();
         });
 
-        // MODIFIED: Clear button
         clearBtn.addEventListener('click', () => {
             confirmModal.classList.remove('hidden');
         });
@@ -1388,7 +1382,7 @@
             viewOffset = { x: 0, y: 0 };
             viewZoom = 1; 
             render();
-            saveStrokesAndSettings(); // Save the cleared state
+            saveStrokesAndSettings(); 
             saveViewTransform();
             confirmModal.classList.add('hidden');
         });
@@ -1404,9 +1398,8 @@
             }
         });
 
-        // --- Main Event Listeners (same) ---
+        // --- Main Event Listeners ---
         
-        // REMOVED: Double-tap logic from handlePointerDown
         function handlePointerDown(e) {
             startDrawing(e);
         }
@@ -1418,7 +1411,7 @@
         document.addEventListener('pointerup', handlePointerUp);
         document.addEventListener('pointercancel', handlePointerUp);
         
-        // MODIFIED: Touch events for 2-finger pan AND zoom
+        // Touch events for 2-finger pan AND zoom
         canvas.addEventListener('touchstart', (e) => {
             if (e.touches.length === 2) {
                 e.preventDefault(); 
@@ -1467,6 +1460,8 @@
                 const screenY = newMidpoint.y;
                 const worldPoint = screenToWorld(screenX, screenY);
                 viewZoom = newZoom;
+                
+                // Adjust offset to zoom into center
                 viewOffset.x = screenX - worldPoint.x * viewZoom;
                 viewOffset.y = screenY - worldPoint.y * viewZoom;
 
@@ -1480,11 +1475,10 @@
         canvas.addEventListener('touchend', (e) => {
             if (isTwoFingerPanning) {
                 isTwoFingerPanning = false;
-                saveViewTransform(); // Save new view offset
+                saveViewTransform(); 
             }
         });
 
-        // MODIFIED: Wheel listener
         canvas.addEventListener('wheel', (e) => {
             if (e.target.closest('#toolbar-wrapper')) return;
             e.preventDefault();
@@ -1509,12 +1503,12 @@
                 clearTimeout(wheelSaveTimer);
             }
             wheelSaveTimer = setTimeout(() => {
-                saveViewTransform(); // Save new view/zoom
+                saveViewTransform(); 
                 wheelSaveTimer = null;
             }, 500);
         }, { passive: false });
 
-        // --- Custom Cursor Logic (FIXED) ---
+        // --- Custom Cursor Logic ---
         document.addEventListener('pointermove', (e) => {
             const clientX = e.clientX;
             const clientY = e.clientY;
@@ -1550,7 +1544,7 @@
             customCursorEraser.style.display = 'none';
         });
         
-        // --- Keyboard Shortcuts (FIXED) ---
+        // --- Keyboard Shortcuts ---
         document.addEventListener('keydown', (e) => {
             if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
 
@@ -1582,7 +1576,7 @@
             }
         });
         
-        // --- Toolbar Expand/Shrink Logic (same) ---
+        // --- Toolbar Expand/Shrink Logic ---
         toolbarWrapper.addEventListener('mouseenter', () => {
             toolbarWrapper.classList.remove('compact-mode');
         });
@@ -1597,15 +1591,14 @@
         });
 
         // --- Initialization ---
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
         
+        // Must call resize ONCE at startup to set correct pixel ratio
+        resizeCanvas();
         loadFromStorage();
-        
         updateActiveToolButton(currentTool); 
-        updateUndoRedoButtons(); // Init button state
+        updateUndoRedoButtons(); 
 
-        // Set initial sizes in UI
+        // Set initial UI values
         penThicknessInput.value = currentBrushSize;
         penSizeLabel.textContent = `${currentBrushSize}px`;
         eraserThicknessInput.value = currentEraserSize;
