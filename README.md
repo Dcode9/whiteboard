@@ -11,6 +11,17 @@ A collaborative whiteboard application with Google Sign-in and Supabase storage.
 
 ## Setup Instructions
 
+### ⚠️ IMPORTANT: Getting "Access blocked" error?
+**You MUST replace the hardcoded Google Client ID in `index.html` line 597 with your own.**
+
+📖 **See [ENV_SETUP_GUIDE.md](ENV_SETUP_GUIDE.md) for complete step-by-step instructions on:**
+- How to create your own Google OAuth credentials
+- Where to find all environment variables
+- How to set them up in Vercel
+- Troubleshooting common issues
+
+### Quick Start
+
 ### 1. Install Dependencies
 
 ```bash
