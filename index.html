@@ -637,13 +637,19 @@
         
         if (!authResponse.ok) {
           let errorMessage = 'Authentication failed';
+          // Clone response so we can read it multiple times if needed
+          const responseClone = authResponse.clone();
           try {
             const errorData = await authResponse.json();
             errorMessage = errorData.error || errorMessage;
           } catch (e) {
             // Response is not JSON, likely HTML error page
-            const errorText = await authResponse.text();
-            console.error('Non-JSON error response:', errorText);
+            try {
+              const errorText = await responseClone.text();
+              console.error('Non-JSON error response:', errorText);
+            } catch (textError) {
+              console.error('Could not read error response');
+            }
             errorMessage = `Server error (${authResponse.status})`;
           }
           throw new Error(errorMessage);

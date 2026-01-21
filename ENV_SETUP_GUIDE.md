@@ -185,6 +185,28 @@ JWT_SECRET=your-actual-secret-here
 
 ## Troubleshooting
 
+### "Failed to load resource: the server responded with a status of 404 ()"
+- **Cause**: API endpoints not deployed correctly to Vercel or deployment not yet propagated
+- **Fix**: 
+  1. Make sure you've committed and pushed all files including the `api/` folder
+  2. Go to Vercel dashboard → Your project
+  3. Check the **Deployments** tab - make sure latest deployment shows "Ready"
+  4. Click on the deployment to see the build logs
+  5. Verify that the `api/` folder files are included in the deployment
+  6. If files are missing, redeploy:
+     - Go to **Deployments** tab
+     - Click three dots on latest deployment → **Redeploy**
+  7. Wait for deployment to complete (usually 1-2 minutes)
+  8. Clear browser cache and try again (Ctrl+F5 or Cmd+Shift+R)
+  
+  **Note**: After redeploying, it may take a few minutes for the API endpoints to become available.
+
+### "Cross-Origin-Opener-Policy policy would block the window.postMessage call"
+- **Cause**: These are warnings from Google's OAuth popup window, not errors from your app
+- **Effect**: These warnings are harmless and don't prevent sign-in from working
+- **Fix**: No fix needed - this is expected behavior from Google's OAuth library
+- If sign-in still fails, the issue is likely one of the other errors listed here
+
 ### "Google Sign-in button disappeared"
 - **Cause**: Old authentication tokens stored in browser's localStorage
 - **Fix**: 
