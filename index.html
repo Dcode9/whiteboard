@@ -618,7 +618,7 @@
         console.log("Authenticating with backend...");
         
         // Send credential to backend
-        const authResponse = await fetch('/api/auth/google', {
+        const authResponse = await fetch('/api/google', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -627,8 +627,17 @@
         });
         
         if (!authResponse.ok) {
-          const errorData = await authResponse.json();
-          throw new Error(errorData.error || 'Authentication failed');
+          let errorMessage = 'Authentication failed';
+          try {
+            const errorData = await authResponse.json();
+            errorMessage = errorData.error || errorMessage;
+          } catch (e) {
+            // Response is not JSON, likely HTML error page
+            const errorText = await authResponse.text();
+            console.error('Non-JSON error response:', errorText);
+            errorMessage = `Server error (${authResponse.status})`;
+          }
+          throw new Error(errorMessage);
         }
         
         const authData = await authResponse.json();
@@ -714,7 +723,7 @@
         const drawingData = window.getDrawingData ? window.getDrawingData() : { strokes: [] };
         
         // Send to backend
-        const response = await fetch('/api/drawings/save', {
+        const response = await fetch('/api/save', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -727,8 +736,14 @@
         });
         
         if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'Failed to save');
+          let errorMessage = 'Failed to save';
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.error || errorMessage;
+          } catch (e) {
+            errorMessage = `Server error (${response.status})`;
+          }
+          throw new Error(errorMessage);
         }
         
         const result = await response.json();
@@ -754,15 +769,21 @@
         }
         
         // Fetch drawings list
-        const response = await fetch('/api/drawings/list', {
+        const response = await fetch('/api/list', {
           headers: {
             'Authorization': `Bearer ${token}`
           }
         });
         
         if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'Failed to load drawings');
+          let errorMessage = 'Failed to load drawings';
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.error || errorMessage;
+          } catch (e) {
+            errorMessage = `Server error (${response.status})`;
+          }
+          throw new Error(errorMessage);
         }
         
         const drawings = await response.json();
@@ -805,15 +826,21 @@
         }
         
         // Fetch the drawing
-        const response = await fetch(`/api/drawings/load/${drawingId}`, {
+        const response = await fetch(`/api/load/${drawingId}`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
         });
         
         if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'Failed to load drawing');
+          let errorMessage = 'Failed to load drawing';
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.error || errorMessage;
+          } catch (e) {
+            errorMessage = `Server error (${response.status})`;
+          }
+          throw new Error(errorMessage);
         }
         
         const drawing = await response.json();
@@ -843,7 +870,7 @@
         }
         
         // Delete the drawing
-        const response = await fetch(`/api/drawings/delete/${drawingId}`, {
+        const response = await fetch(`/api/delete/${drawingId}`, {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${token}`
@@ -851,8 +878,14 @@
         });
         
         if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'Failed to delete drawing');
+          let errorMessage = 'Failed to delete drawing';
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.error || errorMessage;
+          } catch (e) {
+            errorMessage = `Server error (${response.status})`;
+          }
+          throw new Error(errorMessage);
         }
         
         showNotification('Drawing deleted successfully', 'success');

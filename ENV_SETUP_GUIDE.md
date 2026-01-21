@@ -185,6 +185,19 @@ JWT_SECRET=your-actual-secret-here
 
 ## Troubleshooting
 
+### "The given origin is not allowed for the given client ID"
+- **Cause**: Your Vercel deployment URL is not added to Google OAuth authorized origins
+- **Fix**: 
+  1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+  2. Navigate to **APIs & Services** → **Credentials**
+  3. Click on your OAuth 2.0 Client ID
+  4. Under **Authorized JavaScript origins**, click **+ ADD URI**
+  5. Add your exact Vercel URL (e.g., `https://your-app.vercel.app`)
+  6. **Important**: Do NOT include `/api` or any path - just the domain
+  7. Click "SAVE"
+  8. Wait 5 minutes for changes to propagate
+  9. Try signing in again
+
 ### "Access blocked: Authorisation error"
 - **Cause**: Using the hardcoded demo Client ID or your authorized origins don't match
 - **Fix**: 
@@ -192,6 +205,13 @@ JWT_SECRET=your-actual-secret-here
   2. Update `index.html` line 597 with YOUR Client ID
   3. Make sure your Vercel URL is added to "Authorized JavaScript origins"
   4. Redeploy after updating
+
+### "Failed to load resource: the server responded with a status of 404 ()"
+- **Cause**: API endpoints not deployed correctly to Vercel
+- **Fix**: 
+  1. Make sure all environment variables are set in Vercel (see step 4)
+  2. Redeploy the app in Vercel
+  3. Check Vercel deployment logs for any errors
 
 ### "Failed to save drawing"
 - **Cause**: Supabase credentials missing or incorrect
