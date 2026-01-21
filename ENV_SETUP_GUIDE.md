@@ -185,6 +185,33 @@ JWT_SECRET=your-actual-secret-here
 
 ## Troubleshooting
 
+### "Google Sign-in button disappeared"
+- **Cause**: Old authentication tokens stored in browser's localStorage
+- **Fix**: 
+  1. Open browser DevTools (F12 or Right-click → Inspect)
+  2. Go to Console tab
+  3. Type: `localStorage.clear()` and press Enter
+  4. Refresh the page (F5)
+  5. The sign-in button should reappear
+  
+  **Alternative Method:**
+  - In DevTools, go to Application tab (Chrome) or Storage tab (Firefox)
+  - Find "Local Storage" in the left sidebar
+  - Click on your site's URL
+  - Right-click and select "Clear" or delete individual items
+  - Refresh the page
+
+### "Console is empty / No errors showing"
+- **Cause**: Console might have been cleared or filters are active
+- **Fix**:
+  1. Open browser DevTools (F12)
+  2. Go to Console tab
+  3. Check if any filters are active (should show "All levels")
+  4. Refresh the page and watch for messages like:
+     - "initGoogleAuth called"
+     - "Google Sign-In button rendered successfully"
+  5. If you see "User is signed in, hiding sign-in button", clear localStorage (see above)
+
 ### "The given origin is not allowed for the given client ID"
 - **Cause**: Your Vercel deployment URL is not added to Google OAuth authorized origins
 - **Fix**: 
@@ -196,7 +223,7 @@ JWT_SECRET=your-actual-secret-here
   6. **Important**: Do NOT include `/api` or any path - just the domain
   7. Click "SAVE"
   8. Wait 5 minutes for changes to propagate
-  9. Try signing in again
+  9. Clear localStorage and refresh the page
 
 ### "Access blocked: Authorisation error"
 - **Cause**: Using the hardcoded demo Client ID or your authorized origins don't match

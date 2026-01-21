@@ -586,11 +586,14 @@
     // --- Authentication ---
     
     window.initGoogleAuth = function() {
+        console.log("initGoogleAuth called");
         if (typeof google === 'undefined' || !google.accounts) {
-            console.warn("Google library loaded but namespace undefined.");
+            console.error("Google library not loaded. Check network connection.");
+            console.log("typeof google:", typeof google);
             return;
         }
         try {
+            console.log("Initializing Google Sign-In...");
             google.accounts.id.initialize({
                 // ⚠️ IMPORTANT: Replace this with YOUR Google Client ID from Google Cloud Console
                 // See ENV_SETUP_GUIDE.md for detailed instructions
@@ -602,14 +605,20 @@
             });
             
             const btnDiv = document.getElementById('buttonDiv');
+            console.log("buttonDiv element:", btnDiv);
+            console.log("buttonDiv display style:", btnDiv ? btnDiv.style.display : 'element not found');
+            
             if (btnDiv) {
                 google.accounts.id.renderButton(
                     btnDiv,
                     { theme: 'outline', size: 'large', locale: 'en' }
                 );
+                console.log("Google Sign-In button rendered successfully");
+            } else {
+                console.error("buttonDiv element not found!");
             }
         } catch (e) {
-            console.error("Auth Init Error (Safe to ignore if offline):", e);
+            console.error("Auth Init Error:", e);
         }
     };
 
@@ -679,7 +688,10 @@
       const saveBtn = document.getElementById('save-drawing-btn');
       const loadBtn = document.getElementById('load-drawing-btn');
       
+      console.log("updateAuthUI called - token:", token ? "exists" : "none", "email:", userEmail);
+      
       if (token && userEmail) {
+        console.log("User is signed in, hiding sign-in button");
         if(btnDiv) btnDiv.style.display = 'none';
         if(authStatus) authStatus.style.display = 'flex';
         if(saveBtn) saveBtn.style.display = 'block';
@@ -689,6 +701,7 @@
           userEmailEl.textContent = userEmail;
         }
       } else {
+        console.log("User is NOT signed in, showing sign-in button");
         if(btnDiv) btnDiv.style.display = 'flex';
         if(authStatus) authStatus.style.display = 'none';
         if(saveBtn) saveBtn.style.display = 'none';
@@ -697,6 +710,7 @@
     }
     
     window.signOut = function() {
+      console.log("Signing out...");
       localStorage.removeItem('authToken');
       localStorage.removeItem('userId');
       localStorage.removeItem('userEmail');
@@ -705,7 +719,10 @@
       updateAuthUI();
       showNotification('Signed out', 'success');
       // Re-render button
-      window.initGoogleAuth();
+      setTimeout(() => {
+        console.log("Re-initializing Google Sign-In after sign out");
+        window.initGoogleAuth();
+      }, 100);
     }
     
     window.promptSaveDrawing = async function() {
