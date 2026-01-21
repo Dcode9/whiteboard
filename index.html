@@ -366,8 +366,12 @@
     <div id="buttonDiv" style="position: fixed; top: 16px; right: 16px; display: flex; align-items: center; z-index: 100;"></div>
     
     <!-- Auth Status Display -->
-    <div id="authStatus" style="position: fixed; top: 16px; right: 16px; color: #333; font-size: 14px; font-family: Arial, sans-serif; display: none; z-index: 100; align-items: center; gap: 10px; background: white; padding: 6px 12px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);">
-        <span id="userEmail"></span>
+    <div id="authStatus" style="position: fixed; top: 16px; right: 16px; color: #333; font-size: 14px; font-family: Arial, sans-serif; display: none; z-index: 100; align-items: center; gap: 10px; background: white; padding: 8px 16px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); border: 1px solid #e0e0e0;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4CAF50" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+        <span id="userEmail" style="font-weight: 500;"></span>
         <button onclick="window.signOut()" style="padding: 4px 12px; background: #f44336; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">Sign Out</button>
     </div>
     
@@ -695,6 +699,8 @@
       const loadBtn = document.getElementById('load-drawing-btn');
       
       console.log("updateAuthUI called - token:", token ? "exists" : "none", "email:", userEmail);
+      console.log("buttonDiv found:", !!btnDiv, "current display:", btnDiv ? btnDiv.style.display : 'N/A');
+      console.log("buttonDiv children count:", btnDiv ? btnDiv.children.length : 0);
       
       if (token && userEmail) {
         console.log("User is signed in, hiding sign-in button");
@@ -708,7 +714,10 @@
         }
       } else {
         console.log("User is NOT signed in, showing sign-in button");
-        if(btnDiv) btnDiv.style.display = 'flex';
+        if(btnDiv) {
+          btnDiv.style.display = 'flex';
+          console.log("Set buttonDiv display to flex. Button should be visible if Google rendered it.");
+        }
         if(authStatus) authStatus.style.display = 'none';
         if(saveBtn) saveBtn.style.display = 'none';
         if(loadBtn) loadBtn.style.display = 'none';
@@ -922,6 +931,13 @@
     
     function initAuthStatus() {
       updateAuthUI();
+      // Also try to initialize Google Auth if library is already loaded
+      if (typeof google !== 'undefined' && google.accounts) {
+        console.log("Google library already loaded, initializing...");
+        initGoogleAuth();
+      } else {
+        console.log("Waiting for Google library to load...");
+      }
     }
 
     // --- Main Application ---
