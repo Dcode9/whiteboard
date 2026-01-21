@@ -1,35 +1,55 @@
 const express = require('express');
-const axios = require('axios');
+const { OAuth2Client } = require('google-auth-library');
 const jwt = require('jsonwebtoken');
 const router = express.Router();
 
-// Google OAuth Callback
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+// Google Sign-In with JWT credential
 router.post('/google', async (req, res) => {
   try {
-    const { code } = req.body;
+    const { credential } = req.body;
     
-    // Exchange code for tokens
-    const response = await axios.post('https://oauth2.googleapis.com/token', {
-      code,
-      client_id: process.env.GOOGLE_CLIENT_ID,
-      client_secret: process.env.GOOGLE_CLIENT_SECRET,
-      redirect_uri: process.env.REDIRECT_URI || 'http://localhost:3000/api/auth/google/callback',
-      grant_type: 'authorization_code'
+    if (!credential) {
+      return res.status(400).json({ error: 'Missing credential' });
+    }
+    
+    // Verify Google JWT token
+    const ticket = await client.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
     });
     
-    const { id_token, access_token } = response.data;
+    const payload = ticket.getPayload();
+    const userId = payload['sub'];
+    const email = payload['email'];
+    const name = payload['name'];
+    const picture = payload['picture'];
     
-    // Create JWT token
+    // Create app JWT token
     const token = jwt.sign(
-      { access_token },
+      { 
+        userId,
+        email,
+        name,
+        picture
+      },
       process.env.JWT_SECRET || 'your-secret-key',
-      { expiresIn: '24h' }
+      { expiresIn: '7d' }
     );
     
-    res.json({ token, access_token });
+    res.json({ 
+      token, 
+      user: {
+        userId,
+        email,
+        name,
+        picture
+      }
+    });
   } catch (error) {
     console.error('Auth error:', error);
-    res.status(500).json({ error: 'Authentication failed' });
+    res.status(500).json({ error: 'Authentication failed', details: error.message });
   }
 });
 
@@ -39,8 +59,8 @@ router.get('/verify', (req, res) => {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) return res.status(401).json({ error: 'No token' });
     
-    jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
-    res.json({ valid: true });
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+    res.json({ valid: true, user: decoded });
   } catch (error) {
     res.status(401).json({ error: 'Invalid token' });
   }

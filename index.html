@@ -593,16 +593,36 @@
 
     window.handleCredentialResponse = async function(response) {
       try {
-        console.log("Mocking backend auth for:", response);
-        // Note: For real backend, use fetch('/api/auth/google', ...) here
-        const mockData = { token: 'mock-token-' + Date.now(), userId: 'User' };
-        localStorage.setItem('authToken', mockData.token);
-        localStorage.setItem('userId', mockData.userId);
+        console.log("Authenticating with backend...");
+        
+        // Send credential to backend
+        const authResponse = await fetch('/api/auth/google', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ credential: response.credential })
+        });
+        
+        if (!authResponse.ok) {
+          const errorData = await authResponse.json();
+          throw new Error(errorData.error || 'Authentication failed');
+        }
+        
+        const authData = await authResponse.json();
+        
+        // Store auth data
+        localStorage.setItem('authToken', authData.token);
+        localStorage.setItem('userId', authData.user.userId);
+        localStorage.setItem('userEmail', authData.user.email);
+        localStorage.setItem('userName', authData.user.name);
+        localStorage.setItem('userPicture', authData.user.picture || '');
+        
         showNotification('Signed in successfully!', 'success');
         updateAuthUI();
       } catch (error) {
         console.error('Sign-in error:', error);
-        showNotification('Sign-in failed.', 'error');
+        showNotification('Sign-in failed: ' + error.message, 'error');
       }
     };
     
@@ -622,16 +642,19 @@
     
     function updateAuthUI() {
       const token = localStorage.getItem('authToken');
-      const userId = localStorage.getItem('userId');
+      const userEmail = localStorage.getItem('userEmail');
       const btnDiv = document.getElementById('buttonDiv');
       const authStatus = document.getElementById('authStatus');
       const saveBtn = document.getElementById('save-drawing-btn');
       
-      if (token && userId) {
+      if (token && userEmail) {
         if(btnDiv) btnDiv.style.display = 'none';
         if(authStatus) authStatus.style.display = 'flex';
         if(saveBtn) saveBtn.style.display = 'block';
-        document.getElementById('userEmail').textContent = userId;
+        const userEmailEl = document.getElementById('userEmail');
+        if (userEmailEl) {
+          userEmailEl.textContent = userEmail;
+        }
       } else {
         if(btnDiv) btnDiv.style.display = 'flex';
         if(authStatus) authStatus.style.display = 'none';
@@ -642,16 +665,52 @@
     window.signOut = function() {
       localStorage.removeItem('authToken');
       localStorage.removeItem('userId');
+      localStorage.removeItem('userEmail');
+      localStorage.removeItem('userName');
+      localStorage.removeItem('userPicture');
       updateAuthUI();
       showNotification('Signed out', 'success');
       // Re-render button
       window.initGoogleAuth();
     }
     
-    window.promptSaveDrawing = function() {
+    window.promptSaveDrawing = async function() {
       const title = prompt('Enter a title for your drawing:', `Drawing-${new Date().toLocaleDateString()}`);
-      if (title) {
-        showNotification(`Drawing "${title}" saved locally (demo)!`, 'success');
+      if (!title) return;
+      
+      try {
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+          showNotification('Please sign in first', 'error');
+          return;
+        }
+        
+        // Get the current drawing data
+        const drawingData = window.getDrawingData ? window.getDrawingData() : { strokes: [] };
+        
+        // Send to backend
+        const response = await fetch('/api/drawings/save', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            title: title,
+            drawingData: drawingData
+          })
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to save');
+        }
+        
+        const result = await response.json();
+        showNotification(`Drawing "${title}" saved successfully!`, 'success');
+      } catch (error) {
+        console.error('Save error:', error);
+        showNotification('Failed to save: ' + error.message, 'error');
       }
     }
     
@@ -1708,6 +1767,17 @@
 
 
             window.addEventListener('resize', resizeCanvas);
+            
+            // Expose function to get current drawing data for saving
+            window.getDrawingData = function() {
+                return {
+                    strokes: strokes,
+                    backgroundColor: backgroundColor,
+                    backgroundPattern: backgroundPattern,
+                    viewOffset: viewOffset,
+                    viewZoom: viewZoom
+                };
+            };
 
         } catch (criticalError) {
             console.error("Critical Initialization Error:", criticalError);
