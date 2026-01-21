@@ -122,6 +122,14 @@ npm start
 vercel dev
 ```
 
+## Security Considerations
+
+For production deployment, consider adding:
+- Rate limiting on authentication and API endpoints to prevent brute force attacks
+- Additional input validation and sanitization
+- CORS configuration to restrict allowed origins
+- Environment-specific configuration for different deployment environments
+
 ## License
 
 MIT
