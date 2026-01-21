@@ -592,6 +592,8 @@
         }
         try {
             google.accounts.id.initialize({
+                // NOTE: Google Client ID is public and safe to expose in frontend
+                // It's not a secret - it identifies your app to Google's OAuth servers
                 client_id: '738761882830-g349jf9u5t09f2lii1n0n05mlqkabdgj.apps.googleusercontent.com',
                 callback: window.handleCredentialResponse,
                 auto_select: false
