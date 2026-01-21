@@ -2,11 +2,6 @@
   "name": "whiteboard-app",
   "version": "1.0.0",
   "description": "Whiteboard application with Google Sign-in and Supabase storage",
-  "main": "api/index.js",
-  "scripts": {
-    "start": "node api/index.js",
-    "build": "echo 'Build complete'"
-  },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
     "axios": "^1.6.2",
