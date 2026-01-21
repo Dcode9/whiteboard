@@ -186,20 +186,29 @@ JWT_SECRET=your-actual-secret-here
 ## Troubleshooting
 
 ### "Failed to load resource: the server responded with a status of 404 ()"
-- **Cause**: API endpoints not deployed correctly to Vercel or deployment not yet propagated
+- **Cause**: API endpoints not deployed correctly to Vercel
+- **Root Cause**: Old Express-based API files and deprecated Vercel v2 configuration were conflicting
 - **Fix**: 
-  1. Make sure you've committed and pushed all files including the `api/` folder
-  2. Go to Vercel dashboard → Your project
-  3. Check the **Deployments** tab - make sure latest deployment shows "Ready"
-  4. Click on the deployment to see the build logs
-  5. Verify that the `api/` folder files are included in the deployment
-  6. If files are missing, redeploy:
+  1. **This has been fixed in the code**. The vercel.json is now simplified and old conflicting files removed
+  2. You need to **redeploy** for changes to take effect:
+     - Go to Vercel dashboard → Your project
      - Go to **Deployments** tab
      - Click three dots on latest deployment → **Redeploy**
-  7. Wait for deployment to complete (usually 1-2 minutes)
-  8. Clear browser cache and try again (Ctrl+F5 or Cmd+Shift+R)
+     - Wait 1-2 minutes for completion
+  3. **Important**: After redeploying, the API endpoints will work at:
+     - `POST /api/google` ✅
+     - `GET /api/verify` ✅
+     - `POST /api/save` ✅
+     - `GET /api/list` ✅
+     - `GET /api/load/{id}` ✅
+     - `DELETE /api/delete/{id}` ✅
+  4. Clear browser cache (Ctrl+F5) and test sign-in again
   
-  **Note**: After redeploying, it may take a few minutes for the API endpoints to become available.
+  **Why this was happening**: 
+  - The old `vercel.json` used deprecated "builds" and "routes" configuration
+  - Multiple API file structures (Express-based + serverless) were conflicting
+  - Modern Vercel auto-detects `/api` folder - no complex config needed
+  - This fix ensures clean serverless function deployment
 
 ### "Cross-Origin-Opener-Policy policy would block the window.postMessage call"
 - **Cause**: These are warnings from Google's OAuth popup window, not errors from your app
