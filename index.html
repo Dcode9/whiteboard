@@ -1321,6 +1321,11 @@
       document.getElementById('whiteboard-view').classList.add('active');
       if (boardId) {
         window.loadBoard(boardId);
+      } else {
+        // New board - clear everything to start fresh
+        if (window.clearCanvasForNewBoard) {
+          window.clearCanvasForNewBoard();
+        }
       }
     }
     
@@ -1361,9 +1366,11 @@
         currentBoardId = boardId;
         window.goToWhiteboard(boardId);
       } else {
-        // For cloud boards, create empty and switch to whiteboard
-        currentBoardId = null; // Will be set after first save
-        window.goToWhiteboard();
+        // For cloud boards, store title temporarily and switch to whiteboard
+        // Auto-save will handle creating it on the server
+        window.pendingCloudBoardTitle = boardTitle;
+        currentBoardId = null; // Will be set after first auto-save
+        window.goToWhiteboard(); // No boardId = blank canvas
       }
     }
     
@@ -1545,6 +1552,51 @@
         console.error('Save error:', error);
         showNotification('Failed to save: ' + error.message, 'error');
       }
+    }
+    
+    // Auto-save to cloud (real-time, no manual save needed)
+    let cloudSaveTimeout = null;
+    window.autoSaveToCloud = async function() {
+      // Debounce auto-save by 2 seconds to avoid too many saves
+      if (cloudSaveTimeout) {
+        clearTimeout(cloudSaveTimeout);
+      }
+      
+      cloudSaveTimeout = setTimeout(async () => {
+        try {
+          const token = localStorage.getItem('authToken');
+          if (!token) return; // Not authenticated
+          
+          // Get drawing data
+          const drawingData = window.getDrawingData ? window.getDrawingData() : { strokes: [] };
+          
+          // Use pending cloud board title or default
+          const title = window.pendingCloudBoardTitle || `Board-${new Date().toLocaleDateString()}`;
+          
+          // Send to backend
+          const response = await fetch('/api/save', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              title: title,
+              drawingData: drawingData
+            })
+          });
+          
+          if (response.ok) {
+            const result = await response.json();
+            // Clear pending title after first successful save
+            window.pendingCloudBoardTitle = null;
+            console.log('Cloud board auto-saved');
+          }
+        } catch (error) {
+          console.error('Auto-save error:', error);
+          // Fail silently for auto-save, don't show error notifications
+        }
+      }, 2000); // 2 second debounce
     }
     
     function initAuthStatus() {
@@ -1868,6 +1920,10 @@
                     if (window.saveCurrentLocalBoard) {
                         window.saveCurrentLocalBoard();
                     }
+                    // Auto-save to cloud if authenticated
+                    if (localStorage.getItem('authToken') && window.autoSaveToCloud) {
+                        window.autoSaveToCloud();
+                    }
                 } catch (e) {
                     console.error("Error saving strokes", e);
                 }
@@ -1914,6 +1970,23 @@
             // Simple autosave alias
             function autosave() {
                 saveStrokesAndSettings();
+            }
+            
+            // Function to clear canvas for new board
+            window.clearCanvasForNewBoard = function() {
+                strokes = [];
+                undoStack = [];
+                redoStack = [];
+                backgroundColor = '#FFFFFF';
+                backgroundPattern = 'plain';
+                viewOffset = { x: 0, y: 0 };
+                viewZoom = 1;
+                
+                bgColorPicker.value = backgroundColor;
+                bgPatternSelector.value = backgroundPattern;
+                updateCanvasIconPreview();
+                updateUndoRedoButtons();
+                render();
             }
 
             // --- History (Undo/Redo) ---
