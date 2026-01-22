@@ -49,12 +49,29 @@ module.exports = async (req, res) => {
   }
   
   try {
+    // Log environment check
+    console.log('[LOAD] Environment check:', {
+      hasSupabaseUrl: !!process.env.SUPABASE_URL,
+      hasSupabaseKey: !!process.env.SUPABASE_KEY,
+      hasJwtSecret: !!process.env.JWT_SECRET
+    });
+    
+    // Log headers (sanitized)
+    console.log('[LOAD] Headers received:', {
+      hasAuthLower: !!req.headers['authorization'],
+      hasAuthCapital: !!req.headers['Authorization'],
+      authHeaderValue: req.headers['authorization'] ? 'Bearer [REDACTED]' : req.headers['Authorization'] ? 'Bearer [REDACTED]' : 'NONE',
+      allHeaderKeys: Object.keys(req.headers)
+    });
+    
     // Authenticate user
     const user = authenticateToken(req);
+    console.log('[LOAD] User authenticated:', { userId: user.userId, email: user.email });
     const userId = user.userId;
     
     // Extract drawing ID from query parameter
     const { id } = req.query;
+    console.log('[LOAD] Drawing ID requested:', id);
     
     if (!id) {
       return res.status(400).json({ error: 'Drawing ID is required' });
@@ -81,9 +98,16 @@ module.exports = async (req, res) => {
     });
     
   } catch (error) {
-    console.error('Load error:', error);
+    console.error('[LOAD] Error occurred:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
     if (error.message === 'No token provided' || error.message === 'Invalid token') {
       return res.status(401).json({ error: error.message });
+    }
+    if (error.message === 'JWT_SECRET not configured') {
+      return res.status(500).json({ error: 'Server configuration error', details: 'JWT_SECRET not configured' });
     }
     return res.status(500).json({ error: 'Internal server error', details: error.message });
   }

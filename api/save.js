@@ -49,8 +49,23 @@ module.exports = async (req, res) => {
   }
   
   try {
+    // Log environment check
+    console.log('[SAVE] Environment check:', {
+      hasSupabaseUrl: !!process.env.SUPABASE_URL,
+      hasSupabaseKey: !!process.env.SUPABASE_KEY,
+      hasJwtSecret: !!process.env.JWT_SECRET
+    });
+    
+    // Log headers (sanitized)
+    console.log('[SAVE] Headers received:', {
+      hasAuthLower: !!req.headers['authorization'],
+      hasAuthCapital: !!req.headers['Authorization'],
+      authHeaderValue: req.headers['authorization'] ? 'Bearer [REDACTED]' : req.headers['Authorization'] ? 'Bearer [REDACTED]' : 'NONE'
+    });
+    
     // Authenticate user
     const user = authenticateToken(req);
+    console.log('[SAVE] User authenticated:', { userId: user.userId, email: user.email });
     const userId = user.userId;
     const userEmail = user.email;
     

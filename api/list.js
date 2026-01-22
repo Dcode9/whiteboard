@@ -49,8 +49,24 @@ module.exports = async (req, res) => {
   }
   
   try {
+    // Log environment check
+    console.log('[LIST] Environment check:', {
+      hasSupabaseUrl: !!process.env.SUPABASE_URL,
+      hasSupabaseKey: !!process.env.SUPABASE_KEY,
+      hasJwtSecret: !!process.env.JWT_SECRET
+    });
+    
+    // Log headers (sanitized)
+    console.log('[LIST] Headers received:', {
+      hasAuthLower: !!req.headers['authorization'],
+      hasAuthCapital: !!req.headers['Authorization'],
+      authHeaderValue: req.headers['authorization'] ? 'Bearer [REDACTED]' : req.headers['Authorization'] ? 'Bearer [REDACTED]' : 'NONE',
+      allHeaderKeys: Object.keys(req.headers)
+    });
+    
     // Authenticate user
     const user = authenticateToken(req);
+    console.log('[LIST] User authenticated:', { userId: user.userId, email: user.email });
     const userId = user.userId;
     
     const supabase = getSupabase();
@@ -74,9 +90,16 @@ module.exports = async (req, res) => {
     return res.json(drawings);
     
   } catch (error) {
-    console.error('List error:', error);
+    console.error('[LIST] Error occurred:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
     if (error.message === 'No token provided' || error.message === 'Invalid token') {
       return res.status(401).json({ error: error.message });
+    }
+    if (error.message === 'JWT_SECRET not configured') {
+      return res.status(500).json({ error: 'Server configuration error', details: 'JWT_SECRET not configured' });
     }
     return res.status(500).json({ error: 'Internal server error', details: error.message });
   }
