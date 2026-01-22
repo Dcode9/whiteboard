@@ -1712,6 +1712,7 @@
         // Determine if this is an update or new save
         if (currentCloudBoardId) {
           // Update existing board - include ID in the save request
+          console.log('Updating existing cloud board with ID:', currentCloudBoardId);
           const response = await fetch('/api/save', {
             method: 'POST',
             headers: {
@@ -1729,12 +1730,14 @@
             throw new Error('Failed to update board');
           }
           
+          console.log('Board updated successfully');
           showNotification(`Board "${currentCloudBoardTitle}" updated!`, 'success');
         } else {
           // New save - use title from creation or ask
           const title = currentCloudBoardTitle || await window.customPrompt('Save Board', 'Enter board title', `Board-${new Date().toLocaleDateString()}`);
           if (!title) return;
           
+          console.log('Creating new cloud board with title:', title);
           const response = await fetch('/api/save', {
             method: 'POST',
             headers: {
@@ -1754,6 +1757,7 @@
           const result = await response.json();
           currentCloudBoardId = result.id; // Store the server-assigned ID
           currentCloudBoardTitle = title;
+          console.log('Board created successfully with ID:', currentCloudBoardId);
           showNotification(`Board "${title}" saved!`, 'success');
         }
       } catch (error) {
