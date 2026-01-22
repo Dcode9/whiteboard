@@ -1,26 +1,10 @@
 {
-  "version": 2,
-  "public": false,
-  "builds": [
+  "buildCommand": null,
+  "outputDirectory": ".",
+  "rewrites": [
     {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": {"distDir": "."}
-    },
-    {
-      "src": "api/**/*.js",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html",
-      "status": 200
+      "source": "/((?!api).*)",
+      "destination": "/index.html"
     }
   ]
 }

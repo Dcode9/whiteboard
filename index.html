@@ -366,15 +366,37 @@
     <div id="buttonDiv" style="position: fixed; top: 16px; right: 16px; display: flex; align-items: center; z-index: 100;"></div>
     
     <!-- Auth Status Display -->
-    <div id="authStatus" style="position: fixed; top: 16px; right: 16px; color: #333; font-size: 14px; font-family: Arial, sans-serif; display: none; z-index: 100; align-items: center; gap: 10px; background: white; padding: 6px 12px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);">
-        <span id="userEmail"></span>
+    <div id="authStatus" style="position: fixed; top: 16px; right: 16px; color: #333; font-size: 14px; font-family: Arial, sans-serif; display: none; z-index: 100; align-items: center; gap: 10px; background: white; padding: 8px 16px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); border: 1px solid #e0e0e0;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4CAF50" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+        <span id="userEmail" style="font-weight: 500;"></span>
         <button onclick="window.signOut()" style="padding: 4px 12px; background: #f44336; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">Sign Out</button>
     </div>
     
     <!-- Save Drawing Button -->
-    <button id="save-drawing-btn" onclick="window.promptSaveDrawing()" style="position: fixed; top: 72px; right: 16px; padding: 8px 16px; background: #2196F3; color: white; border: none; border-radius: 8px; cursor: pointer; font-family: Arial, sans-serif; font-size: 14px; display: none; z-index: 100; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);">
+    <button id="save-drawing-btn" onclick="window.promptSaveDrawing()" style="position: fixed; top: 72px; right: 140px; padding: 8px 16px; background: #2196F3; color: white; border: none; border-radius: 8px; cursor: pointer; font-family: Arial, sans-serif; font-size: 14px; display: none; z-index: 100; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);">
         Save to Cloud
     </button>
+    
+    <!-- Load Drawings Button -->
+    <button id="load-drawing-btn" onclick="window.showDrawingsList()" style="position: fixed; top: 72px; right: 16px; padding: 8px 16px; background: #4CAF50; color: white; border: none; border-radius: 8px; cursor: pointer; font-family: Arial, sans-serif; font-size: 14px; display: none; z-index: 100; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);">
+        My Drawings
+    </button>
+    
+    <!-- Drawings List Modal -->
+    <div id="drawings-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: white; border-radius: 12px; padding: 24px; max-width: 600px; max-height: 80vh; overflow-y: auto; box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h2 style="font-size: 20px; font-weight: bold; margin: 0;">My Drawings</h2>
+                <button onclick="window.closeDrawingsList()" style="padding: 4px 12px; background: #f44336; color: white; border: none; border-radius: 4px; cursor: pointer;">Close</button>
+            </div>
+            <div id="drawings-list" style="min-height: 100px;">
+                <!-- Drawings will be loaded here -->
+            </div>
+        </div>
+    </div>
 
     <!-- Toolbar wrapper -->
     <div id="toolbar-wrapper" class="fixed top-4 left-0 right-0 z-10 flex justify-center compact-mode pointer-events-none">
@@ -568,41 +590,89 @@
     // --- Authentication ---
     
     window.initGoogleAuth = function() {
+        console.log("initGoogleAuth called");
         if (typeof google === 'undefined' || !google.accounts) {
-            console.warn("Google library loaded but namespace undefined.");
+            console.error("Google library not loaded. Check network connection.");
+            console.log("typeof google:", typeof google);
             return;
         }
         try {
+            console.log("Initializing Google Sign-In...");
             google.accounts.id.initialize({
-                client_id: '738761882830-g349jf9u5t09f2lii1n0n05mlqkabdgj.apps.googleusercontent.com',
+                // ⚠️ IMPORTANT: Replace this with YOUR Google Client ID from Google Cloud Console
+                // See ENV_SETUP_GUIDE.md for detailed instructions
+                // The demo Client ID below will NOT work - you'll get "Access blocked" error
+                // Get yours from: https://console.cloud.google.com/apis/credentials
+                client_id: '263202480558-jm6e5brpr0l00nlrcrer2vjvvtpcfr1r.apps.googleusercontent.com',
                 callback: window.handleCredentialResponse,
                 auto_select: false
             });
             
             const btnDiv = document.getElementById('buttonDiv');
+            console.log("buttonDiv element:", btnDiv);
+            console.log("buttonDiv display style:", btnDiv ? btnDiv.style.display : 'element not found');
+            
             if (btnDiv) {
                 google.accounts.id.renderButton(
                     btnDiv,
                     { theme: 'outline', size: 'large', locale: 'en' }
                 );
+                console.log("Google Sign-In button rendered successfully");
+            } else {
+                console.error("buttonDiv element not found!");
             }
         } catch (e) {
-            console.error("Auth Init Error (Safe to ignore if offline):", e);
+            console.error("Auth Init Error:", e);
         }
     };
 
     window.handleCredentialResponse = async function(response) {
       try {
-        console.log("Mocking backend auth for:", response);
-        // Note: For real backend, use fetch('/api/auth/google', ...) here
-        const mockData = { token: 'mock-token-' + Date.now(), userId: 'User' };
-        localStorage.setItem('authToken', mockData.token);
-        localStorage.setItem('userId', mockData.userId);
+        console.log("Authenticating with backend...");
+        
+        // Send credential to backend
+        const authResponse = await fetch('/api/google', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ credential: response.credential })
+        });
+        
+        if (!authResponse.ok) {
+          let errorMessage = 'Authentication failed';
+          // Clone response so we can read it multiple times if needed
+          const responseClone = authResponse.clone();
+          try {
+            const errorData = await authResponse.json();
+            errorMessage = errorData.error || errorMessage;
+          } catch (e) {
+            // Response is not JSON, likely HTML error page
+            try {
+              const errorText = await responseClone.text();
+              console.error('Non-JSON error response:', errorText);
+            } catch (textError) {
+              console.error('Could not read error response');
+            }
+            errorMessage = `Server error (${authResponse.status})`;
+          }
+          throw new Error(errorMessage);
+        }
+        
+        const authData = await authResponse.json();
+        
+        // Store auth data
+        localStorage.setItem('authToken', authData.token);
+        localStorage.setItem('userId', authData.user.userId);
+        localStorage.setItem('userEmail', authData.user.email);
+        localStorage.setItem('userName', authData.user.name);
+        localStorage.setItem('userPicture', authData.user.picture || '');
+        
         showNotification('Signed in successfully!', 'success');
         updateAuthUI();
       } catch (error) {
         console.error('Sign-in error:', error);
-        showNotification('Sign-in failed.', 'error');
+        showNotification('Sign-in failed: ' + error.message, 'error');
       }
     };
     
@@ -622,41 +692,252 @@
     
     function updateAuthUI() {
       const token = localStorage.getItem('authToken');
-      const userId = localStorage.getItem('userId');
+      const userEmail = localStorage.getItem('userEmail');
       const btnDiv = document.getElementById('buttonDiv');
       const authStatus = document.getElementById('authStatus');
       const saveBtn = document.getElementById('save-drawing-btn');
+      const loadBtn = document.getElementById('load-drawing-btn');
       
-      if (token && userId) {
+      console.log("updateAuthUI called - token:", token ? "exists" : "none", "email:", userEmail);
+      console.log("buttonDiv found:", !!btnDiv, "current display:", btnDiv ? btnDiv.style.display : 'N/A');
+      console.log("buttonDiv children count:", btnDiv ? btnDiv.children.length : 0);
+      
+      if (token && userEmail) {
+        console.log("User is signed in, hiding sign-in button");
         if(btnDiv) btnDiv.style.display = 'none';
         if(authStatus) authStatus.style.display = 'flex';
         if(saveBtn) saveBtn.style.display = 'block';
-        document.getElementById('userEmail').textContent = userId;
+        if(loadBtn) loadBtn.style.display = 'block';
+        const userEmailEl = document.getElementById('userEmail');
+        if (userEmailEl) {
+          userEmailEl.textContent = userEmail;
+        }
       } else {
-        if(btnDiv) btnDiv.style.display = 'flex';
+        console.log("User is NOT signed in, showing sign-in button");
+        if(btnDiv) {
+          btnDiv.style.display = 'flex';
+          console.log("Set buttonDiv display to flex. Button should be visible if Google rendered it.");
+        }
         if(authStatus) authStatus.style.display = 'none';
         if(saveBtn) saveBtn.style.display = 'none';
+        if(loadBtn) loadBtn.style.display = 'none';
       }
     }
     
     window.signOut = function() {
+      console.log("Signing out...");
       localStorage.removeItem('authToken');
       localStorage.removeItem('userId');
+      localStorage.removeItem('userEmail');
+      localStorage.removeItem('userName');
+      localStorage.removeItem('userPicture');
       updateAuthUI();
       showNotification('Signed out', 'success');
       // Re-render button
-      window.initGoogleAuth();
+      setTimeout(() => {
+        console.log("Re-initializing Google Sign-In after sign out");
+        window.initGoogleAuth();
+      }, 100);
     }
     
-    window.promptSaveDrawing = function() {
+    window.promptSaveDrawing = async function() {
       const title = prompt('Enter a title for your drawing:', `Drawing-${new Date().toLocaleDateString()}`);
-      if (title) {
-        showNotification(`Drawing "${title}" saved locally (demo)!`, 'success');
+      if (!title) return;
+      
+      try {
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+          showNotification('Please sign in first', 'error');
+          return;
+        }
+        
+        // Get the current drawing data
+        const drawingData = window.getDrawingData ? window.getDrawingData() : { strokes: [] };
+        
+        // Send to backend
+        const response = await fetch('/api/save', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            title: title,
+            drawingData: drawingData
+          })
+        });
+        
+        if (!response.ok) {
+          let errorMessage = 'Failed to save';
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.error || errorMessage;
+          } catch (e) {
+            errorMessage = `Server error (${response.status})`;
+          }
+          throw new Error(errorMessage);
+        }
+        
+        const result = await response.json();
+        showNotification(`Drawing "${title}" saved successfully!`, 'success');
+      } catch (error) {
+        console.error('Save error:', error);
+        showNotification('Failed to save: ' + error.message, 'error');
+      }
+    }
+    
+    window.showDrawingsList = async function() {
+      const modal = document.getElementById('drawings-modal');
+      const listContainer = document.getElementById('drawings-list');
+      
+      if (modal) modal.style.display = 'flex';
+      listContainer.innerHTML = '<div style="text-align: center; padding: 20px;">Loading...</div>';
+      
+      try {
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+          showNotification('Please sign in first', 'error');
+          return;
+        }
+        
+        // Fetch drawings list
+        const response = await fetch('/api/list', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (!response.ok) {
+          let errorMessage = 'Failed to load drawings';
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.error || errorMessage;
+          } catch (e) {
+            errorMessage = `Server error (${response.status})`;
+          }
+          throw new Error(errorMessage);
+        }
+        
+        const drawings = await response.json();
+        
+        if (drawings.length === 0) {
+          listContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">No drawings saved yet.</div>';
+          return;
+        }
+        
+        // Display drawings
+        listContainer.innerHTML = drawings.map(drawing => `
+          <div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 12px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-weight: bold; margin-bottom: 4px;">${drawing.title}</div>
+              <div style="font-size: 12px; color: #666;">${new Date(drawing.createdAt).toLocaleString()}</div>
+            </div>
+            <div>
+              <button onclick="window.loadDrawing('${drawing.id}')" style="padding: 6px 12px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; margin-right: 8px;">Load</button>
+              <button onclick="window.deleteDrawing('${drawing.id}')" style="padding: 6px 12px; background: #f44336; color: white; border: none; border-radius: 4px; cursor: pointer;">Delete</button>
+            </div>
+          </div>
+        `).join('');
+      } catch (error) {
+        console.error('Load list error:', error);
+        listContainer.innerHTML = `<div style="text-align: center; padding: 20px; color: #f44336;">Failed to load: ${error.message}</div>`;
+      }
+    }
+    
+    window.closeDrawingsList = function() {
+      const modal = document.getElementById('drawings-modal');
+      if (modal) modal.style.display = 'none';
+    }
+    
+    window.loadDrawing = async function(drawingId) {
+      try {
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+          showNotification('Please sign in first', 'error');
+          return;
+        }
+        
+        // Fetch the drawing
+        const response = await fetch(`/api/load/${drawingId}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (!response.ok) {
+          let errorMessage = 'Failed to load drawing';
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.error || errorMessage;
+          } catch (e) {
+            errorMessage = `Server error (${response.status})`;
+          }
+          throw new Error(errorMessage);
+        }
+        
+        const drawing = await response.json();
+        
+        // Apply the drawing data to the canvas
+        if (window.loadDrawingData) {
+          window.loadDrawingData(drawing.drawingData);
+          showNotification(`Loaded: ${drawing.title}`, 'success');
+          window.closeDrawingsList();
+        } else {
+          throw new Error('Drawing load function not available');
+        }
+      } catch (error) {
+        console.error('Load drawing error:', error);
+        showNotification('Failed to load: ' + error.message, 'error');
+      }
+    }
+    
+    window.deleteDrawing = async function(drawingId) {
+      if (!confirm('Are you sure you want to delete this drawing?')) return;
+      
+      try {
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+          showNotification('Please sign in first', 'error');
+          return;
+        }
+        
+        // Delete the drawing
+        const response = await fetch(`/api/delete/${drawingId}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (!response.ok) {
+          let errorMessage = 'Failed to delete drawing';
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.error || errorMessage;
+          } catch (e) {
+            errorMessage = `Server error (${response.status})`;
+          }
+          throw new Error(errorMessage);
+        }
+        
+        showNotification('Drawing deleted successfully', 'success');
+        // Refresh the list
+        window.showDrawingsList();
+      } catch (error) {
+        console.error('Delete drawing error:', error);
+        showNotification('Failed to delete: ' + error.message, 'error');
       }
     }
     
     function initAuthStatus() {
       updateAuthUI();
+      // Also try to initialize Google Auth if library is already loaded
+      if (typeof google !== 'undefined' && google.accounts) {
+        console.log("Google library already loaded, initializing...");
+        initGoogleAuth();
+      } else {
+        console.log("Waiting for Google library to load...");
+      }
     }
 
     // --- Main Application ---
@@ -1708,6 +1989,58 @@
 
 
             window.addEventListener('resize', resizeCanvas);
+            
+            // Expose function to get current drawing data for saving
+            window.getDrawingData = function() {
+                return {
+                    strokes: strokes,
+                    backgroundColor: backgroundColor,
+                    backgroundPattern: backgroundPattern,
+                    viewOffset: viewOffset,
+                    viewZoom: viewZoom
+                };
+            };
+            
+            // Expose function to load drawing data from saved file
+            window.loadDrawingData = function(data) {
+                if (!data) return;
+                
+                // Clear current drawing
+                strokes = [];
+                undoStack = [];
+                redoStack = [];
+                
+                // Load strokes
+                if (data.strokes && Array.isArray(data.strokes)) {
+                    strokes = data.strokes;
+                }
+                
+                // Load background settings
+                if (data.backgroundColor) {
+                    backgroundColor = data.backgroundColor;
+                    bgColorPicker.value = backgroundColor;
+                    updateCanvasIconPreview();
+                }
+                
+                if (data.backgroundPattern) {
+                    backgroundPattern = data.backgroundPattern;
+                    bgPatternSelector.value = backgroundPattern;
+                    updateCanvasIconPreview();
+                }
+                
+                // Load view settings
+                if (data.viewOffset) {
+                    viewOffset = data.viewOffset;
+                }
+                
+                if (data.viewZoom) {
+                    viewZoom = data.viewZoom;
+                }
+                
+                // Re-render the canvas
+                render();
+                updateUndoRedoButtons();
+            };
 
         } catch (criticalError) {
             console.error("Critical Initialization Error:", criticalError);
