@@ -388,7 +388,7 @@
         /* Whiteboard view - show floating containers */
         #whiteboard-view.active .header-logo-container,
         #whiteboard-view.active .header-account-container {
-            display: flex;
+            display: flex !important;
         }
         
         /* Toolbar in whiteboard view becomes the center container */
@@ -1076,15 +1076,6 @@
                 <button id="confirm-clear" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">Confirm</button>
             </div>
         </div>
-    </div>
-
-    <!-- Drawing Area & Cursors -->
-    <canvas id="whiteboard"></canvas>
-    <div id="custom-cursor-circle"></div>
-    <div id="custom-cursor-eraser">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="m19 21-7-7-4 4L2 12l9-9 4 4 7 7Z"/><path d="m18 11 4-4"/>
-        </svg>
     </div>
 
     <!-- Google Sign-In Library -->
