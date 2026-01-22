@@ -401,7 +401,7 @@
             display: block;
             /* Changed from 'none' to 'crosshair' so cursor is visible if JS fails */
             cursor: crosshair; 
-            touch-action: none; /* Disables browser gestures */
+            touch-action: none; /* Disables browser gestures like double-tap-to-zoom */
         }
         
         #whiteboard.panning {
@@ -1732,6 +1732,11 @@
                 
                 render();
             }
+            
+            // Simple autosave alias
+            function autosave() {
+                saveStrokesAndSettings();
+            }
 
             // --- History (Undo/Redo) ---
             function addHistoryAction() {
@@ -2202,13 +2207,13 @@
                             const textData = {
                                 type: 'text',
                                 text: textInput.value,
-                                x: parseInt(textInputOverlay.dataset.x),
-                                y: parseInt(textInputOverlay.dataset.y),
+                                x: parseFloat(textInputOverlay.dataset.x),
+                                y: parseFloat(textInputOverlay.dataset.y),
                                 color: currentColor,
                                 fontSize: Math.max(16, currentBrushSize * 3),
                             };
                             strokes.push(textData);
-                            saveToUndoStack();
+                            addHistoryAction();
                             render();
                             autosave();
                         }
