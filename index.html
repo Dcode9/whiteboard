@@ -1345,7 +1345,7 @@
         if(btnDiv) btnDiv.style.display = 'none';
         if(userProfileArea) userProfileArea.style.display = 'block';
         if(userProfileAreaWhiteboard) userProfileAreaWhiteboard.style.display = 'block';
-        if(saveBtn) saveBtn.style.display = 'block';
+        // Save button visibility will be controlled by updateSaveButtonVisibility based on board type
         if(cloudBoardOption) cloudBoardOption.style.display = 'block';
         if(cloudBoardsSection) cloudBoardsSection.style.display = 'block';
         
@@ -1482,6 +1482,10 @@
           window.clearCanvasForNewBoard();
         }
       }
+      // Update save button visibility based on board type
+      if (window.updateSaveButtonVisibility) {
+        window.updateSaveButtonVisibility();
+      }
     }
     
     // --- Local Board Management ---
@@ -1494,8 +1498,26 @@
       return currentBoardId;
     }
     
+    window.getCurrentBoardType = function() {
+      return currentBoardType;
+    }
+    
     window.setCurrentBoardId = function(id) {
       currentBoardId = id;
+    }
+    
+    window.updateSaveButtonVisibility = function() {
+      const saveBtn = document.getElementById('save-drawing-btn-header');
+      const token = localStorage.getItem('authToken');
+      
+      // Show save button only for cloud boards when user is signed in
+      if (saveBtn) {
+        if (token && currentBoardType === 'cloud') {
+          saveBtn.style.display = 'block';
+        } else {
+          saveBtn.style.display = 'none';
+        }
+      }
     }
     
     window.createNewBoard = async function(type) {
@@ -1541,6 +1563,9 @@
       
       if (board) {
         currentBoardId = boardId;
+        currentBoardType = 'local'; // Local board
+        currentCloudBoardId = null;
+        currentCloudBoardTitle = null;
         if (window.loadDrawingData) {
           window.loadDrawingData(board.data);
         }
@@ -2053,7 +2078,13 @@
                     localStorage.setItem('whiteboardStrokes', JSON.stringify(strokes));
                     localStorage.setItem('whiteboardBgColor', backgroundColor);
                     localStorage.setItem('whiteboardBgPattern', backgroundPattern);
-                    showSaveIndicator();
+                    
+                    // Only show save indicator for local boards (they auto-save)
+                    // Cloud boards save manually, so no indicator
+                    if (window.getCurrentBoardType && window.getCurrentBoardType() === 'local') {
+                        showSaveIndicator();
+                    }
+                    
                     // Also save to current local board if one is active
                     if (window.saveCurrentLocalBoard) {
                         window.saveCurrentLocalBoard();
