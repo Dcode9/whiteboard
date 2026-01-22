@@ -100,308 +100,18 @@
         body, html {
             margin: 0;
             padding: 0;
+            overflow: hidden; /* Prevents scrolling */
             width: 100%;
             height: 100%;
             overscroll-behavior: none; /* Prevents pull-to-refresh */
             background-color: #f3f4f6; /* Fallback bg */
-        }
-        
-        /* View Management */
-        .view {
-            display: none;
-            width: 100%;
-            height: 100%;
-        }
-        
-        .view.active {
-            display: block;
-        }
-        
-        /* Homepage styles */
-        #homepage-view {
-            overflow-y: auto;
-            background-color: #f3f4f6;
-        }
-        
-        /* Whiteboard view */
-        #whiteboard-view {
-            overflow: hidden;
-        }
-        
-        /* Header styles */
-        .app-header {
-            background: white;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            padding: 12px 24px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-        
-        .header-logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            cursor: pointer;
-        }
-        
-        .header-logo img {
-            height: 32px;
-            width: 32px;
-        }
-        
-        .header-logo span {
-            font-size: 20px;
-            font-weight: 600;
-            color: #1f2937;
-        }
-        
-        .header-center {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex: 1;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        
-        .header-search {
-            flex: 1;
-            padding: 8px 16px;
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
-            font-size: 14px;
-        }
-        
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        
-        .user-profile {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 6px 12px;
-            border-radius: 8px;
-            cursor: pointer;
-            position: relative;
-        }
-        
-        .user-profile:hover {
-            background-color: #f3f4f6;
-        }
-        
-        .user-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            border: 2px solid #e5e7eb;
-        }
-        
-        .user-menu {
-            display: none;
-            position: absolute;
-            top: 100%;
-            right: 0;
-            margin-top: 8px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            min-width: 200px;
-            z-index: 1000;
-        }
-        
-        .user-menu.active {
-            display: block;
-        }
-        
-        .user-menu button {
-            width: 100%;
-            text-align: left;
-            padding: 12px 16px;
-            border: none;
-            background: none;
-            cursor: pointer;
-            font-size: 14px;
-        }
-        
-        .user-menu button:hover {
-            background-color: #f3f4f6;
-        }
-        
-        .btn-primary {
-            padding: 8px 16px;
-            background: #2563eb;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-        }
-        
-        .btn-primary:hover {
-            background: #1d4ed8;
-        }
-        
-        .dropdown {
-            position: relative;
-        }
-        
-        .dropdown-menu {
-            display: none;
-            position: absolute;
-            top: 100%;
-            right: 0;
-            margin-top: 8px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            min-width: 150px;
-            z-index: 1000;
-        }
-        
-        .dropdown-menu.active {
-            display: block;
-        }
-        
-        .dropdown-menu button {
-            width: 100%;
-            text-align: left;
-            padding: 12px 16px;
-            border: none;
-            background: none;
-            cursor: pointer;
-            font-size: 14px;
-        }
-        
-        .dropdown-menu button:hover {
-            background-color: #f3f4f6;
-        }
-        
-        /* Boards sections */
-        .boards-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 32px 24px;
-        }
-        
-        .boards-section {
-            margin-bottom: 48px;
-        }
-        
-        .boards-section h2 {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 16px;
-            color: #1f2937;
-        }
-        
-        .boards-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 16px;
-        }
-        
-        .board-card {
-            background: white;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            padding: 16px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .board-card:hover {
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            transform: translateY(-2px);
-        }
-        
-        .board-card h3 {
-            font-size: 16px;
-            font-weight: 600;
-            margin: 0 0 8px 0;
-            color: #1f2937;
-        }
-        
-        .board-card p {
-            font-size: 14px;
-            color: #6b7280;
-            margin: 0;
-        }
-        
-        .board-card-actions {
-            margin-top: 12px;
-            display: flex;
-            gap: 8px;
-        }
-        
-        .board-card-actions button {
-            flex: 1;
-            padding: 6px 12px;
-            border: 1px solid #d1d5db;
-            border-radius: 4px;
-            background: white;
-            cursor: pointer;
-            font-size: 13px;
-        }
-        
-        .board-card-actions button:hover {
-            background: #f3f4f6;
-        }
-        
-        .board-card-actions .delete-btn {
-            color: #dc2626;
-            border-color: #dc2626;
-        }
-        
-        .board-card-actions .delete-btn:hover {
-            background: #fef2f2;
-        }
-        
-        .empty-state {
-            text-align: center;
-            padding: 48px 24px;
-            color: #6b7280;
-        }
-        
-        .whiteboard-header {
-            display: none;
-        }
-        
-        #whiteboard-view.active .whiteboard-header {
-            display: flex;
-        }
-        
-        #whiteboard-view.active #toolbar-wrapper {
-            top: 60px;
-        }
-        
-        /* Mobile responsive */
-        @media (max-width: 768px) {
-            .header-center {
-                display: none;
-            }
-            
-            .header-logo span {
-                display: none;
-            }
-            
-            .boards-grid {
-                grid-template-columns: 1fr;
-            }
         }
         /* The canvas itself */
         #whiteboard {
             display: block;
             /* Changed from 'none' to 'crosshair' so cursor is visible if JS fails */
             cursor: crosshair; 
-            touch-action: none; /* Disables browser gestures */
+            touch-action: none; /* Disables browser gestures like double-tap-to-zoom */
         }
         
         #whiteboard.panning {
@@ -638,27 +348,6 @@
             border-radius: 50%;
             transition: all 0.1s ease;
         }
-        
-        /* Text tool styles */
-        .text-input-overlay {
-            position: fixed;
-            display: none;
-            z-index: 10000;
-        }
-        
-        .text-input-overlay.active {
-            display: block;
-        }
-        
-        .text-input-overlay input {
-            padding: 8px;
-            font-size: 16px;
-            border: 2px solid #2563eb;
-            border-radius: 4px;
-            outline: none;
-            background: white;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
     </style>
 </head>
 <body class="font-sans antialiased">
@@ -673,186 +362,123 @@
         <p style="font-size: 0.875rem; margin-top: 0.5rem;">Init...</p>
     </div>
     
-    <!-- Homepage View -->
-    <div id="homepage-view" class="view active">
-        <!-- Header -->
-        <div class="app-header">
-            <div class="header-logo" onclick="window.goToHomepage()">
-                <img src="WebBoard.png" alt="Webboard Logo">
-                <span>Webboard</span>
+    <!-- Auth buttons -->
+    <div id="buttonDiv" style="position: fixed; top: 16px; right: 16px; display: flex; align-items: center; z-index: 100;"></div>
+    
+    <!-- Auth Status Display -->
+    <div id="authStatus" style="position: fixed; top: 16px; right: 16px; color: #333; font-size: 14px; font-family: Arial, sans-serif; display: none; z-index: 100; align-items: center; gap: 10px; background: white; padding: 8px 16px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); border: 1px solid #e0e0e0;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4CAF50" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+        <span id="userEmail" style="font-weight: 500;"></span>
+        <button onclick="window.signOut()" style="padding: 4px 12px; background: #f44336; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">Sign Out</button>
+    </div>
+    
+    <!-- Save Drawing Button -->
+    <button id="save-drawing-btn" onclick="window.promptSaveDrawing()" style="position: fixed; top: 72px; right: 140px; padding: 8px 16px; background: #2196F3; color: white; border: none; border-radius: 8px; cursor: pointer; font-family: Arial, sans-serif; font-size: 14px; display: none; z-index: 100; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);">
+        Save to Cloud
+    </button>
+    
+    <!-- Load Drawings Button -->
+    <button id="load-drawing-btn" onclick="window.showDrawingsList()" style="position: fixed; top: 72px; right: 16px; padding: 8px 16px; background: #4CAF50; color: white; border: none; border-radius: 8px; cursor: pointer; font-family: Arial, sans-serif; font-size: 14px; display: none; z-index: 100; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);">
+        My Drawings
+    </button>
+    
+    <!-- Drawings List Modal -->
+    <div id="drawings-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: white; border-radius: 12px; padding: 24px; max-width: 600px; max-height: 80vh; overflow-y: auto; box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h2 style="font-size: 20px; font-weight: bold; margin: 0;">My Drawings</h2>
+                <button onclick="window.closeDrawingsList()" style="padding: 4px 12px; background: #f44336; color: white; border: none; border-radius: 4px; cursor: pointer;">Close</button>
             </div>
-            
-            <div class="header-center">
-                <input type="text" class="header-search" placeholder="Search boards..." id="board-search">
-                <div class="dropdown">
-                    <button class="btn-primary" id="new-board-btn">+ New Board</button>
-                    <div class="dropdown-menu" id="new-board-menu">
-                        <button onclick="window.createNewBoard('local')">Local Board</button>
-                        <button onclick="window.createNewBoard('cloud')" id="cloud-board-option">Cloud Board</button>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="header-right">
-                <div id="buttonDiv" style="display: flex; align-items: center;"></div>
-                <div id="user-profile-area" style="display: none;">
-                    <div class="user-profile" id="user-profile-btn">
-                        <img id="user-avatar" class="user-avatar" src="" alt="User">
-                        <span id="user-name"></span>
-                        <div class="user-menu" id="user-menu">
-                            <button onclick="window.signOut()">Sign Out</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Boards Container -->
-        <div class="boards-container">
-            <!-- Local Boards Section -->
-            <div class="boards-section">
-                <h2>On your Computer</h2>
-                <div id="local-boards-grid" class="boards-grid">
-                    <!-- Local boards will be rendered here -->
-                </div>
-            </div>
-            
-            <!-- Cloud Boards Section -->
-            <div class="boards-section" id="cloud-boards-section" style="display: none;">
-                <h2><span id="cloud-boards-title">My Boards</span></h2>
-                <div id="cloud-boards-grid" class="boards-grid">
-                    <!-- Cloud boards will be rendered here -->
-                </div>
+            <div id="drawings-list" style="min-height: 100px;">
+                <!-- Drawings will be loaded here -->
             </div>
         </div>
     </div>
-    
-    <!-- Whiteboard View -->
-    <div id="whiteboard-view" class="view">
-        <!-- Persistent Header for Whiteboard -->
-        <div class="app-header whiteboard-header">
-            <div class="header-logo" onclick="window.goToHomepage()">
-                <img src="WebBoard.png" alt="Webboard Logo">
-                <span>Webboard</span>
+
+    <!-- Toolbar wrapper -->
+    <div id="toolbar-wrapper" class="fixed top-4 left-0 right-0 z-10 flex justify-center compact-mode pointer-events-none">
+        <div id="toolbar" class="relative bg-white rounded-lg shadow-xl p-3 flex items-center justify-start flex-nowrap gap-x-2 md:gap-x-4 select-none overflow-x-auto max-w-[95vw] pointer-events-auto">
+            
+            <div id="pen-tool-wrapper" class="flex flex-col items-center">
+                <button id="pen-btn" class="tool-btn rounded-md active" title="Pen (1)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 pointer-events-none" style="stroke: #000000;">
+                        <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+                    </svg>
+                </button>
+            </div>
+            <div id="eraser-tool-wrapper" class="flex flex-col items-center">
+                <button id="eraser-btn" class="tool-btn rounded-md hover:bg-gray-200" title="Object Eraser (2)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 pointer-events-none">
+                        <path d="M7 21H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h18a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4.27"/><path d="M17 11.73C17 10.67 16.33 10 15 10s-2 .67-2 1.73S13.67 14 15 14s2-.67 2-1.73Z"/><path d="M21.19 11.73c0-4.24-7.2-4.24-7.2 0C14 10.67 14.67 10 16 10s2 .67 2 1.73Z" transform="rotate(-30 16 11.73)"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="flex flex-col items-center">
+                <button id="undo-btn" class="tool-btn rounded-md hover:bg-gray-200" title="Undo (Ctrl+Z)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 pointer-events-none">
+                        <path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="flex flex-col items-center">
+                <button id="redo-btn" class="tool-btn rounded-md hover:bg-gray-200" title="Redo (Ctrl+Y)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 pointer-events-none">
+                        <path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 0 9 9 9 9 0 0 0 6-2.3L21 13"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="flex flex-col items-center">
+                <button id="line-btn" class="tool-btn rounded-md hover:bg-gray-200" title="Line">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 pointer-events-none">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="flex flex-col items-center">
+                <button id="rect-btn" class="tool-btn rounded-md hover:bg-gray-200" title="Rectangle">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 pointer-events-none">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    </svg>
+                </button>
+            </div>
+            <div class="flex flex-col items-center">
+                <button id="circle-btn" class="tool-btn rounded-md hover:bg-gray-200" title="Circle">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 pointer-events-none">
+                        <circle cx="12" cy="12" r="10"></circle>
+                    </svg>
+                </button>
+            </div>
+            <div class="flex flex-col items-center">
+                <button id="triangle-btn" class="tool-btn rounded-md hover:bg-gray-200" title="Triangle">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 pointer-events-none">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                    </svg>
+                </button>
+            </div>
+            <div id="canvas-tool-wrapper" class="flex flex-col items-center">
+                <button id="canvas-btn" class="tool-btn rounded-md hover:bg-gray-200" title="Canvas Settings">
+                    <svg id="canvas-icon-preview" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 pointer-events-none">
+                        <rect id="canvas-icon-bg" x="3" y="3" width="18" height="18" rx="2" ry="2" fill="#ffffff" stroke="#d1d5db" stroke-width="1.5"/><g id="canvas-icon-ruled" style="display: none;" stroke="#d1d5db" stroke-width="1"><path d="M 6 8 L 18 8"></path><path d="M 6 12 L 18 12"></path><path d="M 6 16 L 18 16"></path></g><g id="canvas-icon-grid" style="display: none;" stroke="#d1d5db" stroke-width="1"><path d="M 8 6 L 8 18"></path><path d="M 12 6 L 12 18"></path><path d="M 16 6 L 16 18"></path><path d="M 6 8 L 18 8"></path><path d="M 6 12 L 18 12"></path><path d="M 6 16 L 18 16"></path></g>
+                    </svg>
+                </button>
+            </div>
+            <div class="flex flex-col items-center">
+                <button id="clear-btn" class="tool-btn rounded-md hover:bg-red-100 text-red-600" title="Clear Canvas (Delete)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7">
+                        <path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/>
+                    </svg>
+                </button>
             </div>
             
-            <div class="header-right">
-                <button id="save-drawing-btn-header" onclick="window.promptSaveDrawing()" class="btn-primary" style="display: none;">
-                    Save to Cloud
-                </button>
-                <div id="user-profile-area-whiteboard" style="display: none;">
-                    <div class="user-profile">
-                        <img id="user-avatar-whiteboard" class="user-avatar" src="" alt="User">
-                    </div>
-                </div>
-            </div>
         </div>
-        
-        <!-- Toolbar wrapper -->
-        <div id="toolbar-wrapper" class="fixed top-4 left-0 right-0 z-10 flex justify-center compact-mode pointer-events-none">
-            <div id="toolbar" class="relative bg-white rounded-lg shadow-xl p-3 flex items-center justify-start flex-nowrap gap-x-2 md:gap-x-4 select-none overflow-x-auto max-w-[95vw] pointer-events-auto">
-                
-                <div id="pen-tool-wrapper" class="flex flex-col items-center">
-                    <button id="pen-btn" class="tool-btn rounded-md active" title="Pen (1)">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 pointer-events-none" style="stroke: #000000;">
-                            <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
-                        </svg>
-                    </button>
-                </div>
-                <div id="eraser-tool-wrapper" class="flex flex-col items-center">
-                    <button id="eraser-btn" class="tool-btn rounded-md hover:bg-gray-200" title="Object Eraser (2)">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 pointer-events-none">
-                            <path d="M7 21H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h18a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4.27"/><path d="M17 11.73C17 10.67 16.33 10 15 10s-2 .67-2 1.73S13.67 14 15 14s2-.67 2-1.73Z"/><path d="M21.19 11.73c0-4.24-7.2-4.24-7.2 0C14 10.67 14.67 10 16 10s2 .67 2 1.73Z" transform="rotate(-30 16 11.73)"/>
-                        </svg>
-                    </button>
-                </div>
-                <div class="flex flex-col items-center">
-                    <button id="text-btn" class="tool-btn rounded-md hover:bg-gray-200" title="Text (3)">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 pointer-events-none">
-                            <polyline points="4 7 4 4 20 4 20 7"></polyline>
-                            <line x1="9" y1="20" x2="15" y2="20"></line>
-                            <line x1="12" y1="4" x2="12" y2="20"></line>
-                        </svg>
-                    </button>
-                </div>
-                <div class="flex flex-col items-center">
-                    <button id="undo-btn" class="tool-btn rounded-md hover:bg-gray-200" title="Undo (Ctrl+Z)">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 pointer-events-none">
-                            <path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/>
-                        </svg>
-                    </button>
-                </div>
-                <div class="flex flex-col items-center">
-                    <button id="redo-btn" class="tool-btn rounded-md hover:bg-gray-200" title="Redo (Ctrl+Y)">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 pointer-events-none">
-                            <path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 0 9 9 9 9 0 0 0 6-2.3L21 13"/>
-                        </svg>
-                    </button>
-                </div>
-                <div class="flex flex-col items-center">
-                    <button id="line-btn" class="tool-btn rounded-md hover:bg-gray-200" title="Line">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 pointer-events-none">
-                            <line x1="5" y1="12" x2="19" y2="12"></line>
-                        </svg>
-                    </button>
-                </div>
-                <div class="flex flex-col items-center">
-                    <button id="rect-btn" class="tool-btn rounded-md hover:bg-gray-200" title="Rectangle">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 pointer-events-none">
-                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                        </svg>
-                    </button>
-                </div>
-                <div class="flex flex-col items-center">
-                    <button id="circle-btn" class="tool-btn rounded-md hover:bg-gray-200" title="Circle">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 pointer-events-none">
-                            <circle cx="12" cy="12" r="10"></circle>
-                        </svg>
-                    </button>
-                </div>
-                <div class="flex flex-col items-center">
-                    <button id="triangle-btn" class="tool-btn rounded-md hover:bg-gray-200" title="Triangle">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 pointer-events-none">
-                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-                        </svg>
-                    </button>
-                </div>
-                <div id="canvas-tool-wrapper" class="flex flex-col items-center">
-                    <button id="canvas-btn" class="tool-btn rounded-md hover:bg-gray-200" title="Canvas Settings">
-                        <svg id="canvas-icon-preview" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 pointer-events-none">
-                            <rect id="canvas-icon-bg" x="3" y="3" width="18" height="18" rx="2" ry="2" fill="#ffffff" stroke="#d1d5db" stroke-width="1.5"/><g id="canvas-icon-ruled" style="display: none;" stroke="#d1d5db" stroke-width="1"><path d="M 6 8 L 18 8"></path><path d="M 6 12 L 18 12"></path><path d="M 6 16 L 18 16"></path></g><g id="canvas-icon-grid" style="display: none;" stroke="#d1d5db" stroke-width="1"><path d="M 8 6 L 8 18"></path><path d="M 12 6 L 12 18"></path><path d="M 16 6 L 16 18"></path><path d="M 6 8 L 18 8"></path><path d="M 6 12 L 18 12"></path><path d="M 6 16 L 18 16"></path></g>
-                        </svg>
-                    </button>
-                </div>
-                <div class="flex flex-col items-center">
-                    <button id="clear-btn" class="tool-btn rounded-md hover:bg-red-100 text-red-600" title="Clear Canvas (Delete)">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7">
-                            <path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/>
-                        </svg>
-                    </button>
-                </div>
-                
-            </div>
-        </div>
+    </div>
 
-        <!-- Save Indicator -->
-        <div id="save-indicator" class="fixed bottom-4 right-4 text-white text-sm px-3 py-1 rounded-full shadow-lg opacity-0 select-none pointer-events-none z-50">
-            Saved!
-        </div>
-
-        <!-- Canvas -->
-        <canvas id="whiteboard"></canvas>
-        <div id="custom-cursor-circle"></div>
-        <div id="custom-cursor-eraser">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M16.24 3.56l4.95 4.94c.78.79.78 2.05 0 2.84L12 20.53a4 4 0 0 1-5.66 0L2.81 17c-.78-.79-.78-2.05 0-2.84l10.6-10.6c.79-.78 2.05-.78 2.83 0M4.22 15.58l3.54 3.53c.78.79 2.04.79 2.83 0l3.53-3.53l-4.95-4.95l-4.95 4.95z"/>
-            </svg>
-        </div>
-        
-        <!-- Text input overlay -->
-        <div class="text-input-overlay" id="text-input-overlay">
-            <input type="text" id="text-input" placeholder="Enter text...">
-        </div>
+    <!-- Save Indicator -->
+    <div id="save-indicator" class="fixed bottom-4 right-4 text-white text-sm px-3 py-1 rounded-full shadow-lg opacity-0 select-none pointer-events-none z-50">
+        Saved!
     </div>
 
     <!-- Popovers -->
@@ -1067,56 +693,35 @@
     function updateAuthUI() {
       const token = localStorage.getItem('authToken');
       const userEmail = localStorage.getItem('userEmail');
-      const userName = localStorage.getItem('userName');
-      const userPicture = localStorage.getItem('userPicture');
       const btnDiv = document.getElementById('buttonDiv');
-      const userProfileArea = document.getElementById('user-profile-area');
-      const userProfileAreaWhiteboard = document.getElementById('user-profile-area-whiteboard');
-      const saveBtn = document.getElementById('save-drawing-btn-header');
-      const cloudBoardOption = document.getElementById('cloud-board-option');
-      const cloudBoardsSection = document.getElementById('cloud-boards-section');
+      const authStatus = document.getElementById('authStatus');
+      const saveBtn = document.getElementById('save-drawing-btn');
+      const loadBtn = document.getElementById('load-drawing-btn');
       
       console.log("updateAuthUI called - token:", token ? "exists" : "none", "email:", userEmail);
+      console.log("buttonDiv found:", !!btnDiv, "current display:", btnDiv ? btnDiv.style.display : 'N/A');
+      console.log("buttonDiv children count:", btnDiv ? btnDiv.children.length : 0);
       
       if (token && userEmail) {
-        console.log("User is signed in");
+        console.log("User is signed in, hiding sign-in button");
         if(btnDiv) btnDiv.style.display = 'none';
-        if(userProfileArea) userProfileArea.style.display = 'block';
-        if(userProfileAreaWhiteboard) userProfileAreaWhiteboard.style.display = 'block';
+        if(authStatus) authStatus.style.display = 'flex';
         if(saveBtn) saveBtn.style.display = 'block';
-        if(cloudBoardOption) cloudBoardOption.style.display = 'block';
-        if(cloudBoardsSection) cloudBoardsSection.style.display = 'block';
-        
-        // Update user profile on homepage
-        const userNameEl = document.getElementById('user-name');
-        const userAvatarEl = document.getElementById('user-avatar');
-        if (userNameEl) userNameEl.textContent = userName || userEmail;
-        if (userAvatarEl && userPicture) userAvatarEl.src = userPicture;
-        else if (userAvatarEl) userAvatarEl.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23999"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>';
-        
-        // Update user profile on whiteboard
-        const userAvatarWhiteboardEl = document.getElementById('user-avatar-whiteboard');
-        if (userAvatarWhiteboardEl && userPicture) userAvatarWhiteboardEl.src = userPicture;
-        else if (userAvatarWhiteboardEl) userAvatarWhiteboardEl.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23999"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>';
-        
-        // Update cloud boards title
-        const cloudBoardsTitle = document.getElementById('cloud-boards-title');
-        if (cloudBoardsTitle) cloudBoardsTitle.textContent = `${userName || userEmail}'s Boards`;
-        
-        // Load cloud boards
-        if (window.loadCloudBoards) window.loadCloudBoards();
+        if(loadBtn) loadBtn.style.display = 'block';
+        const userEmailEl = document.getElementById('userEmail');
+        if (userEmailEl) {
+          userEmailEl.textContent = userEmail;
+        }
       } else {
-        console.log("User is NOT signed in");
-        if(btnDiv) btnDiv.style.display = 'flex';
-        if(userProfileArea) userProfileArea.style.display = 'none';
-        if(userProfileAreaWhiteboard) userProfileAreaWhiteboard.style.display = 'none';
+        console.log("User is NOT signed in, showing sign-in button");
+        if(btnDiv) {
+          btnDiv.style.display = 'flex';
+          console.log("Set buttonDiv display to flex. Button should be visible if Google rendered it.");
+        }
+        if(authStatus) authStatus.style.display = 'none';
         if(saveBtn) saveBtn.style.display = 'none';
-        if(cloudBoardOption) cloudBoardOption.style.display = 'none';
-        if(cloudBoardsSection) cloudBoardsSection.style.display = 'none';
+        if(loadBtn) loadBtn.style.display = 'none';
       }
-      
-      // Refresh boards display
-      if (window.renderLocalBoards) window.renderLocalBoards();
     }
     
     window.signOut = function() {
@@ -1128,211 +733,11 @@
       localStorage.removeItem('userPicture');
       updateAuthUI();
       showNotification('Signed out', 'success');
-      window.goToHomepage();
       // Re-render button
       setTimeout(() => {
         console.log("Re-initializing Google Sign-In after sign out");
         window.initGoogleAuth();
       }, 100);
-    }
-    
-    // --- View Management ---
-    window.goToHomepage = function() {
-      document.getElementById('homepage-view').classList.add('active');
-      document.getElementById('whiteboard-view').classList.remove('active');
-      // Save current whiteboard if there's data
-      if (window.getCurrentBoardId && window.getCurrentBoardId()) {
-        window.saveCurrentLocalBoard();
-      }
-      window.renderLocalBoards();
-      if (localStorage.getItem('authToken')) {
-        window.loadCloudBoards();
-      }
-    }
-    
-    window.goToWhiteboard = function(boardId) {
-      document.getElementById('homepage-view').classList.remove('active');
-      document.getElementById('whiteboard-view').classList.add('active');
-      if (boardId) {
-        window.loadBoard(boardId);
-      }
-    }
-    
-    // --- Local Board Management ---
-    let currentBoardId = null;
-    
-    window.getCurrentBoardId = function() {
-      return currentBoardId;
-    }
-    
-    window.setCurrentBoardId = function(id) {
-      currentBoardId = id;
-    }
-    
-    window.createNewBoard = function(type) {
-      if (type === 'cloud' && !localStorage.getItem('authToken')) {
-        showNotification('Please sign in to create cloud boards', 'error');
-        return;
-      }
-      
-      const boardId = 'board_' + Date.now();
-      const boardTitle = prompt('Enter board title:', 'Untitled Board');
-      if (!boardTitle) return;
-      
-      if (type === 'local') {
-        const board = {
-          id: boardId,
-          title: boardTitle,
-          type: 'local',
-          lastModified: Date.now(),
-          data: { strokes: [], backgroundColor: '#FFFFFF', backgroundPattern: 'plain', viewOffset: { x: 0, y: 0 }, viewZoom: 1 }
-        };
-        
-        const boards = JSON.parse(localStorage.getItem('localBoards') || '[]');
-        boards.push(board);
-        localStorage.setItem('localBoards', JSON.stringify(boards));
-        
-        currentBoardId = boardId;
-        window.goToWhiteboard(boardId);
-      } else {
-        // For cloud boards, create empty and switch to whiteboard
-        currentBoardId = null; // Will be set after first save
-        window.goToWhiteboard();
-      }
-    }
-    
-    window.loadBoard = function(boardId) {
-      const boards = JSON.parse(localStorage.getItem('localBoards') || '[]');
-      const board = boards.find(b => b.id === boardId);
-      
-      if (board) {
-        currentBoardId = boardId;
-        if (window.loadDrawingData) {
-          window.loadDrawingData(board.data);
-        }
-      }
-    }
-    
-    window.saveCurrentLocalBoard = function() {
-      if (!currentBoardId) return;
-      
-      const boards = JSON.parse(localStorage.getItem('localBoards') || '[]');
-      const boardIndex = boards.findIndex(b => b.id === currentBoardId);
-      
-      if (boardIndex !== -1 && window.getDrawingData) {
-        boards[boardIndex].data = window.getDrawingData();
-        boards[boardIndex].lastModified = Date.now();
-        localStorage.setItem('localBoards', JSON.stringify(boards));
-      }
-    }
-    
-    window.deleteLocalBoard = function(boardId) {
-      if (!confirm('Delete this board?')) return;
-      
-      const boards = JSON.parse(localStorage.getItem('localBoards') || '[]');
-      const filtered = boards.filter(b => b.id !== boardId);
-      localStorage.setItem('localBoards', JSON.stringify(filtered));
-      window.renderLocalBoards();
-      showNotification('Board deleted', 'success');
-    }
-    
-    window.renderLocalBoards = function() {
-      const grid = document.getElementById('local-boards-grid');
-      if (!grid) return;
-      
-      const boards = JSON.parse(localStorage.getItem('localBoards') || '[]');
-      
-      if (boards.length === 0) {
-        grid.innerHTML = '<div class="empty-state">No local boards yet. Create one to get started!</div>';
-        return;
-      }
-      
-      grid.innerHTML = boards.map(board => `
-        <div class="board-card" onclick="window.goToWhiteboard('${board.id}')">
-          <h3>${board.title}</h3>
-          <p>${new Date(board.lastModified).toLocaleString()}</p>
-          <div class="board-card-actions" onclick="event.stopPropagation()">
-            <button onclick="window.deleteLocalBoard('${board.id}')" class="delete-btn">Delete</button>
-          </div>
-        </div>
-      `).join('');
-    }
-    
-    window.loadCloudBoards = async function() {
-      const grid = document.getElementById('cloud-boards-grid');
-      if (!grid) return;
-      
-      try {
-        const token = localStorage.getItem('authToken');
-        if (!token) return;
-        
-        const response = await fetch('/api/list', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        
-        if (!response.ok) throw new Error('Failed to load cloud boards');
-        
-        const drawings = await response.json();
-        
-        if (drawings.length === 0) {
-          grid.innerHTML = '<div class="empty-state">No cloud boards yet.</div>';
-          return;
-        }
-        
-        grid.innerHTML = drawings.map(drawing => `
-          <div class="board-card" onclick="window.loadCloudBoard('${drawing.id}')">
-            <h3>${drawing.title}</h3>
-            <p>${new Date(drawing.createdAt).toLocaleString()}</p>
-            <div class="board-card-actions" onclick="event.stopPropagation()">
-              <button onclick="window.deleteCloudBoard('${drawing.id}')" class="delete-btn">Delete</button>
-            </div>
-          </div>
-        `).join('');
-      } catch (error) {
-        console.error('Load cloud boards error:', error);
-        grid.innerHTML = '<div class="empty-state">Failed to load cloud boards</div>';
-      }
-    }
-    
-    window.loadCloudBoard = async function(drawingId) {
-      try {
-        const token = localStorage.getItem('authToken');
-        const response = await fetch(`/api/load/${drawingId}`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        
-        if (!response.ok) throw new Error('Failed to load drawing');
-        
-        const drawing = await response.json();
-        currentBoardId = null; // Cloud board, not local
-        window.goToWhiteboard();
-        if (window.loadDrawingData) {
-          window.loadDrawingData(drawing.drawingData);
-        }
-      } catch (error) {
-        console.error('Load cloud board error:', error);
-        showNotification('Failed to load: ' + error.message, 'error');
-      }
-    }
-    
-    window.deleteCloudBoard = async function(drawingId) {
-      if (!confirm('Delete this cloud board?')) return;
-      
-      try {
-        const token = localStorage.getItem('authToken');
-        const response = await fetch(`/api/delete/${drawingId}`, {
-          method: 'DELETE',
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        
-        if (!response.ok) throw new Error('Failed to delete');
-        
-        window.loadCloudBoards();
-        showNotification('Board deleted', 'success');
-      } catch (error) {
-        console.error('Delete error:', error);
-        showNotification('Failed to delete: ' + error.message, 'error');
-      }
     }
     
     window.promptSaveDrawing = async function() {
@@ -1381,6 +786,149 @@
       }
     }
     
+    window.showDrawingsList = async function() {
+      const modal = document.getElementById('drawings-modal');
+      const listContainer = document.getElementById('drawings-list');
+      
+      if (modal) modal.style.display = 'flex';
+      listContainer.innerHTML = '<div style="text-align: center; padding: 20px;">Loading...</div>';
+      
+      try {
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+          showNotification('Please sign in first', 'error');
+          return;
+        }
+        
+        // Fetch drawings list
+        const response = await fetch('/api/list', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (!response.ok) {
+          let errorMessage = 'Failed to load drawings';
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.error || errorMessage;
+          } catch (e) {
+            errorMessage = `Server error (${response.status})`;
+          }
+          throw new Error(errorMessage);
+        }
+        
+        const drawings = await response.json();
+        
+        if (drawings.length === 0) {
+          listContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">No drawings saved yet.</div>';
+          return;
+        }
+        
+        // Display drawings
+        listContainer.innerHTML = drawings.map(drawing => `
+          <div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 12px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-weight: bold; margin-bottom: 4px;">${drawing.title}</div>
+              <div style="font-size: 12px; color: #666;">${new Date(drawing.createdAt).toLocaleString()}</div>
+            </div>
+            <div>
+              <button onclick="window.loadDrawing('${drawing.id}')" style="padding: 6px 12px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; margin-right: 8px;">Load</button>
+              <button onclick="window.deleteDrawing('${drawing.id}')" style="padding: 6px 12px; background: #f44336; color: white; border: none; border-radius: 4px; cursor: pointer;">Delete</button>
+            </div>
+          </div>
+        `).join('');
+      } catch (error) {
+        console.error('Load list error:', error);
+        listContainer.innerHTML = `<div style="text-align: center; padding: 20px; color: #f44336;">Failed to load: ${error.message}</div>`;
+      }
+    }
+    
+    window.closeDrawingsList = function() {
+      const modal = document.getElementById('drawings-modal');
+      if (modal) modal.style.display = 'none';
+    }
+    
+    window.loadDrawing = async function(drawingId) {
+      try {
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+          showNotification('Please sign in first', 'error');
+          return;
+        }
+        
+        // Fetch the drawing
+        const response = await fetch(`/api/load/${drawingId}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (!response.ok) {
+          let errorMessage = 'Failed to load drawing';
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.error || errorMessage;
+          } catch (e) {
+            errorMessage = `Server error (${response.status})`;
+          }
+          throw new Error(errorMessage);
+        }
+        
+        const drawing = await response.json();
+        
+        // Apply the drawing data to the canvas
+        if (window.loadDrawingData) {
+          window.loadDrawingData(drawing.drawingData);
+          showNotification(`Loaded: ${drawing.title}`, 'success');
+          window.closeDrawingsList();
+        } else {
+          throw new Error('Drawing load function not available');
+        }
+      } catch (error) {
+        console.error('Load drawing error:', error);
+        showNotification('Failed to load: ' + error.message, 'error');
+      }
+    }
+    
+    window.deleteDrawing = async function(drawingId) {
+      if (!confirm('Are you sure you want to delete this drawing?')) return;
+      
+      try {
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+          showNotification('Please sign in first', 'error');
+          return;
+        }
+        
+        // Delete the drawing
+        const response = await fetch(`/api/delete/${drawingId}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (!response.ok) {
+          let errorMessage = 'Failed to delete drawing';
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.error || errorMessage;
+          } catch (e) {
+            errorMessage = `Server error (${response.status})`;
+          }
+          throw new Error(errorMessage);
+        }
+        
+        showNotification('Drawing deleted successfully', 'success');
+        // Refresh the list
+        window.showDrawingsList();
+      } catch (error) {
+        console.error('Delete drawing error:', error);
+        showNotification('Failed to delete: ' + error.message, 'error');
+      }
+    }
+    
     function initAuthStatus() {
       updateAuthUI();
       // Also try to initialize Google Auth if library is already loaded
@@ -1407,54 +955,6 @@
 
             initAuthStatus();
             
-            // --- Homepage UI Initialization ---
-            const newBoardBtn = document.getElementById('new-board-btn');
-            const newBoardMenu = document.getElementById('new-board-menu');
-            const userProfileBtn = document.getElementById('user-profile-btn');
-            const userMenu = document.getElementById('user-menu');
-            const boardSearch = document.getElementById('board-search');
-            
-            // New board dropdown
-            if (newBoardBtn && newBoardMenu) {
-                newBoardBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    newBoardMenu.classList.toggle('active');
-                });
-                
-                document.addEventListener('click', () => {
-                    newBoardMenu.classList.remove('active');
-                });
-            }
-            
-            // User menu dropdown
-            if (userProfileBtn && userMenu) {
-                userProfileBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    userMenu.classList.toggle('active');
-                });
-                
-                document.addEventListener('click', () => {
-                    userMenu.classList.remove('active');
-                });
-            }
-            
-            // Board search
-            if (boardSearch) {
-                boardSearch.addEventListener('input', (e) => {
-                    const query = e.target.value.toLowerCase();
-                    document.querySelectorAll('.board-card').forEach(card => {
-                        const title = card.querySelector('h3').textContent.toLowerCase();
-                        card.style.display = title.includes(query) ? '' : 'none';
-                    });
-                });
-            }
-            
-            // Initialize boards on homepage
-            window.renderLocalBoards();
-            if (localStorage.getItem('authToken')) {
-                window.loadCloudBoards();
-            }
-            
             // --- All app variables ---
             const canvas = document.getElementById('whiteboard');
             if(!canvas) throw new Error("Canvas element not found");
@@ -1470,7 +970,6 @@
             // (Tool Buttons)
             const penBtn = document.getElementById('pen-btn');
             const eraserBtn = document.getElementById('eraser-btn');
-            const textBtn = document.getElementById('text-btn');
             const lineBtn = document.getElementById('line-btn');
             const rectBtn = document.getElementById('rect-btn');
             const circleBtn = document.getElementById('circle-btn');
@@ -1478,10 +977,6 @@
             const undoBtn = document.getElementById('undo-btn');
             const redoBtn = document.getElementById('redo-btn');
             const clearBtn = document.getElementById('clear-btn');
-            
-            // Text tool elements
-            const textInputOverlay = document.getElementById('text-input-overlay');
-            const textInput = document.getElementById('text-input');
             
             // (Canvas Tool)
             const canvasBtn = document.getElementById('canvas-btn');
@@ -1516,7 +1011,6 @@
             const toolButtons = [
                 { el: penBtn, tool: 'pen' },
                 { el: eraserBtn, tool: 'eraser' },
-                { el: textBtn, tool: 'text' },
                 { el: lineBtn, tool: 'line' },
                 { el: rectBtn, tool: 'rect' },
                 { el: circleBtn, tool: 'circle' },
@@ -1686,10 +1180,6 @@
                     localStorage.setItem('whiteboardBgColor', backgroundColor);
                     localStorage.setItem('whiteboardBgPattern', backgroundPattern);
                     showSaveIndicator();
-                    // Also save to current local board if one is active
-                    if (window.saveCurrentLocalBoard) {
-                        window.saveCurrentLocalBoard();
-                    }
                 } catch (e) {
                     console.error("Error saving strokes", e);
                 }
@@ -1774,14 +1264,6 @@
 
             // --- Shape Drawing Functions ---
             function drawStroke(stroke) {
-                // Handle text rendering
-                if (stroke.type === 'text') {
-                    ctx.fillStyle = stroke.color;
-                    ctx.font = `${stroke.fontSize}px sans-serif`;
-                    ctx.fillText(stroke.text, stroke.x, stroke.y);
-                    return;
-                }
-                
                 ctx.strokeStyle = stroke.color;
                 ctx.lineWidth = stroke.size;
                 ctx.lineCap = 'round';
@@ -1865,16 +1347,6 @@
                 return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
             }
             function isPointNearStroke(worldPoint, stroke) {
-                // Handle text
-                if (stroke.type === 'text') {
-                    // Rough bounding box for text
-                    const fontSize = stroke.fontSize || 16;
-                    const textWidth = stroke.text.length * fontSize * 0.6; // Approximate
-                    const textHeight = fontSize;
-                    return (worldPoint.x >= stroke.x && worldPoint.x <= stroke.x + textWidth &&
-                            worldPoint.y >= stroke.y - textHeight && worldPoint.y <= stroke.y);
-                }
-                
                 const screenPixelTolerance = 5 / viewZoom; 
                 const tolerance = (currentEraserMode === 'object' ? currentEraserSize : stroke.size) + screenPixelTolerance;
                 switch (stroke.tool) {
@@ -1934,19 +1406,6 @@
                 canvasPopover.classList.remove('active');
                 
                 if (e.target.closest('#toolbar-wrapper') || isTwoFingerPanning) {
-                    return;
-                }
-                
-                // Text tool handling
-                if (currentTool === 'text') {
-                    const { x: screenX, y: screenY } = getCoords(e);
-                    const worldPoint = screenToWorld(screenX, screenY);
-                    textInputOverlay.dataset.x = worldPoint.x;
-                    textInputOverlay.dataset.y = worldPoint.y;
-                    textInputOverlay.style.left = screenX + 'px';
-                    textInputOverlay.style.top = screenY + 'px';
-                    textInputOverlay.classList.add('active');
-                    textInput.focus();
                     return;
                 }
                 
@@ -2180,52 +1639,6 @@
                 originalTool = 'eraser';
                 updateActiveToolButton('eraser');
             });
-            
-            // Text tool handler
-            if (textBtn) {
-                textBtn.addEventListener('click', () => {
-                    currentTool = 'text';
-                    originalTool = 'text';
-                    updateActiveToolButton('text');
-                    penPopover.classList.remove('active');
-                    eraserPopover.classList.remove('active');
-                    canvasPopover.classList.remove('active');
-                });
-            }
-            
-            // Text input handling
-            if (textInput) {
-                textInput.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter' || e.key === 'Escape') {
-                        if (e.key === 'Enter' && textInput.value.trim()) {
-                            // Add text to canvas
-                            const textData = {
-                                type: 'text',
-                                text: textInput.value,
-                                x: parseInt(textInputOverlay.dataset.x),
-                                y: parseInt(textInputOverlay.dataset.y),
-                                color: currentColor,
-                                fontSize: Math.max(16, currentBrushSize * 3),
-                            };
-                            strokes.push(textData);
-                            saveToUndoStack();
-                            render();
-                            autosave();
-                        }
-                        textInputOverlay.classList.remove('active');
-                        textInput.value = '';
-                    }
-                });
-                
-                textInput.addEventListener('blur', () => {
-                    setTimeout(() => {
-                        if (textInputOverlay.classList.contains('active')) {
-                            textInputOverlay.classList.remove('active');
-                            textInput.value = '';
-                        }
-                    }, 200);
-                });
-            }
             
             canvasBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -2533,14 +1946,6 @@
                     originalTool = 'eraser';
                     updateActiveToolButton('eraser');
                     penPopover.classList.remove('active');
-                    canvasPopover.classList.remove('active');
-                } else if (e.key === '3') {
-                    e.preventDefault();
-                    currentTool = 'text';
-                    originalTool = 'text';
-                    updateActiveToolButton('text');
-                    penPopover.classList.remove('active');
-                    eraserPopover.classList.remove('active');
                     canvasPopover.classList.remove('active');
                 } else if (e.key === 'Delete') {
                     e.preventDefault();
