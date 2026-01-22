@@ -11,15 +11,20 @@ const getSupabase = () => {
 
 // Helper function to verify JWT token
 const authenticateToken = (req) => {
-  const authHeader = req.headers['authorization'];
+  // Handle case-insensitive header lookup
+  const authHeader = req.headers['authorization'] || req.headers['Authorization'];
   const token = authHeader && authHeader.split(' ')[1];
   
   if (!token) {
     throw new Error('No token provided');
   }
   
+  if (!process.env.JWT_SECRET) {
+    throw new Error('JWT_SECRET not configured');
+  }
+  
   try {
-    const user = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+    const user = jwt.verify(token, process.env.JWT_SECRET);
     return user;
   } catch (err) {
     throw new Error('Invalid token');

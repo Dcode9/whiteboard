@@ -39,6 +39,10 @@ module.exports = async (req, res) => {
     const name = payload['name'];
     const picture = payload['picture'];
     
+    if (!process.env.JWT_SECRET) {
+      return res.status(500).json({ error: 'JWT_SECRET not configured' });
+    }
+    
     // Create app JWT token
     const token = jwt.sign(
       { 
@@ -47,7 +51,7 @@ module.exports = async (req, res) => {
         name,
         picture
       },
-      process.env.JWT_SECRET || 'your-secret-key',
+      process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
     
