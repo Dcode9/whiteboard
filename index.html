@@ -102,6 +102,7 @@
             padding: 0;
             width: 100%;
             height: 100%;
+            overflow: hidden; /* Prevent scrolling on body */
             overscroll-behavior: none; /* Prevents pull-to-refresh */
             background-color: #f3f4f6; /* Fallback bg */
         }
@@ -111,10 +112,20 @@
             display: none;
             width: 100%;
             height: 100%;
+            position: relative;
         }
         
         .view.active {
             display: block;
+        }
+        
+        /* Canvas fills entire viewport with no offset */
+        #whiteboard {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
         }
         
         /* Homepage styles */
@@ -128,55 +139,59 @@
             overflow: hidden;
         }
         
-        /* Header styles */
-        .app-header {
-            background: white;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            padding: 12px 24px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            position: sticky;
-            top: 0;
+        /* Floating header containers - each is independent and floating */
+        .floating-container {
+            position: fixed;
             z-index: 100;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+            padding: 12px 16px;
         }
         
-        .header-logo {
+        /* Logo container - top left */
+        .header-logo-container {
+            top: 16px;
+            left: 16px;
             display: flex;
             align-items: center;
             gap: 12px;
             cursor: pointer;
         }
         
-        .header-logo img {
+        .header-logo-container img {
             height: 32px;
             width: 32px;
         }
         
-        .header-logo span {
+        .header-logo-container span {
             font-size: 20px;
             font-weight: 600;
             color: #1f2937;
         }
         
-        .header-center {
+        /* Search/Toolbar container - top center */
+        .header-center-container {
+            top: 16px;
+            left: 50%;
+            transform: translateX(-50%);
             display: flex;
             align-items: center;
             gap: 12px;
-            flex: 1;
-            max-width: 600px;
-            margin: 0 auto;
         }
         
         .header-search {
-            flex: 1;
             padding: 8px 16px;
             border: 1px solid #d1d5db;
             border-radius: 8px;
             font-size: 14px;
+            min-width: 300px;
         }
         
-        .header-right {
+        /* User account container - top right */
+        .header-account-container {
+            top: 16px;
+            right: 16px;
             display: flex;
             align-items: center;
             gap: 12px;
@@ -288,7 +303,7 @@
         .boards-container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 32px 24px;
+            padding: 80px 24px 32px 24px; /* Added top padding for floating header */
         }
         
         .boards-section {
@@ -370,25 +385,49 @@
             color: #6b7280;
         }
         
-        .whiteboard-header {
-            display: none;
-        }
-        
-        #whiteboard-view.active .whiteboard-header {
+        /* Whiteboard view - show floating containers */
+        #whiteboard-view.active .header-logo-container,
+        #whiteboard-view.active .header-account-container {
             display: flex;
         }
         
+        /* Toolbar in whiteboard view becomes the center container */
         #whiteboard-view.active #toolbar-wrapper {
-            top: 60px;
+            position: fixed;
+            top: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+        }
+        
+        #whiteboard-view.active #toolbar {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+            padding: 12px 16px;
+        }
+        
+        /* Homepage view - hide whiteboard specific floating containers */
+        #homepage-view.active .header-logo-container,
+        #homepage-view.active .header-center-container,
+        #homepage-view.active .header-account-container {
+            display: flex;
+        }
+        
+        #homepage-view.active #whiteboard-view .header-logo-container,
+        #homepage-view.active #whiteboard-view .header-account-container {
+            display: none;
         }
         
         /* Mobile responsive */
         @media (max-width: 768px) {
-            .header-center {
+            .header-center-container {
                 display: none;
             }
             
-            .header-logo span {
+            .header-logo-container span {
                 display: none;
             }
             
@@ -751,33 +790,33 @@
     
     <!-- Homepage View -->
     <div id="homepage-view" class="view active">
-        <!-- Header -->
-        <div class="app-header">
-            <div class="header-logo" onclick="window.goToHomepage()">
-                <img src="WebBoard.png" alt="Webboard Logo">
-                <span>Webboard</span>
-            </div>
-            
-            <div class="header-center">
-                <input type="text" class="header-search" placeholder="Search boards..." id="board-search">
-                <div class="dropdown">
-                    <button class="btn-primary" id="new-board-btn">+ New Board</button>
-                    <div class="dropdown-menu" id="new-board-menu">
-                        <button onclick="window.createNewBoard('local')">Local Board</button>
-                        <button onclick="window.createNewBoard('cloud')" id="cloud-board-option">Cloud Board</button>
-                    </div>
+        <!-- Floating Logo Container -->
+        <div class="floating-container header-logo-container" onclick="window.goToHomepage()">
+            <img src="WebBoard.png" alt="Webboard Logo">
+            <span>Webboard</span>
+        </div>
+        
+        <!-- Floating Search/New Board Container -->
+        <div class="floating-container header-center-container">
+            <input type="text" class="header-search" placeholder="Search boards..." id="board-search">
+            <div class="dropdown">
+                <button class="btn-primary" id="new-board-btn">+ New Board</button>
+                <div class="dropdown-menu" id="new-board-menu">
+                    <button onclick="window.createNewBoard('local')">Local Board</button>
+                    <button onclick="window.createNewBoard('cloud')" id="cloud-board-option">Cloud Board</button>
                 </div>
             </div>
-            
-            <div class="header-right">
-                <div id="buttonDiv" style="display: flex; align-items: center;"></div>
-                <div id="user-profile-area" style="display: none;">
-                    <div class="user-profile" id="user-profile-btn">
-                        <img id="user-avatar" class="user-avatar" src="" alt="User">
-                        <span id="user-name"></span>
-                        <div class="user-menu" id="user-menu">
-                            <button onclick="window.signOut()">Sign Out</button>
-                        </div>
+        </div>
+        
+        <!-- Floating Account Container -->
+        <div class="floating-container header-account-container">
+            <div id="buttonDiv" style="display: flex; align-items: center;"></div>
+            <div id="user-profile-area" style="display: none;">
+                <div class="user-profile" id="user-profile-btn">
+                    <img id="user-avatar" class="user-avatar" src="" alt="User">
+                    <span id="user-name"></span>
+                    <div class="user-menu" id="user-menu">
+                        <button onclick="window.signOut()">Sign Out</button>
                     </div>
                 </div>
             </div>
@@ -805,27 +844,26 @@
     
     <!-- Whiteboard View -->
     <div id="whiteboard-view" class="view">
-        <!-- Persistent Header for Whiteboard -->
-        <div class="app-header whiteboard-header">
-            <div class="header-logo" onclick="window.goToHomepage()">
-                <img src="WebBoard.png" alt="Webboard Logo">
-                <span>Webboard</span>
-            </div>
-            
-            <div class="header-right">
-                <button id="save-drawing-btn-header" onclick="window.promptSaveDrawing()" class="btn-primary" style="display: none;">
-                    Save to Cloud
-                </button>
-                <div id="user-profile-area-whiteboard" style="display: none;">
-                    <div class="user-profile">
-                        <img id="user-avatar-whiteboard" class="user-avatar" src="" alt="User">
-                    </div>
+        <!-- Floating Logo Container (shared, will be visible in whiteboard view) -->
+        <div class="floating-container header-logo-container" onclick="window.goToHomepage()" style="display: none;">
+            <img src="WebBoard.png" alt="Webboard Logo">
+            <span>Webboard</span>
+        </div>
+        
+        <!-- Floating Account Container (shared, will be visible in whiteboard view) -->
+        <div class="floating-container header-account-container" style="display: none;">
+            <button id="save-drawing-btn-header" onclick="window.promptSaveDrawing()" class="btn-primary" style="display: none;">
+                Save to Cloud
+            </button>
+            <div id="user-profile-area-whiteboard" style="display: none;">
+                <div class="user-profile">
+                    <img id="user-avatar-whiteboard" class="user-avatar" src="" alt="User">
                 </div>
             </div>
         </div>
         
-        <!-- Toolbar wrapper -->
-        <div id="toolbar-wrapper" class="fixed top-4 left-0 right-0 z-10 flex justify-center compact-mode pointer-events-none">
+        <!-- Toolbar wrapper (acts as center floating container in whiteboard view) -->
+        <div id="toolbar-wrapper" class="pointer-events-none">
             <div id="toolbar" class="relative bg-white rounded-lg shadow-xl p-3 flex items-center justify-start flex-nowrap gap-x-2 md:gap-x-4 select-none overflow-x-auto max-w-[95vw] pointer-events-auto">
                 
                 <div id="pen-tool-wrapper" class="flex flex-col items-center">
