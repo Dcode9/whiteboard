@@ -639,25 +639,101 @@
             transition: all 0.1s ease;
         }
         
-        /* Text tool styles */
+        /* Text tool styles - Microsoft Office-like text box */
         .text-input-overlay {
             position: fixed;
             display: none;
             z-index: 10000;
+            background: white;
+            border: 2px solid #2563eb;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            min-width: 300px;
+            max-width: 600px;
         }
         
         .text-input-overlay.active {
             display: block;
         }
         
-        .text-input-overlay input {
+        .text-input-toolbar {
+            display: flex;
+            gap: 4px;
             padding: 8px;
-            font-size: 16px;
-            border: 2px solid #2563eb;
+            background: #f3f4f6;
+            border-bottom: 1px solid #e5e7eb;
+            border-radius: 6px 6px 0 0;
+            align-items: center;
+        }
+        
+        .text-input-toolbar button,
+        .text-input-toolbar select {
+            padding: 6px 10px;
+            border: 1px solid #d1d5db;
             border-radius: 4px;
-            outline: none;
             background: white;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .text-input-toolbar button:hover {
+            background: #e5e7eb;
+        }
+        
+        .text-input-toolbar button.active {
+            background: #dbeafe;
+            border-color: #2563eb;
+            color: #2563eb;
+        }
+        
+        .text-input-overlay textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 12px;
+            font-size: 16px;
+            border: none;
+            border-radius: 0 0 6px 6px;
+            outline: none;
+            resize: vertical;
+            font-family: inherit;
+        }
+        
+        .text-input-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            padding: 8px;
+            background: #f9fafb;
+            border-top: 1px solid #e5e7eb;
+            border-radius: 0 0 6px 6px;
+        }
+        
+        .text-input-footer button {
+            padding: 6px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .text-input-footer button.primary {
+            background: #2563eb;
+            color: white;
+            border-color: #2563eb;
+        }
+        
+        .text-input-footer button.primary:hover {
+            background: #1d4ed8;
+        }
+        
+        .text-input-footer button.secondary {
+            background: white;
+        }
+        
+        .text-input-footer button.secondary:hover {
+            background: #f3f4f6;
         }
     </style>
 </head>
@@ -849,9 +925,39 @@
             </svg>
         </div>
         
-        <!-- Text input overlay -->
+        <!-- Text input overlay with Microsoft Office-like interface -->
         <div class="text-input-overlay" id="text-input-overlay">
-            <input type="text" id="text-input" placeholder="Enter text...">
+            <div class="text-input-toolbar">
+                <select id="text-font-family" title="Font Family">
+                    <option value="Arial, sans-serif">Arial</option>
+                    <option value="'Times New Roman', serif">Times New Roman</option>
+                    <option value="'Courier New', monospace">Courier New</option>
+                    <option value="Georgia, serif">Georgia</option>
+                    <option value="Verdana, sans-serif">Verdana</option>
+                    <option value="'Comic Sans MS', cursive">Comic Sans MS</option>
+                </select>
+                <select id="text-font-size" title="Font Size">
+                    <option value="12">12</option>
+                    <option value="14">14</option>
+                    <option value="16" selected>16</option>
+                    <option value="18">18</option>
+                    <option value="20">20</option>
+                    <option value="24">24</option>
+                    <option value="28">28</option>
+                    <option value="32">32</option>
+                    <option value="36">36</option>
+                    <option value="48">48</option>
+                    <option value="72">72</option>
+                </select>
+                <button id="text-bold" title="Bold (Ctrl+B)" style="font-weight: bold;">B</button>
+                <button id="text-italic" title="Italic (Ctrl+I)" style="font-style: italic;">I</button>
+                <button id="text-underline" title="Underline (Ctrl+U)" style="text-decoration: underline;">U</button>
+            </div>
+            <textarea id="text-input" placeholder="Enter text here..."></textarea>
+            <div class="text-input-footer">
+                <button class="secondary" id="text-cancel">Cancel</button>
+                <button class="primary" id="text-submit">Add Text</button>
+            </div>
         </div>
     </div>
 
@@ -949,6 +1055,18 @@
 
     <script>
     
+    // ===== CONFIGURATION =====
+    // ⚠️ IMPORTANT: Google Sign-In Configuration
+    // The default Client ID below is a demo ID and will show "Access blocked: Authorization error"
+    // To fix this, you MUST create your own Google OAuth Client ID:
+    // 1. Go to https://console.cloud.google.com/apis/credentials
+    // 2. Create a new OAuth 2.0 Client ID (Web application type)
+    // 3. Add your domain to "Authorized JavaScript origins"
+    // 4. Replace the GOOGLE_CLIENT_ID below with your Client ID
+    // 
+    // For detailed instructions, see: ENV_SETUP_GUIDE.md
+    const GOOGLE_CLIENT_ID = '263202480558-jm6e5brpr0l00nlrcrer2vjvvtpcfr1r.apps.googleusercontent.com';
+    
     // ===== Consolidated Application Logic =====
     
     // Safety Timeout: If app doesn't load in 5 seconds, hide loader anyway so user can see what's wrong (or right)
@@ -968,16 +1086,18 @@
         if (typeof google === 'undefined' || !google.accounts) {
             console.error("Google library not loaded. Check network connection.");
             console.log("typeof google:", typeof google);
+            
+            // Show error message to user
+            const btnDiv = document.getElementById('buttonDiv');
+            if (btnDiv) {
+                btnDiv.innerHTML = '<div style="padding: 10px; background: #fee; border: 1px solid #fcc; border-radius: 4px; color: #c00; font-size: 12px; max-width: 300px;">⚠️ Google Sign-In unavailable. Check network connection.</div>';
+            }
             return;
         }
         try {
             console.log("Initializing Google Sign-In...");
             google.accounts.id.initialize({
-                // ⚠️ IMPORTANT: Replace this with YOUR Google Client ID from Google Cloud Console
-                // See ENV_SETUP_GUIDE.md for detailed instructions
-                // The demo Client ID below will NOT work - you'll get "Access blocked" error
-                // Get yours from: https://console.cloud.google.com/apis/credentials
-                client_id: '263202480558-jm6e5brpr0l00nlrcrer2vjvvtpcfr1r.apps.googleusercontent.com',
+                client_id: GOOGLE_CLIENT_ID,
                 callback: window.handleCredentialResponse,
                 auto_select: false
             });
@@ -987,16 +1107,33 @@
             console.log("buttonDiv display style:", btnDiv ? btnDiv.style.display : 'element not found');
             
             if (btnDiv) {
+                // Clear any previous error messages
+                btnDiv.innerHTML = '';
+                
                 google.accounts.id.renderButton(
                     btnDiv,
                     { theme: 'outline', size: 'large', locale: 'en' }
                 );
                 console.log("Google Sign-In button rendered successfully");
+                
+                // Show configuration notice if using demo Client ID
+                if (GOOGLE_CLIENT_ID === '263202480558-jm6e5brpr0l00nlrcrer2vjvvtpcfr1r.apps.googleusercontent.com') {
+                    const notice = document.createElement('div');
+                    notice.style.cssText = 'margin-top: 8px; padding: 8px; background: #fff3cd; border: 1px solid #ffc107; border-radius: 4px; color: #856404; font-size: 11px; max-width: 300px;';
+                    notice.innerHTML = '⚠️ Using demo Client ID. Sign-in may fail with "Access blocked" error. See <a href="ENV_SETUP_GUIDE.md" target="_blank" style="color: #004085; text-decoration: underline;">setup guide</a> to configure your own.';
+                    btnDiv.appendChild(notice);
+                }
             } else {
                 console.error("buttonDiv element not found!");
             }
         } catch (e) {
             console.error("Auth Init Error:", e);
+            
+            // Show error to user
+            const btnDiv = document.getElementById('buttonDiv');
+            if (btnDiv) {
+                btnDiv.innerHTML = '<div style="padding: 10px; background: #fee; border: 1px solid #fcc; border-radius: 4px; color: #c00; font-size: 12px; max-width: 300px;">⚠️ Google Sign-In error: ' + e.message + '</div>';
+            }
         }
     };
 
@@ -1482,6 +1619,18 @@
             // Text tool elements
             const textInputOverlay = document.getElementById('text-input-overlay');
             const textInput = document.getElementById('text-input');
+            const textFontFamily = document.getElementById('text-font-family');
+            const textFontSize = document.getElementById('text-font-size');
+            const textBoldBtn = document.getElementById('text-bold');
+            const textItalicBtn = document.getElementById('text-italic');
+            const textUnderlineBtn = document.getElementById('text-underline');
+            const textSubmitBtn = document.getElementById('text-submit');
+            const textCancelBtn = document.getElementById('text-cancel');
+            
+            // Text formatting state
+            let textBold = false;
+            let textItalic = false;
+            let textUnderline = false;
             
             // (Canvas Tool)
             const canvasBtn = document.getElementById('canvas-btn');
@@ -1782,8 +1931,35 @@
                 // Handle text rendering
                 if (stroke.type === 'text') {
                     ctx.fillStyle = stroke.color;
-                    ctx.font = `${stroke.fontSize}px sans-serif`;
-                    ctx.fillText(stroke.text, stroke.x, stroke.y);
+                    
+                    // Build font string with formatting
+                    let fontStyle = '';
+                    if (stroke.italic) fontStyle += 'italic ';
+                    if (stroke.bold) fontStyle += 'bold ';
+                    
+                    const fontSize = stroke.fontSize || 16;
+                    const fontFamily = stroke.fontFamily || 'Arial, sans-serif';
+                    ctx.font = `${fontStyle}${fontSize}px ${fontFamily}`;
+                    
+                    // Handle multi-line text
+                    const lines = stroke.text.split('\n');
+                    const lineHeight = fontSize * 1.2;
+                    
+                    lines.forEach((line, index) => {
+                        const y = stroke.y + (index * lineHeight);
+                        ctx.fillText(line, stroke.x, y);
+                        
+                        // Draw underline if needed
+                        if (stroke.underline) {
+                            const textWidth = ctx.measureText(line).width;
+                            ctx.beginPath();
+                            ctx.strokeStyle = stroke.color;
+                            ctx.lineWidth = Math.max(1, fontSize / 16);
+                            ctx.moveTo(stroke.x, y + 2);
+                            ctx.lineTo(stroke.x + textWidth, y + 2);
+                            ctx.stroke();
+                        }
+                    });
                     return;
                 }
                 
@@ -1872,12 +2048,18 @@
             function isPointNearStroke(worldPoint, stroke) {
                 // Handle text
                 if (stroke.type === 'text') {
-                    // Rough bounding box for text
+                    // Better bounding box for text with multi-line support
                     const fontSize = stroke.fontSize || 16;
-                    const textWidth = stroke.text.length * fontSize * 0.6; // Approximate
-                    const textHeight = fontSize;
-                    return (worldPoint.x >= stroke.x && worldPoint.x <= stroke.x + textWidth &&
-                            worldPoint.y >= stroke.y - textHeight && worldPoint.y <= stroke.y);
+                    const lines = stroke.text.split('\n');
+                    const lineHeight = fontSize * 1.2;
+                    const totalHeight = lines.length * lineHeight;
+                    
+                    // Estimate text width (use longest line)
+                    const maxLineLength = Math.max(...lines.map(l => l.length));
+                    const textWidth = maxLineLength * fontSize * 0.6; // Approximate
+                    
+                    return (worldPoint.x >= stroke.x - 10 && worldPoint.x <= stroke.x + textWidth + 10 &&
+                            worldPoint.y >= stroke.y - fontSize && worldPoint.y <= stroke.y + totalHeight);
                 }
                 
                 const screenPixelTolerance = 5 / viewZoom; 
@@ -2198,37 +2380,124 @@
                 });
             }
             
-            // Text input handling
+            // Text formatting button handlers
+            if (textBoldBtn) {
+                textBoldBtn.addEventListener('click', () => {
+                    textBold = !textBold;
+                    textBoldBtn.classList.toggle('active', textBold);
+                    updateTextInputStyle();
+                });
+            }
+            
+            if (textItalicBtn) {
+                textItalicBtn.addEventListener('click', () => {
+                    textItalic = !textItalic;
+                    textItalicBtn.classList.toggle('active', textItalic);
+                    updateTextInputStyle();
+                });
+            }
+            
+            if (textUnderlineBtn) {
+                textUnderlineBtn.addEventListener('click', () => {
+                    textUnderline = !textUnderline;
+                    textUnderlineBtn.classList.toggle('active', textUnderline);
+                    updateTextInputStyle();
+                });
+            }
+            
+            // Update textarea style based on formatting
+            function updateTextInputStyle() {
+                if (textInput) {
+                    textInput.style.fontWeight = textBold ? 'bold' : 'normal';
+                    textInput.style.fontStyle = textItalic ? 'italic' : 'normal';
+                    textInput.style.textDecoration = textUnderline ? 'underline' : 'none';
+                    textInput.style.fontFamily = textFontFamily.value;
+                    textInput.style.fontSize = textFontSize.value + 'px';
+                }
+            }
+            
+            // Font family change handler
+            if (textFontFamily) {
+                textFontFamily.addEventListener('change', updateTextInputStyle);
+            }
+            
+            // Font size change handler
+            if (textFontSize) {
+                textFontSize.addEventListener('change', updateTextInputStyle);
+            }
+            
+            // Function to add text to canvas
+            function addTextToCanvas() {
+                if (textInput && textInput.value.trim()) {
+                    const textData = {
+                        type: 'text',
+                        text: textInput.value,
+                        x: parseFloat(textInputOverlay.dataset.x),
+                        y: parseFloat(textInputOverlay.dataset.y),
+                        color: currentColor,
+                        fontSize: parseInt(textFontSize.value),
+                        fontFamily: textFontFamily.value,
+                        bold: textBold,
+                        italic: textItalic,
+                        underline: textUnderline,
+                    };
+                    strokes.push(textData);
+                    addHistoryAction();
+                    render();
+                    autosave();
+                }
+                closeTextInput();
+            }
+            
+            // Function to close text input
+            function closeTextInput() {
+                textInputOverlay.classList.remove('active');
+                textInput.value = '';
+                textBold = false;
+                textItalic = false;
+                textUnderline = false;
+                textBoldBtn.classList.remove('active');
+                textItalicBtn.classList.remove('active');
+                textUnderlineBtn.classList.remove('active');
+            }
+            
+            // Text submit button
+            if (textSubmitBtn) {
+                textSubmitBtn.addEventListener('click', addTextToCanvas);
+            }
+            
+            // Text cancel button
+            if (textCancelBtn) {
+                textCancelBtn.addEventListener('click', closeTextInput);
+            }
+            
+            // Text input handling with keyboard shortcuts
             if (textInput) {
                 textInput.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter' || e.key === 'Escape') {
-                        if (e.key === 'Enter' && textInput.value.trim()) {
-                            // Add text to canvas
-                            const textData = {
-                                type: 'text',
-                                text: textInput.value,
-                                x: parseFloat(textInputOverlay.dataset.x),
-                                y: parseFloat(textInputOverlay.dataset.y),
-                                color: currentColor,
-                                fontSize: Math.max(16, currentBrushSize * 3),
-                            };
-                            strokes.push(textData);
-                            addHistoryAction();
-                            render();
-                            autosave();
-                        }
-                        textInputOverlay.classList.remove('active');
-                        textInput.value = '';
+                    // Ctrl+B for bold
+                    if (e.ctrlKey && e.key === 'b') {
+                        e.preventDefault();
+                        textBoldBtn.click();
                     }
-                });
-                
-                textInput.addEventListener('blur', () => {
-                    setTimeout(() => {
-                        if (textInputOverlay.classList.contains('active')) {
-                            textInputOverlay.classList.remove('active');
-                            textInput.value = '';
-                        }
-                    }, 200);
+                    // Ctrl+I for italic
+                    else if (e.ctrlKey && e.key === 'i') {
+                        e.preventDefault();
+                        textItalicBtn.click();
+                    }
+                    // Ctrl+U for underline
+                    else if (e.ctrlKey && e.key === 'u') {
+                        e.preventDefault();
+                        textUnderlineBtn.click();
+                    }
+                    // Ctrl+Enter to submit
+                    else if (e.ctrlKey && e.key === 'Enter') {
+                        e.preventDefault();
+                        addTextToCanvas();
+                    }
+                    // Escape to cancel
+                    else if (e.key === 'Escape') {
+                        closeTextInput();
+                    }
                 });
             }
             
