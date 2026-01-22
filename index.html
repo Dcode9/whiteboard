@@ -1686,14 +1686,16 @@
         
         // Determine if this is an update or new save
         if (currentCloudBoardId) {
-          // Update existing board
-          const response = await fetch(`/api/update/${currentCloudBoardId}`, {
-            method: 'PUT',
+          // Update existing board - include ID in the save request
+          const response = await fetch('/api/save', {
+            method: 'POST',
             headers: {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify({
+              id: currentCloudBoardId, // Include ID to update existing
+              title: currentCloudBoardTitle,
               drawingData: drawingData
             })
           });
