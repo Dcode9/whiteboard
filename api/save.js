@@ -69,7 +69,7 @@ module.exports = async (req, res) => {
     const userId = user.userId;
     const userEmail = user.email;
     
-    const { drawingData, title } = req.body;
+    const { id, drawingData, title } = req.body;
     
     if (!drawingData || !title) {
       return res.status(400).json({ error: 'Missing drawingData or title' });
@@ -79,30 +79,51 @@ module.exports = async (req, res) => {
       return res.status(500).json({ error: 'Supabase not configured' });
     }
     
-    // Save to Supabase
+    // Save to Supabase (create or update)
     const supabase = getSupabase();
-    const { data, error } = await supabase
-      .from('drawings')
-      .insert([
-        {
-          user_id: userId,
-          user_email: userEmail,
+    let data;
+    let error;
+    
+    if (id) {
+      ({ data, error } = await supabase
+        .from('drawings')
+        .update({
           title: title,
           drawing_data: drawingData,
-          created_at: new Date().toISOString()
-        }
-      ])
-      .select();
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id)
+        .eq('user_id', userId)
+        .select());
+    } else {
+      ({ data, error } = await supabase
+        .from('drawings')
+        .insert([
+          {
+            user_id: userId,
+            user_email: userEmail,
+            title: title,
+            drawing_data: drawingData,
+            created_at: new Date().toISOString()
+          }
+        ])
+        .select());
+    }
     
     if (error) {
       console.error('Supabase save error:', error);
       return res.status(500).json({ error: 'Failed to save drawing', details: error.message });
     }
     
+    if (!data || data.length === 0) {
+      return res.status(404).json({ error: 'Drawing not found or not owned by user' });
+    }
+    
     return res.json({
       success: true,
+      id: data[0].id,
       drawingId: data[0].id,
-      message: 'Drawing saved successfully'
+      message: id ? 'Drawing updated successfully' : 'Drawing saved successfully'
     });
     
   } catch (error) {
