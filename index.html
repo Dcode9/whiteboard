@@ -951,7 +951,7 @@
             <div id="toolbar" class="relative bg-white rounded-lg shadow-xl p-3 flex items-center justify-start flex-nowrap gap-x-2 md:gap-x-4 select-none overflow-x-auto max-w-[95vw] pointer-events-auto">
                 
                 <div id="move-tool-wrapper" class="flex flex-col items-center">
-                    <button id="move-btn" class="tool-btn rounded-md hover:bg-gray-200" title="Move Shapes (1)">
+                    <button id="move-btn" class="tool-btn rounded-md hover:bg-gray-200" title="Move (1)">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 pointer-events-none">
                             <path d="M12 2v20"></path>
                             <path d="m7 7 5-5 5 5"></path>
@@ -2535,7 +2535,7 @@
 
             function resizeShapeToPoint(stroke, worldPoint) {
                 if (!stroke || !isShapeStroke(stroke) || !stroke.points || stroke.points.length < 2) return;
-                stroke.points[1] = { x: worldPoint.x, y: worldPoint.y };
+                stroke.points[1] = { ...stroke.points[1], x: worldPoint.x, y: worldPoint.y };
             }
 
             // --- Drawing Functions ---
@@ -3284,7 +3284,7 @@
                         } else { 
                             customCursorCircle.style.display = 'none';
                             customCursorEraser.style.display = 'none';
-                            canvas.style.cursor = currentTool === 'move' ? 'move' : 'grab';
+                            canvas.style.cursor = 'grab';
                         }
                     } else {
                         customCursorCircle.style.display = 'none';
