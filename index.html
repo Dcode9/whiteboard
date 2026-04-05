@@ -2481,7 +2481,6 @@
                         lastMovePoint = worldPoint;
                         hasMovedShape = false;
                         isDrawing = true;
-                        addHistoryAction();
                     } else {
                         isDrawing = false;
                         movingStrokeIndex = -1;
@@ -2531,6 +2530,22 @@
                 }
                 if (isDrawing) {
                     const worldPoint = screenToWorld(screenX, screenY);
+                    if (currentTool === 'move') {
+                        if (movingStrokeIndex !== -1 && lastMovePoint) {
+                            const dx = worldPoint.x - lastMovePoint.x;
+                            const dy = worldPoint.y - lastMovePoint.y;
+                            if (dx !== 0 || dy !== 0) {
+                                if (!hasMovedShape) {
+                                    addHistoryAction();
+                                }
+                                moveStrokeBy(strokes[movingStrokeIndex], dx, dy);
+                                lastMovePoint = worldPoint;
+                                hasMovedShape = true;
+                                render();
+                            }
+                        }
+                        return;
+                    }
                     if (currentTool === 'eraser') {
                         if (currentEraserMode === 'object') {
                             if (findAndRemoveStroke(worldPoint)) {
@@ -2539,19 +2554,6 @@
                         } else { // Pixel eraser
                             if (currentPath) {
                                 currentPath.points.push(worldPoint);
-                                render();
-                            }
-                        }
-                        return;
-                    }
-                    if (currentTool === 'move') {
-                        if (movingStrokeIndex !== -1 && lastMovePoint) {
-                            const dx = worldPoint.x - lastMovePoint.x;
-                            const dy = worldPoint.y - lastMovePoint.y;
-                            if (dx !== 0 || dy !== 0) {
-                                moveStrokeBy(strokes[movingStrokeIndex], dx, dy);
-                                lastMovePoint = worldPoint;
-                                hasMovedShape = true;
                                 render();
                             }
                         }
@@ -2607,11 +2609,7 @@
                             currentPath = null;
                         }
                     } else if (currentTool === 'move') {
-                        if (movingStrokeIndex !== -1 && hasMovedShape) {
-                            didChange = true;
-                        } else {
-                            undoStack.pop();
-                        }
+                        didChange = movingStrokeIndex !== -1 && hasMovedShape;
                         movingStrokeIndex = -1;
                         lastMovePoint = null;
                         hasMovedShape = false;
@@ -3120,7 +3118,7 @@
                         } else { 
                             customCursorCircle.style.display = 'none';
                             customCursorEraser.style.display = 'none';
-                            canvas.style.cursor = currentTool === 'move' ? 'move' : 'grab';
+                            canvas.style.cursor = currentTool === 'pan' ? 'grab' : 'move';
                         }
                     } else {
                         customCursorCircle.style.display = 'none';
