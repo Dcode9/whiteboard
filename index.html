@@ -951,7 +951,7 @@
             <div id="toolbar" class="relative bg-white rounded-lg shadow-xl p-3 flex items-center justify-start flex-nowrap gap-x-2 md:gap-x-4 select-none overflow-x-auto max-w-[95vw] pointer-events-auto">
                 
                 <div id="move-tool-wrapper" class="flex flex-col items-center">
-                    <button id="move-btn" class="tool-btn rounded-md hover:bg-gray-200" title="Move (1)">
+                    <button id="move-btn" class="tool-btn rounded-md hover:bg-gray-200" title="Move (1)" aria-label="Move tool">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 pointer-events-none">
                             <path d="M12 2v20"></path>
                             <path d="m7 7 5-5 5 5"></path>
@@ -3284,7 +3284,7 @@
                         } else { 
                             customCursorCircle.style.display = 'none';
                             customCursorEraser.style.display = 'none';
-                            canvas.style.cursor = 'grab';
+                            canvas.style.cursor = isPanning ? 'grabbing' : 'grab';
                         }
                     } else {
                         customCursorCircle.style.display = 'none';
