@@ -1957,9 +1957,11 @@
             let currentBrushSize = 5;
             let currentTool = 'pen'; 
             let originalTool = 'pen'; 
+            let selectedStrokeIndex = -1;
             let movingStrokeIndex = -1;
             let lastMovePoint = null;
             let hasMovedShape = false;
+            let moveInteractionMode = 'none'; // 'none' | 'move' | 'resize'
             
             let currentEraserMode = 'object';
             let currentEraserSize = 20;
@@ -2163,6 +2165,9 @@
                 strokes = [];
                 undoStack = [];
                 redoStack = [];
+                selectedStrokeIndex = -1;
+                movingStrokeIndex = -1;
+                moveInteractionMode = 'none';
                 backgroundColor = '#FFFFFF';
                 backgroundPattern = 'plain';
                 viewOffset = { x: 0, y: 0 };
@@ -2197,6 +2202,9 @@
                 redoStack.push(JSON.stringify(strokes));
                 try {
                     strokes = JSON.parse(undoStack.pop());
+                    selectedStrokeIndex = -1;
+                    movingStrokeIndex = -1;
+                    moveInteractionMode = 'none';
                     updateUndoRedoButtons();
                     render();
                     saveStrokesAndSettings();
@@ -2208,6 +2216,9 @@
                 undoStack.push(JSON.stringify(strokes));
                 try {
                     strokes = JSON.parse(redoStack.pop());
+                    selectedStrokeIndex = -1;
+                    movingStrokeIndex = -1;
+                    moveInteractionMode = 'none';
                     updateUndoRedoButtons();
                     render();
                     saveStrokesAndSettings();
@@ -2326,6 +2337,7 @@
                 if (currentPath) {
                     drawStroke(currentPath);
                 }
+                drawSelectionOverlay();
                 ctx.restore();
             }
 
@@ -2381,6 +2393,11 @@
                 for (let i = strokes.length - 1; i >= 0; i--) {
                     if (isPointNearStroke(worldPoint, strokes[i])) {
                         strokes.splice(i, 1);
+                        if (selectedStrokeIndex === i) {
+                            selectedStrokeIndex = -1;
+                        } else if (selectedStrokeIndex > i) {
+                            selectedStrokeIndex--;
+                        }
                         didDelete = true;
                         break; 
                     }
@@ -2395,6 +2412,86 @@
                 return stroke && ['line', 'rect', 'circle', 'triangle'].includes(stroke.tool);
             }
 
+            function getStrokeBounds(stroke) {
+                if (!stroke) return null;
+                if (stroke.type === 'text') {
+                    const fontSize = stroke.fontSize || 16;
+                    const lines = (stroke.text || '').split('\n');
+                    const lineHeight = fontSize * 1.2;
+                    const totalHeight = Math.max(1, lines.length) * lineHeight;
+                    const maxLineLength = Math.max(1, ...lines.map(l => l.length));
+                    const textWidth = maxLineLength * fontSize * 0.6;
+                    return {
+                        minX: stroke.x,
+                        maxX: stroke.x + textWidth,
+                        minY: stroke.y - fontSize,
+                        maxY: stroke.y + totalHeight
+                    };
+                }
+                if (stroke.tool === 'pen' && stroke.points?.length) {
+                    const xs = stroke.points.map(p => p.x);
+                    const ys = stroke.points.map(p => p.y);
+                    const pad = (stroke.size || 1) / 2;
+                    return {
+                        minX: Math.min(...xs) - pad,
+                        maxX: Math.max(...xs) + pad,
+                        minY: Math.min(...ys) - pad,
+                        maxY: Math.max(...ys) + pad
+                    };
+                }
+                if (!stroke.points || stroke.points.length < 2) return null;
+                const p1 = stroke.points[0];
+                const p2 = stroke.points[1];
+                if (stroke.tool === 'circle') {
+                    const radius = getDistance(p1, p2);
+                    return {
+                        minX: p1.x - radius,
+                        maxX: p1.x + radius,
+                        minY: p1.y - radius,
+                        maxY: p1.y + radius
+                    };
+                }
+                return {
+                    minX: Math.min(p1.x, p2.x),
+                    maxX: Math.max(p1.x, p2.x),
+                    minY: Math.min(p1.y, p2.y),
+                    maxY: Math.max(p1.y, p2.y)
+                };
+            }
+
+            function drawSelectionOverlay() {
+                if (currentTool !== 'move' || selectedStrokeIndex < 0 || selectedStrokeIndex >= strokes.length) return;
+                const stroke = strokes[selectedStrokeIndex];
+                const bounds = getStrokeBounds(stroke);
+                if (!bounds) return;
+                const pad = 8 / viewZoom;
+                ctx.save();
+                ctx.strokeStyle = '#2563eb';
+                ctx.fillStyle = '#ffffff';
+                ctx.lineWidth = 1.5 / viewZoom;
+                ctx.setLineDash([6 / viewZoom, 4 / viewZoom]);
+                ctx.strokeRect(bounds.minX - pad, bounds.minY - pad, (bounds.maxX - bounds.minX) + pad * 2, (bounds.maxY - bounds.minY) + pad * 2);
+                ctx.setLineDash([]);
+                if (isShapeStroke(stroke)) {
+                    const handle = getShapeResizeHandlePoint(stroke);
+                    const size = 10 / viewZoom;
+                    ctx.fillRect(handle.x - size / 2, handle.y - size / 2, size, size);
+                    ctx.strokeRect(handle.x - size / 2, handle.y - size / 2, size, size);
+                }
+                ctx.restore();
+            }
+
+            function getShapeResizeHandlePoint(stroke) {
+                return stroke.points[1];
+            }
+
+            function isPointOnResizeHandle(worldPoint, stroke) {
+                if (!isShapeStroke(stroke)) return false;
+                const handle = getShapeResizeHandlePoint(stroke);
+                const size = 12 / viewZoom;
+                return Math.abs(worldPoint.x - handle.x) <= size / 2 && Math.abs(worldPoint.y - handle.y) <= size / 2;
+            }
+
             function findShapeStrokeIndex(worldPoint) {
                 for (let i = strokes.length - 1; i >= 0; i--) {
                     const stroke = strokes[i];
@@ -2405,9 +2502,40 @@
                 return -1;
             }
 
+            function findSelectableStrokeIndex(worldPoint) {
+                for (let i = strokes.length - 1; i >= 0; i--) {
+                    if (isPointNearStroke(worldPoint, strokes[i])) {
+                        return i;
+                    }
+                }
+                return -1;
+            }
+
+            function getMoveCursorAtPoint(worldPoint) {
+                if (selectedStrokeIndex >= 0 && selectedStrokeIndex < strokes.length) {
+                    const selectedStroke = strokes[selectedStrokeIndex];
+                    if (isPointOnResizeHandle(worldPoint, selectedStroke)) {
+                        return 'nwse-resize';
+                    }
+                }
+                const hitIndex = findSelectableStrokeIndex(worldPoint);
+                return hitIndex !== -1 ? 'move' : 'default';
+            }
+
             function moveStrokeBy(stroke, dx, dy) {
-                if (!stroke || !stroke.points) return;
+                if (!stroke) return;
+                if (stroke.type === 'text') {
+                    stroke.x += dx;
+                    stroke.y += dy;
+                    return;
+                }
+                if (!stroke.points) return;
                 stroke.points = stroke.points.map(p => ({ x: p.x + dx, y: p.y + dy }));
+            }
+
+            function resizeShapeToPoint(stroke, worldPoint) {
+                if (!stroke || !isShapeStroke(stroke) || !stroke.points || stroke.points.length < 2) return;
+                stroke.points[1] = { x: worldPoint.x, y: worldPoint.y };
             }
 
             // --- Drawing Functions ---
@@ -2475,18 +2603,32 @@
                     return;
                 }
                 if (currentTool === 'move') {
-                    const shapeIndex = findShapeStrokeIndex(worldPoint);
-                    if (shapeIndex !== -1) {
-                        movingStrokeIndex = shapeIndex;
+                    const selectedStroke = selectedStrokeIndex >= 0 ? strokes[selectedStrokeIndex] : null;
+                    if (selectedStroke && isPointOnResizeHandle(worldPoint, selectedStroke)) {
+                        movingStrokeIndex = selectedStrokeIndex;
+                        moveInteractionMode = 'resize';
+                        lastMovePoint = worldPoint;
+                        hasMovedShape = false;
+                        isDrawing = true;
+                        return;
+                    }
+                    const selectableIndex = findSelectableStrokeIndex(worldPoint);
+                    if (selectableIndex !== -1) {
+                        selectedStrokeIndex = selectableIndex;
+                        movingStrokeIndex = selectableIndex;
+                        moveInteractionMode = 'move';
                         lastMovePoint = worldPoint;
                         hasMovedShape = false;
                         isDrawing = true;
                     } else {
+                        selectedStrokeIndex = -1;
                         isDrawing = false;
                         movingStrokeIndex = -1;
+                        moveInteractionMode = 'none';
                         lastMovePoint = null;
                         hasMovedShape = false;
                     }
+                    render();
                     return;
                 }
                 isDrawing = true;
@@ -2532,16 +2674,25 @@
                     const worldPoint = screenToWorld(screenX, screenY);
                     if (currentTool === 'move') {
                         if (movingStrokeIndex !== -1 && lastMovePoint) {
-                            const dx = worldPoint.x - lastMovePoint.x;
-                            const dy = worldPoint.y - lastMovePoint.y;
-                            if (dx !== 0 || dy !== 0) {
+                            if (moveInteractionMode === 'resize') {
                                 if (!hasMovedShape) {
                                     addHistoryAction();
                                 }
-                                moveStrokeBy(strokes[movingStrokeIndex], dx, dy);
-                                lastMovePoint = worldPoint;
+                                resizeShapeToPoint(strokes[movingStrokeIndex], worldPoint);
                                 hasMovedShape = true;
                                 render();
+                            } else {
+                                const dx = worldPoint.x - lastMovePoint.x;
+                                const dy = worldPoint.y - lastMovePoint.y;
+                                if (dx !== 0 || dy !== 0) {
+                                    if (!hasMovedShape) {
+                                        addHistoryAction();
+                                    }
+                                    moveStrokeBy(strokes[movingStrokeIndex], dx, dy);
+                                    lastMovePoint = worldPoint;
+                                    hasMovedShape = true;
+                                    render();
+                                }
                             }
                         }
                         return;
@@ -2611,6 +2762,7 @@
                     } else if (currentTool === 'move') {
                         didChange = movingStrokeIndex !== -1 && hasMovedShape;
                         movingStrokeIndex = -1;
+                        moveInteractionMode = 'none';
                         lastMovePoint = null;
                         hasMovedShape = false;
                     } else if (currentPath) {
@@ -2656,6 +2808,12 @@
                 }
                 customCursorCircle.style.display = 'none';
                 customCursorEraser.style.display = 'none';
+                if (activeTool !== 'move') {
+                    selectedStrokeIndex = -1;
+                    movingStrokeIndex = -1;
+                    moveInteractionMode = 'none';
+                }
+                render();
             }
             
             function positionPopover(popover, buttonRect) {
@@ -2967,6 +3125,9 @@
                     addHistoryAction();
                 }
                 strokes = [];
+                selectedStrokeIndex = -1;
+                movingStrokeIndex = -1;
+                moveInteractionMode = 'none';
                 viewOffset = { x: 0, y: 0 };
                 viewZoom = 1; 
                 render();
@@ -3111,6 +3272,11 @@
                             customCursorCircle.style.display = 'none';
                             customCursorEraser.style.display = 'block';
                             canvas.style.cursor = 'none';
+                        } else if (currentTool === 'move') {
+                            customCursorCircle.style.display = 'none';
+                            customCursorEraser.style.display = 'none';
+                            const worldPoint = screenToWorld(clientX, clientY);
+                            canvas.style.cursor = getMoveCursorAtPoint(worldPoint);
                         } else if (currentTool !== 'pan' && currentTool !== 'move') {
                             customCursorCircle.style.display = 'block';
                             customCursorEraser.style.display = 'none';
@@ -3179,7 +3345,17 @@
                     canvasPopover.classList.remove('active');
                 } else if (e.key === 'Delete') {
                     e.preventDefault();
-                    confirmModal.classList.remove('hidden');
+                    if (currentTool === 'move' && selectedStrokeIndex >= 0 && selectedStrokeIndex < strokes.length) {
+                        addHistoryAction();
+                        strokes.splice(selectedStrokeIndex, 1);
+                        selectedStrokeIndex = -1;
+                        movingStrokeIndex = -1;
+                        moveInteractionMode = 'none';
+                        render();
+                        saveStrokesAndSettings();
+                    } else {
+                        confirmModal.classList.remove('hidden');
+                    }
                 }
             });
             
