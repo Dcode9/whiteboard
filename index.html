@@ -396,31 +396,37 @@
             position: fixed;
             z-index: 100;
             display: flex;
+            align-items: center;
             justify-content: center;
+        }
+
+        #whiteboard-view.active #toolbar-wrapper.toolbar-dock-top,
+        #whiteboard-view.active #toolbar-wrapper.toolbar-dock-bottom {
+            left: 50%;
+            transform: translateX(-50%);
         }
 
         #whiteboard-view.active #toolbar-wrapper.toolbar-dock-top {
             top: 16px;
-            left: 50%;
-            transform: translateX(-50%);
         }
 
         #whiteboard-view.active #toolbar-wrapper.toolbar-dock-bottom {
             bottom: 16px;
-            left: 50%;
-            transform: translateX(-50%);
+        }
+
+        #whiteboard-view.active #toolbar-wrapper.toolbar-dock-left,
+        #whiteboard-view.active #toolbar-wrapper.toolbar-dock-right {
+            top: 50%;
+            justify-content: flex-start;
+            transform: translateY(-50%);
         }
 
         #whiteboard-view.active #toolbar-wrapper.toolbar-dock-left {
             left: 16px;
-            top: 50%;
-            transform: translateY(-50%);
         }
 
         #whiteboard-view.active #toolbar-wrapper.toolbar-dock-right {
             right: 16px;
-            top: 50%;
-            transform: translateY(-50%);
         }
 
         #whiteboard-view.active #toolbar {
@@ -431,14 +437,27 @@
             box-shadow: 0 12px 30px -12px rgba(15, 23, 42, 0.35);
             padding: 10px;
             gap: 0.5rem;
+            width: max-content;
+            max-width: min(95vw, 1100px);
         }
 
         #whiteboard-view.active .toolbar-dock-left #toolbar,
         #whiteboard-view.active .toolbar-dock-right #toolbar {
             flex-direction: column;
             align-items: stretch;
-            max-height: min(86vh, 860px);
+            width: auto;
+            max-width: min(20rem, calc(100vw - 32px));
+            max-height: min(86vh, calc(100vh - 32px));
             overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        #whiteboard-view.active .toolbar-dock-top #toolbar,
+        #whiteboard-view.active .toolbar-dock-bottom #toolbar {
+            flex-direction: row;
+            align-items: flex-start;
+            overflow-x: auto;
+            overflow-y: hidden;
         }
 
         #whiteboard-view.active .toolbar-dock-bottom #toolbar {
@@ -954,6 +973,28 @@
             border-color: #2563eb;
             color: #1d4ed8;
         }
+
+        .pen-mode-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 6px;
+            width: 100%;
+        }
+
+        .pen-mode-grid button {
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            background: white;
+            padding: 8px 6px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .pen-mode-grid button.active {
+            background: #dbeafe;
+            border-color: #2563eb;
+            color: #1d4ed8;
+        }
         
         /* Custom prompt modal */
         .custom-modal-overlay {
@@ -1141,10 +1182,10 @@
                 <div id="move-tool-wrapper" class="tool-group">
                     <button id="move-btn" class="tool-btn tool-action rounded-md hover:bg-gray-200" title="Move (1)" aria-label="Move tool">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 pointer-events-none">
-                            <path d="M12 2v20"></path>
-                            <path d="m5 9 7-7 7 7"></path>
-                            <path d="m5 15 7 7 7-7"></path>
-                            <path d="M2 12h20"></path>
+                            <path d="M12 3v18"></path>
+                            <path d="m8 7 4-4 4 4"></path>
+                            <path d="m8 17 4 4 4-4"></path>
+                            <path d="M3 12h18"></path>
                         </svg>
                     </button>
                     <div class="tool-meta"><span class="tool-label">Move</span><span class="tool-shortcut">1</span></div>
@@ -1152,7 +1193,8 @@
                 <div id="pen-tool-wrapper" class="tool-group">
                     <button id="pen-btn" class="tool-btn tool-action rounded-md active" title="Pen (2)">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 pointer-events-none" style="stroke: #000000;">
-                            <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+                            <path d="M14.5 3.5 20.5 9.5 9 21H3v-6Z"></path>
+                            <path d="M14.5 3.5 10 8"></path>
                         </svg>
                     </button>
                     <div class="tool-meta"><span class="tool-label">Pen</span><span class="tool-shortcut">2</span></div>
@@ -1160,8 +1202,8 @@
                 <div id="eraser-tool-wrapper" class="tool-group">
                     <button id="eraser-btn" class="tool-btn tool-action rounded-md hover:bg-gray-200" title="Eraser (3)">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 pointer-events-none">
-                            <path d="M20.2 13.5 13 20.7c-.4.4-1 .4-1.4 0L3.3 12.4c-.4-.4-.4-1 0-1.4L10.5 3.8c.8-.8 2-.8 2.8 0l6.9 6.9c.8.8.8 2 0 2.8Z"></path>
-                            <path d="m7 14 3-3"></path>
+                            <path d="m20 13-7.5 7.5H8.8L3 13l7.5-7.5a2 2 0 0 1 2.8 0L20 10.2Z"></path>
+                            <path d="M7.5 14.5 10.5 17.5"></path>
                         </svg>
                     </button>
                     <div class="tool-meta"><span class="tool-label">Eraser</span><span class="tool-shortcut">3</span></div>
@@ -1180,8 +1222,8 @@
                     <button id="undo-btn" class="tool-btn tool-action rounded-md hover:bg-gray-200" title="Undo (Ctrl+Z)">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 pointer-events-none">
                             <path d="M7 7H3v4"></path>
-                            <path d="M3.2 11a9 9 0 1 1 2.1 5.7"></path>
-                            <path d="m3 17 2.3-2.3"></path>
+                            <path d="M4 11a8 8 0 1 1 2.3 5.7"></path>
+                            <path d="m4 17 2.3-2.3"></path>
                         </svg>
                     </button>
                     <div class="tool-meta"><span class="tool-label">Undo</span><span class="tool-shortcut">Ctrl+Z</span></div>
@@ -1190,8 +1232,8 @@
                     <button id="redo-btn" class="tool-btn tool-action rounded-md hover:bg-gray-200" title="Redo (Ctrl+Y)">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 pointer-events-none">
                             <path d="M17 7h4v4"></path>
-                            <path d="M20.8 11a9 9 0 1 0-2.1 5.7"></path>
-                            <path d="m21 17-2.3-2.3"></path>
+                            <path d="M20 11a8 8 0 1 0-2.3 5.7"></path>
+                            <path d="m20 17-2.3-2.3"></path>
                         </svg>
                     </button>
                     <div class="tool-meta"><span class="tool-label">Redo</span><span class="tool-shortcut">Ctrl+Y</span></div>
@@ -1220,7 +1262,7 @@
                 <div class="flex flex-col items-center">
                     <button id="triangle-btn" class="tool-btn rounded-md hover:bg-gray-200" title="Triangle">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 pointer-events-none">
-                            <path d="M4 19h16L12 5Z"></path>
+                            <path d="M12 5 4 19h16Z"></path>
                         </svg>
                     </button>
                 </div>
@@ -1312,6 +1354,13 @@
                 <label class="text-sm font-medium text-gray-700 mb-2">Preview</label>
                 <div class="preview-box">
                     <div id="pen-preview"></div>
+                </div>
+            </div>
+            <div class="flex flex-col items-center">
+                <label class="text-sm font-medium text-gray-700 mb-2">Pen Mode</label>
+                <div class="pen-mode-grid">
+                    <button id="pen-draw-btn" class="active">Draw</button>
+                    <button id="pen-cut-btn">Cut</button>
                 </div>
             </div>
             <div class="flex flex-col items-center">
@@ -2125,6 +2174,8 @@
             const penPopover = document.getElementById('pen-popover');
             const eraserPopover = document.getElementById('eraser-popover');
             const canvasPopover = document.getElementById('canvas-popover');
+            const penDrawBtn = document.getElementById('pen-draw-btn');
+            const penCutBtn = document.getElementById('pen-cut-btn');
             
             // (Pen Popover)
             const colorPicker = document.getElementById('color-picker');
@@ -2189,6 +2240,7 @@
             
             let currentEraserMode = 'object';
             let currentEraserSize = 20;
+            let currentPenMode = 'draw';
             let currentTriangleType = 'isosceles';
             
             let backgroundColor = '#FFFFFF';
@@ -2320,6 +2372,15 @@
             function selectTool(tool, { keepSettingsOpen = false } = {}) {
                 currentTool = tool;
                 originalTool = tool;
+                if (!keepSettingsOpen) {
+                    if (tool === 'pen') {
+                        currentPenMode = 'draw';
+                        updatePenModeButtons();
+                    } else if (tool === 'eraser') {
+                        currentEraserMode = 'object';
+                        updateEraserModeButtons();
+                    }
+                }
                 updateActiveToolButton(tool);
                 if (!keepSettingsOpen) {
                     closeAllToolPopovers();
@@ -2327,15 +2388,33 @@
             }
 
             function showToolSettings(tool, buttonEl) {
+                selectTool(tool, { keepSettingsOpen: true });
                 openToolPopover(tool, buttonEl);
-                if (tool === 'pen') {
-                    currentTool = 'pen';
-                } else if (tool === 'eraser') {
-                    currentTool = 'eraser';
-                } else if (tool === 'triangle') {
-                    currentTool = 'triangle';
+            }
+
+            function updatePenModeButtons() {
+                if (penDrawBtn) {
+                    penDrawBtn.classList.toggle('active', currentPenMode === 'draw');
                 }
-                updateActiveToolButton(currentTool);
+                if (penCutBtn) {
+                    penCutBtn.classList.toggle('active', currentPenMode === 'cut');
+                }
+            }
+
+            if (penDrawBtn) {
+                penDrawBtn.addEventListener('click', () => {
+                    currentPenMode = 'draw';
+                    updatePenModeButtons();
+                    selectTool('pen', { keepSettingsOpen: true });
+                });
+            }
+
+            if (penCutBtn) {
+                penCutBtn.addEventListener('click', () => {
+                    currentPenMode = 'cut';
+                    updatePenModeButtons();
+                    selectTool('pen', { keepSettingsOpen: true });
+                });
             }
 
             function handleToolPress(tool, buttonEl) {
@@ -3097,9 +3176,9 @@
                 return false;
             }
 
-            function cutStrokesByPath(pathPoints) {
+            function cutStrokesByPath(pathPoints, sourceSize = currentEraserSize) {
                 if (!Array.isArray(pathPoints) || pathPoints.length === 0) return false;
-                const tolerance = Math.max(4, currentEraserSize * 0.4);
+                const tolerance = Math.max(8, sourceSize * 1.1);
                 const before = strokes.length;
                 strokes = strokes.filter((stroke) => {
                     if (!stroke || stroke.tool !== 'pen') return true;
@@ -3195,6 +3274,10 @@
                     return;
                 }
                 isDrawing = true;
+                if (currentTool === 'pen' && currentPenMode === 'cut') {
+                    currentPath = { id: Date.now(), tool: 'cut', color: currentColor, size: currentBrushSize, points: [worldPoint] };
+                    return;
+                }
                 if (currentTool === 'eraser') {
                     if (currentEraserMode === 'object') {
                         eraserHistorySnapshot = null;
@@ -3269,6 +3352,11 @@
                         }
                         return;
                     }
+                    if (currentPath && currentPath.tool === 'cut') {
+                        currentPath.points.push(worldPoint);
+                        render();
+                        return;
+                    }
                     if (currentTool === 'eraser') {
                         if (currentEraserMode === 'object') {
                             if (!eraserHistorySnapshot) {
@@ -3321,7 +3409,24 @@
                 if (isDrawing) {
                     isDrawing = false;
                     let didChange = false;
-                    if (currentTool === 'eraser') {
+                    if (currentPath && currentPath.tool === 'cut') {
+                        if (currentPath.points.length > 0) {
+                            if (currentPath.points.length === 1) {
+                                currentPath.points.push({ x: currentPath.points[0].x + 0.1, y: currentPath.points[0].y + 0.1 });
+                            }
+                            const previousState = JSON.stringify(strokes);
+                            if (cutStrokesByPath(currentPath.points, currentPath.size)) {
+                                redoStack = [];
+                                undoStack.push(previousState);
+                                if (undoStack.length > 50) {
+                                    undoStack.shift();
+                                }
+                                updateUndoRedoButtons();
+                                didChange = true;
+                            }
+                        }
+                        currentPath = null;
+                    } else if (currentTool === 'eraser') {
                         if (currentEraserMode === 'object') {
                             if (didDeleteInStroke) {
                                 if (eraserHistorySnapshot) {
@@ -3342,7 +3447,7 @@
                                     currentPath.points.push({ x: currentPath.points[0].x + 0.1, y: currentPath.points[0].y + 0.1 });
                                 }
                                 const previousState = JSON.stringify(strokes);
-                                if (cutStrokesByPath(currentPath.points)) {
+                                if (cutStrokesByPath(currentPath.points, currentPath.size)) {
                                     redoStack = [];
                                     undoStack.push(previousState);
                                     if (undoStack.length > 50) {
@@ -3891,34 +3996,16 @@
                     }
                 } else if (e.key === '1') {
                     e.preventDefault();
-                    currentTool = 'move';
-                    originalTool = 'move';
-                    updateActiveToolButton('move');
-                    penPopover.classList.remove('active');
-                    eraserPopover.classList.remove('active');
-                    canvasPopover.classList.remove('active');
+                    selectTool('move');
                 } else if (e.key === '2') {
                     e.preventDefault();
-                    currentTool = 'pen';
-                    originalTool = 'pen';
-                    updateActiveToolButton('pen');
-                    eraserPopover.classList.remove('active');
-                    canvasPopover.classList.remove('active');
+                    selectTool('pen');
                 } else if (e.key === '3') {
                     e.preventDefault();
-                    currentTool = 'eraser';
-                    originalTool = 'eraser';
-                    updateActiveToolButton('eraser');
-                    penPopover.classList.remove('active');
-                    canvasPopover.classList.remove('active');
+                    selectTool('eraser');
                 } else if (e.key === '4') {
                     e.preventDefault();
-                    currentTool = 'text';
-                    originalTool = 'text';
-                    updateActiveToolButton('text');
-                    penPopover.classList.remove('active');
-                    eraserPopover.classList.remove('active');
-                    canvasPopover.classList.remove('active');
+                    selectTool('text');
                 } else if (e.key === 'Delete') {
                     e.preventDefault();
                     if (currentTool === 'move' && selectedStrokeIndex >= 0 && selectedStrokeIndex < strokes.length) {
@@ -3985,6 +4072,7 @@
             updateToolbarDock(toolbarDockPosition, false);
             updateActiveToolButton(currentTool); 
             updateUndoRedoButtons(); 
+            updatePenModeButtons();
             updateEraserModeButtons();
             textInputOverlay.setAttribute('aria-hidden', 'true');
             textInputOverlay.style.visibility = 'hidden';
