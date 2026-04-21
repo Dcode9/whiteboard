@@ -3461,8 +3461,11 @@
                     const cutEnd = cutPoints[i];
                     for (const [strokeStart, strokeEnd] of strokeSegments) {
                         if (segmentsIntersect(cutStart, cutEnd, strokeStart, strokeEnd)) return true;
-                        if (distancePointToSegment(strokeStart, cutStart, cutEnd) <= tolerance) return true;
-                        if (distancePointToSegment(strokeEnd, cutStart, cutEnd) <= tolerance) return true;
+                        const thisTolerance = tolerance + (stroke.size ? stroke.size / 2 : 0);
+                        if (distancePointToSegment(cutStart, strokeStart, strokeEnd) <= thisTolerance) return true;
+                        if (distancePointToSegment(cutEnd, strokeStart, strokeEnd) <= thisTolerance) return true;
+                        if (distancePointToSegment(strokeStart, cutStart, cutEnd) <= thisTolerance) return true;
+                        if (distancePointToSegment(strokeEnd, cutStart, cutEnd) <= thisTolerance) return true;
                     }
                 }
                 return false;
