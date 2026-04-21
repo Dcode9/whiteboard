@@ -3217,8 +3217,20 @@
                     const lines = (stroke.text || '').split('\n');
                     const lineHeight = fontSize * 1.2;
                     const totalHeight = Math.max(1, lines.length) * lineHeight;
-                    const maxLineLength = Math.max(1, ...lines.map(l => l.length));
-                    const textWidth = maxLineLength * fontSize * 0.6;
+                    const normalizedLines = lines.length ? lines : [''];
+                    const fontStyle = `${stroke.italic ? 'italic ' : ''}${stroke.bold ? 'bold ' : ''}${fontSize}px ${stroke.fontFamily || 'Arial, sans-serif'}`;
+                    let textWidth = 0;
+                    if (ctx) {
+                        ctx.save();
+                        ctx.font = fontStyle;
+                        for (const line of normalizedLines) {
+                            textWidth = Math.max(textWidth, ctx.measureText(line || ' ').width);
+                        }
+                        ctx.restore();
+                    } else {
+                        const maxLineLength = Math.max(1, ...normalizedLines.map((line) => line.length));
+                        textWidth = maxLineLength * fontSize * 0.6;
+                    }
                     return {
                         minX: stroke.x,
                         maxX: stroke.x + textWidth,
@@ -3429,6 +3441,18 @@
                 return false;
             }
 
+            function segmentToSegmentDistance(segmentAStart, segmentAEnd, segmentBStart, segmentBEnd) {
+                if (segmentsIntersect(segmentAStart, segmentAEnd, segmentBStart, segmentBEnd)) {
+                    return 0;
+                }
+                return Math.min(
+                    distancePointToSegment(segmentAStart, segmentBStart, segmentBEnd),
+                    distancePointToSegment(segmentAEnd, segmentBStart, segmentBEnd),
+                    distancePointToSegment(segmentBStart, segmentAStart, segmentAEnd),
+                    distancePointToSegment(segmentBEnd, segmentAStart, segmentAEnd)
+                );
+            }
+
             function getStrokeSegments(stroke) {
                 if (!stroke || !stroke.points || stroke.points.length < 2) return [];
                 if (stroke.tool === 'pen') {
@@ -3460,12 +3484,10 @@
                     const cutStart = cutPoints[i - 1];
                     const cutEnd = cutPoints[i];
                     for (const [strokeStart, strokeEnd] of strokeSegments) {
-                        if (segmentsIntersect(cutStart, cutEnd, strokeStart, strokeEnd)) return true;
                         const thisTolerance = tolerance + (stroke.size ? stroke.size / 2 : 0);
-                        if (distancePointToSegment(cutStart, strokeStart, strokeEnd) <= thisTolerance) return true;
-                        if (distancePointToSegment(cutEnd, strokeStart, strokeEnd) <= thisTolerance) return true;
-                        if (distancePointToSegment(strokeStart, cutStart, cutEnd) <= thisTolerance) return true;
-                        if (distancePointToSegment(strokeEnd, cutStart, cutEnd) <= thisTolerance) return true;
+                        if (segmentToSegmentDistance(cutStart, cutEnd, strokeStart, strokeEnd) <= thisTolerance) {
+                            return true;
+                        }
                     }
                 }
                 return false;
@@ -3508,7 +3530,9 @@
 
             function cutStrokesByPath(pathPoints, sourceSize = currentEraserSize) {
                 if (!Array.isArray(pathPoints) || pathPoints.length === 0) return false;
-                const tolerance = Math.max(8, sourceSize * 1.1);
+                const zoomSafe = Math.max(0.15, viewZoom || 1);
+                const baseToleranceInScreenPx = Math.max(14, sourceSize * 1.8);
+                const tolerance = baseToleranceInScreenPx / zoomSafe;
                 const before = strokes.length;
                 strokes = strokes.filter((stroke) => {
                     if (!stroke) return true;
