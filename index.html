@@ -3578,19 +3578,6 @@
                         textBoldBtn.click();
                     }
                     // Ctrl+I for italic
-
-                canvasBtn.addEventListener('click', (event) => {
-                    event.stopPropagation();
-                    const wasActive = canvasPopover.classList.contains('active');
-                    closeAllToolPopovers();
-                    if (!wasActive) {
-                        canvasPopover.classList.add('active');
-                        canvasPopover.style.display = 'block';
-                        const btnRect = canvasBtn.getBoundingClientRect();
-                        positionPopover(canvasPopover, btnRect);
-                        canvasPopover.style.display = '';
-                    }
-                });
                     else if (e.ctrlKey && e.key === 'i') {
                         e.preventDefault();
                         textItalicBtn.click();
@@ -3611,6 +3598,20 @@
                     }
                 });
             }
+
+            canvasBtn.addEventListener('click', (event) => {
+                event.stopPropagation();
+                const wasActive = canvasPopover.classList.contains('active');
+                closeAllToolPopovers();
+                if (!wasActive) {
+                    canvasPopover.classList.add('active');
+                    canvasPopover.style.display = 'block';
+                    const btnRect = canvasBtn.getBoundingClientRect();
+                    positionPopover(canvasPopover, btnRect);
+                    canvasPopover.style.display = '';
+                }
+            });
+
             [lineBtn, rectBtn, circleBtn].forEach(btn => {
                 btn.addEventListener('click', () => {
                     const tool = toolButtons.find(b => b.el === btn).tool;
