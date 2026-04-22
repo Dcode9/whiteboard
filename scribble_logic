@@ -1,0 +1,544 @@
+import React, { useRef, useState, useEffect, useCallback } from 'react';
+import { Pen, Eraser, Trash2, Undo2, MousePointer2 } from 'lucide-react';
+
+// --- Math & Geometry Helpers for the Stroke Eraser ---
+
+// Calculate squared distance between two points
+const dist2 = (v, w) => Math.pow(v.x - w.x, 2) + Math.pow(v.y - w.y, 2);
+
+// Calculate distance from point p to line segment vw
+const distToSegment = (p, v, w) => {
+  const l2 = dist2(v, w);
+  if (l2 === 0) return Math.sqrt(dist2(p, v));
+  let t = ((p.x - v.x) * (w.x - v.x) + (p.y - v.y) * (w.y - v.y)) / l2;
+  t = Math.max(0, Math.min(1, t));
+  return Math.sqrt(dist2(p, { x: v.x + t * (w.x - v.x), y: v.y + t * (w.y - v.y) }));
+};
+
+// Check if line segment ab intersects line segment cd
+const intersects = (a, b, c, d) => {
+  const det = (a.x - b.x) * (c.y - d.y) - (a.y - b.y) * (c.x - d.x);
+  if (det === 0) return false;
+  const lambda = ((c.y - d.y) * (c.x - a.x) + (d.x - c.x) * (c.y - a.y)) / det;
+  const gamma = ((b.y - a.y) * (c.x - a.x) + (a.x - b.x) * (c.y - a.y)) / det;
+  return (0 < lambda && lambda < 1) && (0 < gamma && gamma < 1);
+};
+
+// --- Scribble Detection Helpers ---
+const getBoundingBox = (points) => {
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  for (const p of points) {
+    if (p.x < minX) minX = p.x;
+    if (p.x > maxX) maxX = p.x;
+    if (p.y < minY) minY = p.y;
+    if (p.y > maxY) maxY = p.y;
+  }
+  return { minX, minY, maxX, maxY };
+};
+
+const boxesIntersect = (box1, box2, padding = 0) => {
+  return !(
+    box2.minX > box1.maxX + padding || 
+    box2.maxX < box1.minX - padding || 
+    box2.minY > box1.maxY + padding ||
+    box2.maxY < box1.minY - padding
+  );
+};
+
+const detectScribble = (points) => {
+  // LOWERED: Catch faster, shorter scribbles
+  if (points.length < 12) return false;
+
+  let reversalsX = 0, reversalsY = 0;
+  let dirX = 0, dirY = 0;
+  let lastExtremaX = points[0].x, lastExtremaY = points[0].y;
+  let totalAbsDx = 0, totalAbsDy = 0;
+  
+  // LOWERED: Catch tighter, narrower scribbles
+  const MIN_AMP = 3;
+
+  for (let i = 1; i < points.length; i++) {
+    const pt = points[i];
+    const prevPt = points[i-1];
+    
+    totalAbsDx += Math.abs(pt.x - prevPt.x);
+    totalAbsDy += Math.abs(pt.y - prevPt.y);
+
+    // X reversals
+    if (dirX === 0) {
+      if (Math.abs(pt.x - lastExtremaX) > MIN_AMP) {
+        dirX = Math.sign(pt.x - lastExtremaX);
+        lastExtremaX = pt.x;
+      }
+    } else {
+      if (dirX === 1 && pt.x < lastExtremaX - MIN_AMP) {
+        reversalsX++; dirX = -1; lastExtremaX = pt.x;
+      } else if (dirX === -1 && pt.x > lastExtremaX + MIN_AMP) {
+        reversalsX++; dirX = 1; lastExtremaX = pt.x;
+      } else {
+        if (dirX === 1 && pt.x > lastExtremaX) lastExtremaX = pt.x;
+        if (dirX === -1 && pt.x < lastExtremaX) lastExtremaX = pt.x;
+      }
+    }
+
+    // Y reversals
+    if (dirY === 0) {
+      if (Math.abs(pt.y - lastExtremaY) > MIN_AMP) {
+        dirY = Math.sign(pt.y - lastExtremaY);
+        lastExtremaY = pt.y;
+      }
+    } else {
+      if (dirY === 1 && pt.y < lastExtremaY - MIN_AMP) {
+        reversalsY++; dirY = -1; lastExtremaY = pt.y;
+      } else if (dirY === -1 && pt.y > lastExtremaY + MIN_AMP) {
+        reversalsY++; dirY = 1; lastExtremaY = pt.y;
+      } else {
+        if (dirY === 1 && pt.y > lastExtremaY) lastExtremaY = pt.y;
+        if (dirY === -1 && pt.y < lastExtremaY) lastExtremaY = pt.y;
+      }
+    }
+  }
+
+  const box = getBoundingBox(points);
+  const width = (box.maxX - box.minX) || 1;
+  const height = (box.maxY - box.minY) || 1;
+
+  const xTraversalRatio = totalAbsDx / width;
+  const yTraversalRatio = totalAbsDy / height;
+
+  // SMART AXIS LOGIC: 
+  // Most users scratch out horizontally (Left-Right). 3 reversals = 4 lines.
+  // A cursive 'w' or 'm' has 3 Y-reversals (Up-Down), but 0 X-reversals.
+  // So we allow 3 reversals horizontally, but require 4 vertically to protect handwriting!
+  return (xTraversalRatio > 2.5 && reversalsX >= 3) || 
+         (yTraversalRatio > 2.5 && reversalsY >= 4);
+};
+
+// REPLACES strokeIntersectsStroke
+const scribbleErasesStroke = (scribble, target) => {
+  const sBox = scribble.boundingBox || getBoundingBox(scribble.points);
+  const tBox = target.boundingBox || getBoundingBox(target.points);
+
+  // Fast rejection with generous padding for fast swipes
+  if (!boxesIntersect(sBox, tBox, 10)) return false;
+
+  let intersectionCount = 0;
+  let pointsInsideScribbleBox = 0;
+
+  // 1. Count strict segment intersections (How many times did we CUT the line?)
+  for (let i = 1; i < target.points.length; i++) {
+    const t1 = target.points[i - 1];
+    const t2 = target.points[i];
+    
+    let hit = false;
+    for (let j = 1; j < scribble.points.length; j++) {
+      const s1 = scribble.points[j - 1];
+      const s2 = scribble.points[j];
+      if (intersects(t1, t2, s1, s2)) {
+        hit = true;
+        break; 
+      }
+    }
+    if (hit) intersectionCount++;
+  }
+
+  // 2. Calculate containment (How much of the target is physically "under" the scribble?)
+  for (let i = 0; i < target.points.length; i++) {
+    const p = target.points[i];
+    const pad = scribble.width; // account for ink thickness
+    if (p.x >= sBox.minX - pad && p.x <= sBox.maxX + pad && 
+        p.y >= sBox.minY - pad && p.y <= sBox.maxY + pad) {
+      pointsInsideScribbleBox++;
+    }
+  }
+
+  const overlapRatio = target.points.length > 0 ? pointsInsideScribbleBox / target.points.length : 0;
+  const targetWidth = tBox.maxX - tBox.minX;
+  const targetHeight = tBox.maxY - tBox.minY;
+  const targetDiagonal = Math.sqrt(targetWidth * targetWidth + targetHeight * targetHeight);
+
+  // --- SMART DECISION TREE (Relaxed for effortless erasing) ---
+  
+  // Since the stroke passed the `detectScribble` guard, we know the user's intent. 
+  // We can be very aggressive about deleting anything caught inside it.
+
+  // Case 1: Standard hit. If the scribble cuts the line just 2+ times, delete it immediately.
+  if (intersectionCount >= 2) return true;
+
+  // Case 2: Graze with overlap. Cuts 1 time, but covers at least 20% of the target's bounding box.
+  if (intersectionCount >= 1 && overlapRatio > 0.2) return true;
+
+  // Case 3: Parallel swipe. 1 cut, but massive physical containment (for horizontal scratch-outs).
+  if (intersectionCount >= 1 && overlapRatio > 0.4) return true;
+
+  // Case 4: Tiny marks (dots, commas). Might not intersect cleanly due to speed, rely on overlap.
+  if (targetDiagonal < 30 && overlapRatio > 0.3) return true;
+
+  // OTHERWISE: Accidental graze on a descender (1 intersection, very low overlap). Protect it!
+  return false; 
+};
+
+export default function App() {
+  const canvasRef = useRef(null);
+  const containerRef = useRef(null);
+  
+  // App State
+  const [tool, setTool] = useState('pen'); // 'pen' | 'eraser'
+  const [color, setColor] = useState('#2dd4bf');
+  const [lineWidth, setLineWidth] = useState(4);
+  
+  // Canvas drawing data (using refs for performance instead of state)
+  const strokesRef = useRef([]); // Array of { points: [{x,y}], color, width }
+  const currentStrokeRef = useRef(null);
+  const eraserPathRef = useRef([]); // Visual trail for the eraser
+  const historyRef = useRef([]); // For undo feature
+  
+  const isDrawingRef = useRef(false);
+  const lastPosRef = useRef(null);
+
+  const ERASER_RADIUS = 8; // How forgiving the eraser hit-detection is
+
+  // Setup canvas size & scaling
+  const resizeCanvas = useCallback(() => {
+    const canvas = canvasRef.current;
+    const container = containerRef.current;
+    if (!canvas || !container) return;
+
+    const rect = container.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    canvas.style.width = `${rect.width}px`;
+    canvas.style.height = `${rect.height}px`;
+
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    redrawCanvas();
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+    return () => window.removeEventListener('resize', resizeCanvas);
+  }, [resizeCanvas]);
+
+  // Main drawing engine
+  const redrawCanvas = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width / (window.devicePixelRatio || 1);
+    const height = canvas.height / (window.devicePixelRatio || 1);
+
+    // Clear background
+    ctx.clearRect(0, 0, width, height);
+    
+    // Draw grid lines
+    ctx.strokeStyle = '#f1f5f9';
+    ctx.lineWidth = 1;
+    const gridSize = 40;
+    for (let x = 0; x <= width; x += gridSize) {
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, height); ctx.stroke();
+    }
+    for (let y = 0; y <= height; y += gridSize) {
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(width, y); ctx.stroke();
+    }
+
+    // Helper to draw a single stroke
+    const drawStroke = (stroke) => {
+      if (stroke.points.length === 0) return;
+      ctx.beginPath();
+      ctx.strokeStyle = stroke.color;
+      ctx.lineWidth = stroke.width;
+      
+      const pts = stroke.points;
+      ctx.moveTo(pts[0].x, pts[0].y);
+
+      // Smooth curves using quadratic curves
+      for (let i = 1; i < pts.length - 1; i++) {
+        const xc = (pts[i].x + pts[i + 1].x) / 2;
+        const yc = (pts[i].y + pts[i + 1].y) / 2;
+        ctx.quadraticCurveTo(pts[i].x, pts[i].y, xc, yc);
+      }
+      if (pts.length > 1) {
+        ctx.lineTo(pts[pts.length - 1].x, pts[pts.length - 1].y);
+      } else {
+        // Dot
+        ctx.lineTo(pts[0].x, pts[0].y);
+      }
+      ctx.stroke();
+    };
+
+    // Render saved strokes
+    strokesRef.current.forEach(drawStroke);
+
+    // Render current active stroke
+    if (currentStrokeRef.current) {
+      drawStroke(currentStrokeRef.current);
+    }
+
+    // Render eraser trail (red dashed line)
+    if (eraserPathRef.current.length > 0 && tool === 'eraser') {
+      ctx.beginPath();
+      ctx.strokeStyle = 'rgba(239, 68, 68, 0.4)';
+      ctx.lineWidth = ERASER_RADIUS * 2;
+      const ePts = eraserPathRef.current;
+      ctx.moveTo(ePts[0].x, ePts[0].y);
+      for (let i = 1; i < ePts.length; i++) {
+        ctx.lineTo(ePts[i].x, ePts[i].y);
+      }
+      ctx.stroke();
+    }
+  };
+
+  // Interaction handlers
+  const getPointerPos = (e) => {
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    return {
+      x: clientX - rect.left,
+      y: clientY - rect.top
+    };
+  };
+
+  const startDrawing = (e) => {
+    e.preventDefault();
+    isDrawingRef.current = true;
+    const pos = getPointerPos(e);
+    lastPosRef.current = pos;
+
+    if (tool === 'pen') {
+      currentStrokeRef.current = {
+        color,
+        width: lineWidth,
+        points: [pos]
+      };
+    } else if (tool === 'eraser') {
+      eraserPathRef.current = [pos];
+      eraseIntersection(pos, pos); // Check for single clicks
+    }
+    redrawCanvas();
+  };
+
+  const draw = (e) => {
+    e.preventDefault();
+    if (!isDrawingRef.current) return;
+    const pos = getPointerPos(e);
+
+    if (tool === 'pen') {
+      currentStrokeRef.current.points.push(pos);
+    } else if (tool === 'eraser') {
+      eraserPathRef.current.push(pos);
+      eraseIntersection(lastPosRef.current, pos);
+    }
+
+    lastPosRef.current = pos;
+    redrawCanvas();
+  };
+
+  const stopDrawing = (e) => {
+    e.preventDefault();
+    if (!isDrawingRef.current) return;
+    isDrawingRef.current = false;
+
+    if (tool === 'pen' && currentStrokeRef.current) {
+      const currentPts = currentStrokeRef.current.points;
+      
+      // 1. Detect if the user just scribbled to erase
+      if (detectScribble(currentPts)) {
+        currentStrokeRef.current.boundingBox = getBoundingBox(currentPts);
+        let erasedSomething = false;
+        
+        const remainingStrokes = strokesRef.current.filter((targetStroke) => {
+          targetStroke.boundingBox = targetStroke.boundingBox || getBoundingBox(targetStroke.points);
+          
+          // Use our new intent-based heuristic instead of binary touches
+          if (scribbleErasesStroke(currentStrokeRef.current, targetStroke)) {
+              erasedSomething = true;
+              return false; // Erase it
+          }
+          return true; // Keep it
+        });
+
+        if (erasedSomething) {
+          saveStateToHistory();
+          strokesRef.current = remainingStrokes;
+          currentStrokeRef.current = null; // Delete the scribble mark itself too
+          redrawCanvas();
+          return;
+        }
+      }
+      
+      // 2. Otherwise, save the stroke normally
+      saveStateToHistory();
+      currentStrokeRef.current.boundingBox = getBoundingBox(currentPts);
+      strokesRef.current.push(currentStrokeRef.current);
+    }
+    
+    currentStrokeRef.current = null;
+    eraserPathRef.current = [];
+    redrawCanvas();
+  };
+
+  // CORE LOGIC: Stroke Erasing Algorithm
+  const eraseIntersection = (p1, p2) => {
+    let erasedSomething = false;
+    const initialCount = strokesRef.current.length;
+
+    strokesRef.current = strokesRef.current.filter(stroke => {
+      // 1. Point distance check (catches if eraser grazes a point or clicks)
+      for (let i = 0; i < stroke.points.length; i++) {
+        if (distToSegment(stroke.points[i], p1, p2) < ERASER_RADIUS + stroke.width / 2) {
+          return false; // Erase it
+        }
+      }
+
+      // 2. Line segment intersection check (catches fast swipes across strokes)
+      for (let i = 1; i < stroke.points.length; i++) {
+        if (intersects(p1, p2, stroke.points[i - 1], stroke.points[i])) {
+          return false; // Erase it
+        }
+      }
+
+      return true; // Keep it
+    });
+
+    if (strokesRef.current.length < initialCount) {
+      if (!erasedSomething) {
+        saveStateToHistory(); // Save state before first erasure during this stroke
+        erasedSomething = true; 
+      }
+    }
+  };
+
+  const saveStateToHistory = () => {
+    // Deep copy strokes
+    const snapshot = JSON.parse(JSON.stringify(strokesRef.current));
+    historyRef.current.push(snapshot);
+    // Limit history to 20 steps
+    if (historyRef.current.length > 20) {
+      historyRef.current.shift();
+    }
+  };
+
+  const undo = () => {
+    if (historyRef.current.length > 0) {
+      const prevState = historyRef.current.pop();
+      strokesRef.current = prevState;
+      redrawCanvas();
+    }
+  };
+
+  const clearCanvas = () => {
+    saveStateToHistory();
+    strokesRef.current = [];
+    redrawCanvas();
+  };
+
+  return (
+    <div className="flex flex-col h-screen w-full bg-slate-50 text-slate-800 font-sans overflow-hidden">
+      
+      {/* Top Toolbar */}
+      <div className="flex items-center justify-between px-6 py-4 bg-white border-b border-slate-200 shadow-sm z-10">
+        <div className="flex items-center gap-2">
+          <div className="h-8 w-8 bg-blue-600 rounded-lg flex items-center justify-center mr-2">
+            <MousePointer2 className="text-white w-5 h-5" />
+          </div>
+          <h1 className="text-xl font-bold tracking-tight">Smart Whiteboard</h1>
+        </div>
+
+        <div className="flex items-center gap-4 bg-slate-100 p-1.5 rounded-xl border border-slate-200">
+          <button
+            onClick={() => setTool('pen')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
+              tool === 'pen' ? 'bg-white shadow text-blue-600' : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <Pen className="w-4 h-4" /> Pen
+          </button>
+          
+          {/* Vertical divider */}
+          <div className="w-px h-6 bg-slate-300"></div>
+
+          <button
+            onClick={() => setTool('eraser')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
+              tool === 'eraser' ? 'bg-white shadow text-red-500' : 'text-slate-600 hover:text-slate-900'
+            }`}
+            title="Stroke Eraser: Cross any line to delete it"
+          >
+            <Eraser className="w-4 h-4" /> Stroke Eraser
+          </button>
+        </div>
+
+        <div className="flex items-center gap-3">
+          {tool === 'pen' && (
+            <div className="flex items-center gap-2 mr-4 border-r border-slate-200 pr-4">
+              {['#0f172a', '#dc2626', '#2563eb', '#16a34a', '#2dd4bf', '#d946ef'].map(c => (
+                <button
+                  key={c}
+                  onClick={() => setColor(c)}
+                  className={`w-7 h-7 rounded-full border-2 transition-transform ${color === c ? 'scale-125 border-slate-300' : 'border-transparent hover:scale-110'}`}
+                  style={{ backgroundColor: c }}
+                  title="Color"
+                />
+              ))}
+              <div className="ml-2 flex items-center gap-1 bg-slate-100 rounded-lg p-1">
+                 {[2, 4, 8].map(w => (
+                    <button
+                      key={w}
+                      onClick={() => setLineWidth(w)}
+                      className={`w-8 h-8 rounded flex items-center justify-center transition-colors ${lineWidth === w ? 'bg-white shadow-sm' : 'hover:bg-slate-200'}`}
+                    >
+                      <div className="bg-slate-800 rounded-full" style={{ width: w, height: w }} />
+                    </button>
+                 ))}
+              </div>
+            </div>
+          )}
+
+          <button onClick={undo} className="p-2 text-slate-600 hover:bg-slate-200 rounded-lg transition-colors" title="Undo">
+            <Undo2 className="w-5 h-5" />
+          </button>
+          <button onClick={clearCanvas} className="p-2 text-slate-600 hover:bg-red-100 hover:text-red-600 rounded-lg transition-colors" title="Clear All">
+            <Trash2 className="w-5 h-5" />
+          </button>
+        </div>
+      </div>
+
+      {/* Canvas Area */}
+      <div 
+        ref={containerRef} 
+        className="flex-1 relative w-full cursor-crosshair overflow-hidden touch-none"
+      >
+        <canvas
+          ref={canvasRef}
+          onPointerDown={startDrawing}
+          onPointerMove={draw}
+          onPointerUp={stopDrawing}
+          onPointerLeave={stopDrawing}
+          className="absolute top-0 left-0"
+        />
+        
+        {/* Onboarding tooltip */}
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-slate-800 text-slate-100 px-4 py-2 rounded-full text-sm font-medium shadow-lg pointer-events-none opacity-70 flex items-center gap-2">
+           {tool === 'eraser' ? (
+               <>
+                 <Eraser className="w-4 h-4" /> Swipe across any drawn line to instantly erase the entire stroke.
+               </>
+           ) : (
+               <>
+                 <Pen className="w-4 h-4" /> Smart Pen: Draw normally. To quickly erase, just scribble back-and-forth over your text!
+               </>
+           )}
+        </div>
+      </div>
+    </div>
+  );
+}
