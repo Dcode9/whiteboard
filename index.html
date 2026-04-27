@@ -3629,129 +3629,6 @@
                 return false;
             }
 
-            function getPathBounds(points) {
-                if (!Array.isArray(points) || points.length === 0) return null;
-                let minX = Infinity;
-                let minY = Infinity;
-                let maxX = -Infinity;
-                let maxY = -Infinity;
-                for (const point of points) {
-                    minX = Math.min(minX, point.x);
-                    maxX = Math.max(maxX, point.x);
-                    minY = Math.min(minY, point.y);
-                    maxY = Math.max(maxY, point.y);
-                }
-                return { minX, minY, maxX, maxY };
-            }
-
-            function boundsIntersect(boundsA, boundsB, padding = 0) {
-                if (!boundsA || !boundsB) return false;
-                return !(
-                    boundsB.minX > boundsA.maxX + padding ||
-                    boundsB.maxX < boundsA.minX - padding ||
-                    boundsB.minY > boundsA.maxY + padding ||
-                    boundsB.maxY < boundsA.minY - padding
-                );
-            }
-
-                const box = getPathBounds(points);
-                if (!box) return false;
-                const width = Math.max(1e-9, box.maxX - box.minX);
-                const height = Math.max(1e-9, box.maxY - box.minY);
-                const xTraversalRatio = totalAbsDx / width;
-                const yTraversalRatio = totalAbsDy / height;
-
-                return (xTraversalRatio > 2.5 && reversalsX >= 3) || (yTraversalRatio > 2.5 && reversalsY >= 4);
-            }
-
-            function countPenStrokeIntersections(pathPoints, stroke, tolerance) {
-                const strokeSegments = getStrokeSegments(stroke);
-                if (strokeSegments.length === 0) return 0;
-                let intersections = 0;
-                for (const [strokeStart, strokeEnd] of strokeSegments) {
-                    let hit = false;
-                    for (let i = 1; i < pathPoints.length; i++) {
-                        const scribbleStart = pathPoints[i - 1];
-                        const scribbleEnd = pathPoints[i];
-                        if (segmentToSegmentDistance(scribbleStart, scribbleEnd, strokeStart, strokeEnd) <= tolerance) {
-                            hit = true;
-                            break;
-                        }
-                    }
-                    if (hit) intersections++;
-                }
-                return intersections;
-            }
-
-            function getPointsInsideBoundsRatio(points, bounds, padding = 0) {
-                if (!Array.isArray(points) || points.length === 0 || !bounds) return 0;
-                let inside = 0;
-                for (const point of points) {
-                    if (
-                        point.x >= bounds.minX - padding &&
-                        point.x <= bounds.maxX + padding &&
-                        point.y >= bounds.minY - padding &&
-                        point.y <= bounds.maxY + padding
-                    ) {
-                        inside++;
-                    }
-                }
-                return inside / points.length;
-            }
-
-            function scribbleErasesStroke(pathPoints, stroke, sourceSize) {
-                const scribbleBounds = getPathBounds(pathPoints);
-                const strokeBounds = getStrokeBounds(stroke);
-                if (!scribbleBounds || !strokeBounds) return false;
-
-                const zoomSafe = Math.max(0.15, viewZoom || 1);
-                const boundsPadding = Math.max(10 / zoomSafe, sourceSize / zoomSafe);
-                if (!boundsIntersect(scribbleBounds, strokeBounds, boundsPadding)) return false;
-
-                if (stroke.tool === 'pen') {
-                    const tolerance = Math.max(6 / zoomSafe, sourceSize / zoomSafe) + ((stroke.size || 1) / 2);
-                    const intersectionCount = countPenStrokeIntersections(pathPoints, stroke, tolerance);
-                    const overlapRatio = getPointsInsideBoundsRatio(stroke.points || [], scribbleBounds, Math.max(sourceSize / zoomSafe, 2 / zoomSafe));
-                    const strokeWidth = strokeBounds.maxX - strokeBounds.minX;
-                    const strokeHeight = strokeBounds.maxY - strokeBounds.minY;
-                    const strokeDiagonal = Math.sqrt(strokeWidth * strokeWidth + strokeHeight * strokeHeight);
-
-                    if (intersectionCount >= 2) return true;
-                    if (intersectionCount >= 1 && overlapRatio > 0.2) return true;
-                    if (intersectionCount >= 1 && overlapRatio > 0.4) return true;
-                    if (strokeDiagonal < (30 / zoomSafe) && overlapRatio > 0.3) return true;
-                    return false;
-                }
-
-                if (stroke.type === 'text') {
-                    let segmentHits = 0;
-                    for (let i = 1; i < pathPoints.length; i++) {
-                        if (segmentIntersectsRect(pathPoints[i - 1], pathPoints[i], strokeBounds)) {
-                            segmentHits++;
-                        }
-                    }
-                    const overlapRatio = getPointsInsideBoundsRatio(pathPoints, strokeBounds, Math.max(sourceSize / zoomSafe, 2 / zoomSafe));
-                    return segmentHits >= 2 || (segmentHits >= 1 && overlapRatio > 0.15) || overlapRatio > 0.45;
-                }
-
-                return false;
-            }
-
-            function eraseStrokesByScribble(pathPoints, sourceSize = currentBrushSize) {
-                const before = strokes.length;
-                strokes = strokes.filter((stroke) => {
-                    if (!stroke) return true;
-                    if (stroke.tool === 'pen' || stroke.type === 'text') {
-                        return !scribbleErasesStroke(pathPoints, stroke, sourceSize);
-                    }
-                    return true;
-                });
-                if (selectedStrokeIndex >= strokes.length) {
-                    selectedStrokeIndex = -1;
-                }
-                return strokes.length !== before;
-            }
-
             function cutStrokesByPath(pathPoints, sourceSize = currentEraserSize) {
                 if (!Array.isArray(pathPoints) || pathPoints.length === 0) return false;
                 const zoomSafe = Math.max(0.15, viewZoom || 1);
@@ -4670,7 +4547,6 @@
                     setZoom(nextZoom, window.innerWidth / 2, window.innerHeight / 2);
                 });
             }
-
 
             window.addEventListener('resize', resizeCanvas);
             window.addEventListener('resize', syncHeaderContainerHeights);
