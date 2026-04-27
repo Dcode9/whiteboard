@@ -3654,63 +3654,6 @@
                 );
             }
 
-            function detectScribble(points) {
-                if (!Array.isArray(points) || points.length < 12) return false;
-
-                const zoomSafe = Math.max(0.15, viewZoom || 1);
-                const minAmplitude = 3 / zoomSafe;
-                let reversalsX = 0;
-                let reversalsY = 0;
-                let dirX = 0;
-                let dirY = 0;
-                let lastExtremaX = points[0].x;
-                let lastExtremaY = points[0].y;
-                let totalAbsDx = 0;
-                let totalAbsDy = 0;
-
-                for (let i = 1; i < points.length; i++) {
-                    const point = points[i];
-                    const previousPoint = points[i - 1];
-                    totalAbsDx += Math.abs(point.x - previousPoint.x);
-                    totalAbsDy += Math.abs(point.y - previousPoint.y);
-
-                    if (dirX === 0) {
-                        if (Math.abs(point.x - lastExtremaX) > minAmplitude) {
-                            dirX = Math.sign(point.x - lastExtremaX);
-                            lastExtremaX = point.x;
-                        }
-                    } else if (dirX === 1 && point.x < lastExtremaX - minAmplitude) {
-                        reversalsX++;
-                        dirX = -1;
-                        lastExtremaX = point.x;
-                    } else if (dirX === -1 && point.x > lastExtremaX + minAmplitude) {
-                        reversalsX++;
-                        dirX = 1;
-                        lastExtremaX = point.x;
-                    } else {
-                        if (dirX === 1 && point.x > lastExtremaX) lastExtremaX = point.x;
-                        if (dirX === -1 && point.x < lastExtremaX) lastExtremaX = point.x;
-                    }
-
-                    if (dirY === 0) {
-                        if (Math.abs(point.y - lastExtremaY) > minAmplitude) {
-                            dirY = Math.sign(point.y - lastExtremaY);
-                            lastExtremaY = point.y;
-                        }
-                    } else if (dirY === 1 && point.y < lastExtremaY - minAmplitude) {
-                        reversalsY++;
-                        dirY = -1;
-                        lastExtremaY = point.y;
-                    } else if (dirY === -1 && point.y > lastExtremaY + minAmplitude) {
-                        reversalsY++;
-                        dirY = 1;
-                        lastExtremaY = point.y;
-                    } else {
-                        if (dirY === 1 && point.y > lastExtremaY) lastExtremaY = point.y;
-                        if (dirY === -1 && point.y < lastExtremaY) lastExtremaY = point.y;
-                    }
-                }
-
                 const box = getPathBounds(points);
                 if (!box) return false;
                 const width = Math.max(1e-9, box.maxX - box.minX);
