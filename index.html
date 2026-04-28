@@ -196,6 +196,24 @@
             align-items: center;
             gap: 12px;
         }
+
+        .theme-toggle-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: transparent;
+            border: 1px solid #e5e7eb;
+            color: #4b5563;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .theme-toggle-btn:hover {
+            background: #f3f4f6;
+        }
         
         .user-profile {
             display: flex;
@@ -568,7 +586,8 @@
         .tool-action:focus-visible,
         .toolbar-drag-handle:focus-visible,
         .text-input-toolbar button:focus-visible,
-        .triangle-option:focus-visible {
+        .triangle-option:focus-visible,
+        .line-option:focus-visible {
             outline: 2px solid #2563eb;
             outline-offset: 2px;
         }
@@ -602,7 +621,6 @@
         /* The canvas itself */
         #whiteboard {
             display: block;
-            /* Changed from 'none' to 'crosshair' so cursor is visible if JS fails */
             cursor: crosshair; 
             touch-action: none; /* Disables browser gestures like double-tap-to-zoom */
         }
@@ -713,7 +731,6 @@
             box-shadow: none;
         }
 
-        /* NEW: Popover styles */
         .popover {
             display: none; 
             position: fixed; 
@@ -731,7 +748,6 @@
             display: block;
         }
         
-        /* Custom Scrollbar for Popovers */
         .popover::-webkit-scrollbar {
             width: 8px;
         }
@@ -747,7 +763,6 @@
             background: #94a3b8; 
         }
 
-        /* Styles for thickness input */
         .thickness-control {
             display: flex;
             align-items: center;
@@ -783,12 +798,10 @@
             background-color: #f3f4f6; 
         }
 
-        /* Toolbar and tool transitions */
         #toolbar, .tool-btn, .tool-btn svg, .toolbar-drag-handle, .tool-group, .tool-label, .tool-shortcut {
             transition: all 0.15s ease-in-out;
         }
         
-        /* Custom scrollbar for toolbar */
         #toolbar::-webkit-scrollbar {
             height: 4px; 
         }
@@ -803,7 +816,6 @@
             background: #94a3b8; 
         }
         
-        /* Preview box styles */
         .preview-box {
             width: 100%;
             height: 60px;
@@ -830,7 +842,6 @@
             transition: all 0.1s ease;
         }
         
-        /* Text tool styles - floating transparent editor */
         .text-input-overlay {
             position: fixed;
             display: none;
@@ -964,74 +975,6 @@
             right: 16px;
         }
 
-        .board-controls {
-            position: fixed;
-            right: 16px;
-            bottom: 16px;
-            z-index: 110;
-            display: flex;
-            align-items: stretch;
-            gap: 10px;
-            pointer-events: auto;
-        }
-
-        .board-theme-toggle {
-            width: 3rem;
-            height: 3rem;
-            border-radius: 999px;
-            border: 1px solid rgba(148, 163, 184, 0.25);
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(14px);
-            box-shadow: 0 12px 30px -12px rgba(15, 23, 42, 0.35);
-            color: #0f172a;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-        }
-
-        .zoom-panel {
-            min-width: 280px;
-            padding: 10px 12px;
-            border-radius: 16px;
-            border: 1px solid rgba(148, 163, 184, 0.25);
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(14px);
-            box-shadow: 0 12px 30px -12px rgba(15, 23, 42, 0.35);
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .zoom-panel-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            font-size: 12px;
-            font-weight: 600;
-            color: #334155;
-        }
-
-        .zoom-slider-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .zoom-slider-row svg {
-            width: 14px;
-            height: 14px;
-            color: #64748b;
-            flex: none;
-        }
-
-        #zoom-slider {
-            flex: 1;
-            accent-color: #2563eb;
-            cursor: pointer;
-        }
-
         body.dark-mode {
             background-color: #020617;
             color: #e2e8f0;
@@ -1041,9 +984,7 @@
         body.dark-mode #whiteboard-view.active #toolbar,
         body.dark-mode .popover,
         body.dark-mode .text-input-overlay,
-        body.dark-mode .custom-modal,
-        body.dark-mode .zoom-panel,
-        body.dark-mode .board-theme-toggle {
+        body.dark-mode .custom-modal {
             background: rgba(15, 23, 42, 0.92);
             color: #e2e8f0;
             border-color: rgba(148, 163, 184, 0.22);
@@ -1053,7 +994,6 @@
         body.dark-mode .header-logo-container span,
         body.dark-mode .tool-label,
         body.dark-mode .tool-shortcut,
-        body.dark-mode .zoom-panel-header,
         body.dark-mode .custom-modal h3,
         body.dark-mode .custom-modal p,
         body.dark-mode .text-input-toolbar,
@@ -1065,6 +1005,7 @@
         body.dark-mode .text-input-toolbar button,
         body.dark-mode .text-input-toolbar select,
         body.dark-mode .triangle-option,
+        body.dark-mode .line-option,
         body.dark-mode .eraser-mode-grid button,
         body.dark-mode .pen-mode-grid button {
             background: rgba(15, 23, 42, 0.82);
@@ -1072,9 +1013,19 @@
             border-color: rgba(148, 163, 184, 0.22);
         }
 
+        body.dark-mode .theme-toggle-btn {
+            border-color: rgba(148, 163, 184, 0.22);
+            color: #e2e8f0;
+        }
+        
+        body.dark-mode .theme-toggle-btn:hover {
+            background: rgba(30, 41, 59, 0.96);
+        }
+
         body.dark-mode .tool-btn:hover,
         body.dark-mode .text-input-toolbar button:hover,
         body.dark-mode .triangle-option:hover,
+        body.dark-mode .line-option:hover,
         body.dark-mode .eraser-mode-grid button:hover,
         body.dark-mode .pen-mode-grid button:hover {
             background: rgba(30, 41, 59, 0.96);
@@ -1083,6 +1034,7 @@
         body.dark-mode .tool-btn.active,
         body.dark-mode .text-input-toolbar button.active,
         body.dark-mode .triangle-option.active,
+        body.dark-mode .line-option.active,
         body.dark-mode .eraser-mode-grid button.active,
         body.dark-mode .pen-mode-grid button.active {
             background: rgba(37, 99, 235, 0.24);
@@ -1091,20 +1043,14 @@
             box-shadow: 0 0 0 1px rgba(96, 165, 250, 0.25);
         }
 
-        body.dark-mode .zoom-panel-header,
         body.dark-mode .text-input-toolbar,
         body.dark-mode .text-input-footer {
             background: rgba(15, 23, 42, 0.96);
             border-color: rgba(148, 163, 184, 0.16);
         }
 
-        body.dark-mode .board-theme-toggle svg,
-        body.dark-mode .zoom-slider-row svg,
         body.dark-mode #custom-cursor-circle {
             color: #e2e8f0;
-        }
-
-        body.dark-mode #custom-cursor-circle {
             border-color: rgba(226, 232, 240, 0.72);
             box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.75);
         }
@@ -1127,14 +1073,14 @@
             border-color: rgba(148, 163, 184, 0.3);
         }
 
-        .triangle-options {
+        .triangle-options, .line-options {
             display: grid;
             grid-template-columns: repeat(3, minmax(0, 1fr));
             gap: 6px;
             width: 100%;
         }
 
-        .triangle-option {
+        .triangle-option, .line-option {
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -1148,13 +1094,13 @@
             color: #334155;
         }
 
-        .triangle-option.active {
+        .triangle-option.active, .line-option.active {
             border-color: #2563eb;
             background: #dbeafe;
             color: #1d4ed8;
         }
 
-        .triangle-option svg {
+        .triangle-option svg, .line-option svg {
             width: 28px;
             height: 28px;
         }
@@ -1322,6 +1268,11 @@
         
         <!-- Floating Account Container -->
         <div class="floating-container header-account-container">
+            <button class="theme-toggle-btn" title="Toggle dark mode">
+                <svg class="theme-toggle-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="M4.93 4.93 6.34 6.34"></path><path d="M17.66 17.66 19.07 19.07"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="M4.93 19.07 6.34 17.66"></path><path d="M17.66 6.34 19.07 4.93"></path>
+                </svg>
+            </button>
             <div id="buttonDiv" style="display: flex; align-items: center;"></div>
             <div id="user-profile-area" style="display: none;">
                 <div class="user-profile" id="user-profile-btn">
@@ -1364,6 +1315,11 @@
         
         <!-- Floating Account Container (shared, will be visible in whiteboard view) -->
         <div class="floating-container header-account-container" style="display: none;">
+            <button class="theme-toggle-btn" title="Toggle dark mode">
+                <svg class="theme-toggle-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="M4.93 4.93 6.34 6.34"></path><path d="M17.66 17.66 19.07 19.07"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="M4.93 19.07 6.34 17.66"></path><path d="M17.66 6.34 19.07 4.93"></path>
+                </svg>
+            </button>
             <button id="save-drawing-btn-header" onclick="window.promptSaveDrawing()" class="btn-primary" style="display: none;">
                 Save
             </button>
@@ -1445,13 +1401,15 @@
                     </button>
                     <div class="tool-meta"><span class="tool-label">Redo</span><span class="tool-shortcut">Ctrl+Y</span></div>
                 </div>
-                <div class="flex flex-col items-center">
-                    <button id="line-btn" class="tool-btn rounded-md hover:bg-gray-200" title="Line">
+                
+                <div id="line-tool-wrapper" class="tool-group">
+                    <button id="line-btn" class="tool-btn tool-action rounded-md hover:bg-gray-200" title="Line">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 pointer-events-none">
                             <line x1="5" y1="12" x2="19" y2="12"></line>
                         </svg>
                     </button>
                 </div>
+                
                 <div class="flex flex-col items-center">
                     <button id="rect-btn" class="tool-btn rounded-md hover:bg-gray-200" title="Rectangle">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 pointer-events-none">
@@ -1467,7 +1425,7 @@
                     </button>
                 </div>
                 <div class="flex flex-col items-center">
-                    <button id="triangle-btn" class="tool-btn rounded-md hover:bg-gray-200" title="Triangle">
+                    <button id="triangle-btn" class="tool-btn tool-action rounded-md hover:bg-gray-200" title="Triangle">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 pointer-events-none">
                             <path d="M12 5 4 19h16Z"></path>
                         </svg>
@@ -1499,29 +1457,6 @@
 
         <!-- Canvas -->
         <canvas id="whiteboard"></canvas>
-        <div id="board-controls" class="board-controls">
-            <button id="theme-toggle-btn" class="board-theme-toggle" type="button" title="Toggle dark mode" aria-label="Toggle dark mode" aria-pressed="false">
-                <svg id="theme-toggle-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
-                </svg>
-            </button>
-            <div class="zoom-panel">
-                <div class="zoom-panel-header">
-                    <span>Zoom</span>
-                    <span id="zoom-value-label">100%</span>
-                </div>
-                <div class="zoom-slider-row">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <path d="M5 12h14"></path>
-                    </svg>
-                    <input id="zoom-slider" type="range" min="10" max="1000" step="1" value="100" aria-label="Zoom slider">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <path d="M12 5v14"></path>
-                        <path d="M5 12h14"></path>
-                    </svg>
-                </div>
-            </div>
-        </div>
         <div id="custom-cursor-circle"></div>
         <div id="custom-cursor-eraser">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
@@ -1635,6 +1570,41 @@
             </div>
         </div>
     </div>
+    
+    <div id="line-popover" class="popover">
+        <div class="flex flex-col gap-4">
+            <div class="flex flex-col items-center">
+                <label class="text-sm font-medium text-gray-700 mb-2">Line Type</label>
+                <div class="line-options">
+                    <button class="line-option active" data-line-type="segment" title="Segment">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="4" cy="12" r="2" fill="currentColor" stroke="none"></circle>
+                            <circle cx="20" cy="12" r="2" fill="currentColor" stroke="none"></circle>
+                            <line x1="6" y1="12" x2="18" y2="12"></line>
+                        </svg>
+                        <span>Segment</span>
+                    </button>
+                    <button class="line-option" data-line-type="line" title="Line">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="2" y1="12" x2="22" y2="12"></line>
+                            <polyline points="6,8 2,12 6,16"></polyline>
+                            <polyline points="18,8 22,12 18,16"></polyline>
+                        </svg>
+                        <span>Line</span>
+                    </button>
+                    <button class="line-option" data-line-type="ray" title="Ray">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="4" cy="12" r="2" fill="currentColor" stroke="none"></circle>
+                            <line x1="6" y1="12" x2="22" y2="12"></line>
+                            <polyline points="18,8 22,12 18,16"></polyline>
+                        </svg>
+                        <span>Ray</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="triangle-popover" class="popover">
         <div class="flex flex-col gap-4">
             <div class="flex flex-col items-center">
@@ -2433,10 +2403,8 @@
             const toolbarWrapper = document.getElementById('toolbar-wrapper');
             const logoContainer = document.querySelector('#whiteboard-view .header-logo-container');
             const accountContainer = document.querySelector('#whiteboard-view .header-account-container');
-            const themeToggleBtn = document.getElementById('theme-toggle-btn');
-            const themeToggleIcon = document.getElementById('theme-toggle-icon');
-            const zoomSlider = document.getElementById('zoom-slider');
-            const zoomValueLabel = document.getElementById('zoom-value-label');
+            const themeToggleBtns = document.querySelectorAll('.theme-toggle-btn');
+            const themeToggleIcons = document.querySelectorAll('.theme-toggle-icon');
 
             // (Tool Buttons)
             const moveBtn = document.getElementById('move-btn');
@@ -2450,8 +2418,15 @@
             const undoBtn = document.getElementById('undo-btn');
             const redoBtn = document.getElementById('redo-btn');
             const clearBtn = document.getElementById('clear-btn');
+            
+            // (Popovers)
+            const penPopover = document.getElementById('pen-popover');
+            const eraserPopover = document.getElementById('eraser-popover');
+            const canvasPopover = document.getElementById('canvas-popover');
             const trianglePopover = document.getElementById('triangle-popover');
+            const linePopover = document.getElementById('line-popover');
             const triangleOptionButtons = trianglePopover ? Array.from(trianglePopover.querySelectorAll('.triangle-option')) : [];
+            const lineOptionButtons = linePopover ? Array.from(linePopover.querySelectorAll('.line-option')) : [];
             
             // Text tool elements
             const textInputOverlay = document.getElementById('text-input-overlay');
@@ -2476,10 +2451,7 @@
             const canvasIconRuled = document.getElementById('canvas-icon-ruled');
             const canvasIconGrid = document.getElementById('canvas-icon-grid');
             
-            // (Popovers)
-            const penPopover = document.getElementById('pen-popover');
-            const eraserPopover = document.getElementById('eraser-popover');
-            const canvasPopover = document.getElementById('canvas-popover');
+            // Modes
             const penDrawBtn = document.getElementById('pen-draw-btn');
             const penCutBtn = document.getElementById('pen-cut-btn');
             
@@ -2548,6 +2520,7 @@
             let currentEraserSize = 20;
             let currentPenMode = 'draw';
             let currentTriangleType = 'isosceles';
+            let currentLineType = 'segment'; // 'segment', 'line', 'ray'
             
             let backgroundColor = '#FFFFFF';
             let backgroundPattern = 'plain';
@@ -2599,15 +2572,6 @@
                 return Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoomValue));
             }
 
-            function syncZoomControls() {
-                if (zoomSlider) {
-                    zoomSlider.value = Math.round(viewZoom * 100);
-                }
-                if (zoomValueLabel) {
-                    zoomValueLabel.textContent = `${Math.round(viewZoom * 100)}%`;
-                }
-            }
-
             function scheduleViewTransformSave() {
                 if (zoomSaveTimer) {
                     clearTimeout(zoomSaveTimer);
@@ -2624,25 +2588,29 @@
                 viewOffset.x = anchorScreenX - anchorWorld.x * viewZoom;
                 viewOffset.y = anchorScreenY - anchorWorld.y * viewZoom;
                 updatePenCursorSize();
-                syncZoomControls();
                 render();
                 if (persist) {
                     scheduleViewTransformSave();
                 }
             }
 
+            function updateThemeIcons() {
+                themeToggleIcons.forEach(icon => {
+                    icon.innerHTML = isDarkMode
+                        ? '<path d="M12 3a9 9 0 1 0 9 9 7 7 0 1 1-9-9Z"></path>'
+                        : '<circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="M4.93 4.93 6.34 6.34"></path><path d="M17.66 17.66 19.07 19.07"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="M4.93 19.07 6.34 17.66"></path><path d="M17.66 6.34 19.07 4.93"></path>';
+                });
+            }
+
             function applyThemeMode(mode) {
                 isDarkMode = mode === 'dark';
                 document.body.classList.toggle('dark-mode', isDarkMode);
-                if (themeToggleBtn) {
-                    themeToggleBtn.setAttribute('aria-pressed', String(isDarkMode));
-                    themeToggleBtn.setAttribute('title', isDarkMode ? 'Switch to light mode' : 'Switch to dark mode');
-                }
-                if (themeToggleIcon) {
-                    themeToggleIcon.innerHTML = isDarkMode
-                        ? '<path d="M12 3a9 9 0 1 0 9 9 7 7 0 1 1-9-9Z"></path>'
-                        : '<circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="M4.93 4.93 6.34 6.34"></path><path d="M17.66 17.66 19.07 19.07"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="M4.93 19.07 6.34 17.66"></path><path d="M17.66 6.34 19.07 4.93"></path>';
-                }
+                
+                themeToggleBtns.forEach(btn => {
+                    btn.setAttribute('title', isDarkMode ? 'Switch to light mode' : 'Switch to dark mode');
+                });
+                updateThemeIcons();
+
                 try {
                     localStorage.setItem('whiteboardThemeMode', isDarkMode ? 'dark' : 'light');
                 } catch (e) {
@@ -2650,11 +2618,18 @@
                 }
             }
 
+            themeToggleBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    applyThemeMode(isDarkMode ? 'light' : 'dark');
+                });
+            });
+
             function closeAllToolPopovers() {
                 penPopover.classList.remove('active');
                 eraserPopover.classList.remove('active');
                 canvasPopover.classList.remove('active');
                 trianglePopover.classList.remove('active');
+                if (linePopover) linePopover.classList.remove('active');
             }
 
             function updateToolbarDock(position, persist = true) {
@@ -2757,6 +2732,7 @@
                     eraser: eraserPopover,
                     canvas: canvasPopover,
                     triangle: trianglePopover,
+                    line: linePopover
                 };
                 const popover = popoverMap[tool];
                 if (!popover || !buttonEl) return;
@@ -2943,7 +2919,7 @@
                 render(); 
             }
 
-            // --- Local Storage ---
+            // --- Local Storage & Settings ---
             function showSaveIndicator() {
                 saveIndicator.style.opacity = '1';
                 setTimeout(() => {
@@ -2959,12 +2935,64 @@
                 }
             }
 
+            function saveToolSettings() {
+                try {
+                    const settings = {
+                        brushSize: currentBrushSize,
+                        eraserSize: currentEraserSize,
+                        color: currentColor,
+                        triangleType: currentTriangleType,
+                        lineType: currentLineType
+                    };
+                    localStorage.setItem('whiteboardToolSettings', JSON.stringify(settings));
+                } catch(e) {
+                    console.error("Failed to save tool settings", e);
+                }
+            }
+
+            function applyLoadedSettingsToUI() {
+                // Apply brush size
+                penThicknessInput.value = currentBrushSize;
+                penSizeLabel.textContent = `${currentBrushSize}px`;
+                updatePenCursorSize();
+                penPreview.style.height = `${Math.min(currentBrushSize, 40)}px`;
+
+                // Apply eraser size
+                eraserThicknessInput.value = currentEraserSize;
+                eraserSizeLabel.textContent = `${currentEraserSize}px`;
+                const epSize = Math.min(currentEraserSize, 40);
+                eraserPreview.style.width = `${epSize}px`;
+                eraserPreview.style.height = `${epSize}px`;
+
+                // Apply color
+                colorPicker.value = currentColor;
+                penBtn.querySelector('svg').style.stroke = currentColor;
+                penPreview.style.backgroundColor = currentColor;
+
+                // Apply Triangle type
+                triangleOptionButtons.forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.triangleType === currentTriangleType);
+                });
+
+                // Apply Line type
+                lineOptionButtons.forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.lineType === currentLineType);
+                });
+                
+                // Background settings are already handled via loadFromStorage but we can resync them
+                bgColorPicker.value = backgroundColor;
+                bgPatternSelector.value = backgroundPattern;
+                updateCanvasIconPreview();
+            }
+
             function saveStrokesAndSettings() {
                 try {
                     localStorage.setItem('whiteboardStrokes', JSON.stringify(strokes));
                     localStorage.setItem('whiteboardBgColor', backgroundColor);
                     localStorage.setItem('whiteboardBgPattern', backgroundPattern);
                     
+                    saveToolSettings();
+
                     // Also save to current local board if one is active
                     if (window.saveCurrentLocalBoard) {
                         window.saveCurrentLocalBoard();
@@ -2978,10 +3006,18 @@
             function loadFromStorage() {
                 backgroundColor = localStorage.getItem('whiteboardBgColor') || '#FFFFFF';
                 backgroundPattern = localStorage.getItem('whiteboardBgPattern') || 'plain';
-                
-                bgColorPicker.value = backgroundColor;
-                bgPatternSelector.value = backgroundPattern;
-                updateCanvasIconPreview();
+
+                // Load tool settings if they exist
+                try {
+                    const toolSettings = JSON.parse(localStorage.getItem('whiteboardToolSettings'));
+                    if (toolSettings) {
+                        if (toolSettings.brushSize) currentBrushSize = toolSettings.brushSize;
+                        if (toolSettings.eraserSize) currentEraserSize = toolSettings.eraserSize;
+                        if (toolSettings.color) currentColor = toolSettings.color;
+                        if (toolSettings.triangleType) currentTriangleType = toolSettings.triangleType;
+                        if (toolSettings.lineType) currentLineType = toolSettings.lineType;
+                    }
+                } catch (e) { console.warn("Could not load tool settings"); }
 
                 const viewDataStr = localStorage.getItem('whiteboardView');
                 if (viewDataStr) {
@@ -3009,8 +3045,7 @@
                 undoStack = [];
                 redoStack = [];
                 updateUndoRedoButtons();
-                syncZoomControls();
-                
+                applyLoadedSettingsToUI();
                 render();
             }
             
@@ -3036,7 +3071,6 @@
                 bgPatternSelector.value = backgroundPattern;
                 updateCanvasIconPreview();
                 updateUndoRedoButtons();
-                syncZoomControls();
                 render();
             }
 
@@ -3083,6 +3117,26 @@
                     render();
                     saveStrokesAndSettings();
                 } catch(e) { console.error("Redo error", e); }
+            }
+
+            // --- Draw Utils ---
+            function drawArrowHead(ctx, x, y, angle, size) {
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate(angle);
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(-size, size / 1.5);
+                ctx.lineTo(-size, -size / 1.5);
+                ctx.closePath();
+                ctx.fill();
+                ctx.restore();
+            }
+
+            function drawDot(ctx, x, y, size) {
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fill();
             }
 
             // --- Shape Drawing Functions ---
@@ -3193,6 +3247,30 @@
                         break;
                 }
                 ctx.stroke();
+
+                // Fills (e.g. Line caps, arrows) rendered after the stroke
+                if (stroke.tool === 'line' && stroke.points.length >= 2) {
+                    const p0 = stroke.points[0];
+                    const p1 = stroke.points[1];
+                    const lType = stroke.lineType || 'segment';
+                    const dx = p1.x - p0.x;
+                    const dy = p1.y - p0.y;
+                    const angle = Math.atan2(dy, dx);
+                    const capSize = Math.max(6, stroke.size * 2.5);
+
+                    ctx.fillStyle = stroke.color;
+
+                    if (lType === 'line') {
+                        drawArrowHead(ctx, p1.x, p1.y, angle, capSize);
+                        drawArrowHead(ctx, p0.x, p0.y, angle + Math.PI, capSize);
+                    } else if (lType === 'ray') {
+                        drawDot(ctx, p0.x, p0.y, stroke.size * 1.5);
+                        drawArrowHead(ctx, p1.x, p1.y, angle, capSize);
+                    } else if (lType === 'segment') {
+                        drawDot(ctx, p0.x, p0.y, stroke.size * 1.5);
+                        drawDot(ctx, p1.x, p1.y, stroke.size * 1.5);
+                    }
+                }
             }
 
             // --- Main Render Loop ---
@@ -3763,6 +3841,8 @@
                     currentPath.points.push(worldPoint);
                     if (currentTool === 'triangle') {
                         currentPath.triangleType = currentTriangleType;
+                    } else if (currentTool === 'line') {
+                        currentPath.lineType = currentLineType;
                     }
                 }
             }
@@ -3944,6 +4024,8 @@
                         if (currentPath && currentPath.points.length > 1) {
                             if (currentPath.tool === 'triangle') {
                                 currentPath.triangleType = currentPath.triangleType || currentTriangleType;
+                            } else if (currentPath.tool === 'line') {
+                                currentPath.lineType = currentLineType;
                             }
                             addHistoryAction();
                             strokes.push(currentPath);
@@ -4007,6 +4089,7 @@
             setupToolButton(textBtn, 'text', false);
             setupToolButton(moveBtn, 'move', false);
             setupToolButton(triangleBtn, 'triangle', true);
+            setupToolButton(lineBtn, 'line', true);
 
             moveBtn.addEventListener('click', () => {
                 closeAllToolPopovers();
@@ -4022,22 +4105,34 @@
             objectEraserBtn.addEventListener('click', () => {
                 currentEraserMode = 'object';
                 updateEraserModeButtons();
+                saveToolSettings();
             });
 
             pixelEraserBtn.addEventListener('click', () => {
                 currentEraserMode = 'pixel';
                 updateEraserModeButtons();
+                saveToolSettings();
             });
 
             cutEraserBtn.addEventListener('click', () => {
                 currentEraserMode = 'cut';
                 updateEraserModeButtons();
+                saveToolSettings();
             });
 
             triangleOptionButtons.forEach((button) => {
                 button.addEventListener('click', () => {
                     currentTriangleType = button.dataset.triangleType || 'isosceles';
                     triangleOptionButtons.forEach((option) => option.classList.toggle('active', option === button));
+                    saveToolSettings();
+                });
+            });
+
+            lineOptionButtons.forEach((button) => {
+                button.addEventListener('click', () => {
+                    currentLineType = button.dataset.lineType || 'segment';
+                    lineOptionButtons.forEach((option) => option.classList.toggle('active', option === button));
+                    saveToolSettings();
                 });
             });
             
@@ -4178,7 +4273,7 @@
                 }
             });
 
-            [lineBtn, rectBtn, circleBtn].forEach(btn => {
+            [rectBtn, circleBtn].forEach(btn => {
                 btn.addEventListener('click', () => {
                     const tool = toolButtons.find(b => b.el === btn).tool;
                     closeAllToolPopovers();
@@ -4193,6 +4288,7 @@
                 currentColor = e.target.value;
                 penBtn.querySelector('svg').style.stroke = currentColor;
                 penPreview.style.backgroundColor = currentColor;
+                saveToolSettings();
             });
             
             function updatePenCursorSize() {
@@ -4222,6 +4318,7 @@
                         eraserPreview.style.width = `${previewSize}px`;
                         eraserPreview.style.height = `${previewSize}px`;
                     }
+                    saveToolSettings();
                 };
                 input.addEventListener('input', () => updateSize(parseInt(input.value) || 1));
                 input.addEventListener('change', () => updateSize(parseInt(input.value) || 1));
@@ -4231,21 +4328,6 @@
             }
             setupThicknessControl(penThicknessControl);
             setupThicknessControl(eraserThicknessControl);
-            
-            objectEraserBtn.addEventListener('click', () => {
-                currentEraserMode = 'object';
-                objectEraserBtn.classList.add('bg-blue-100', 'text-blue-700');
-                objectEraserBtn.classList.remove('bg-white', 'text-gray-700', 'hover:bg-gray-50');
-                pixelEraserBtn.classList.add('bg-white', 'text-gray-700', 'hover:bg-gray-50');
-                pixelEraserBtn.classList.remove('bg-blue-100', 'text-blue-700');
-            });
-            pixelEraserBtn.addEventListener('click', () => {
-                currentEraserMode = 'pixel';
-                pixelEraserBtn.classList.add('bg-blue-100', 'text-blue-700');
-                pixelEraserBtn.classList.remove('bg-white', 'text-gray-700', 'hover:bg-gray-50');
-                objectEraserBtn.classList.add('bg-white', 'text-gray-700', 'hover:bg-gray-50');
-                objectEraserBtn.classList.remove('bg-blue-100', 'text-blue-700');
-            });
 
             bgColorPicker.addEventListener('input', (e) => {
                 backgroundColor = e.target.value;
@@ -4519,34 +4601,8 @@
             updateUndoRedoButtons(); 
             updatePenModeButtons();
             updateEraserModeButtons();
-            syncZoomControls();
             textInputOverlay.setAttribute('aria-hidden', 'true');
             textInputOverlay.style.visibility = 'hidden';
-
-            // Set initial UI values
-            penThicknessInput.value = currentBrushSize;
-            penSizeLabel.textContent = `${currentBrushSize}px`;
-            eraserThicknessInput.value = currentEraserSize;
-            eraserSizeLabel.textContent = `${currentEraserSize}px`;
-            penBtn.querySelector('svg').style.stroke = currentColor;
-            penPreview.style.backgroundColor = currentColor;
-            penPreview.style.height = `${Math.min(currentBrushSize, 40)}px`;
-            const eraserPreviewSize = Math.min(currentEraserSize, 40);
-            eraserPreview.style.width = `${eraserPreviewSize}px`;
-            eraserPreview.style.height = `${eraserPreviewSize}px`;
-
-            if (themeToggleBtn) {
-                themeToggleBtn.addEventListener('click', () => {
-                    applyThemeMode(isDarkMode ? 'light' : 'dark');
-                });
-            }
-
-            if (zoomSlider) {
-                zoomSlider.addEventListener('input', () => {
-                    const nextZoom = parseInt(zoomSlider.value, 10) / 100;
-                    setZoom(nextZoom, window.innerWidth / 2, window.innerHeight / 2);
-                });
-            }
 
             window.addEventListener('resize', resizeCanvas);
             window.addEventListener('resize', syncHeaderContainerHeights);
@@ -4599,7 +4655,6 @@
                 }
                 
                 // Re-render the canvas
-                syncZoomControls();
                 render();
                 updateUndoRedoButtons();
             };
