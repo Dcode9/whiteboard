@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>WebBoard by Dhairya</title>
     <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/Dcode9/whiteboard/dfcc6b7600fe1bf56dd763ea9715e9ad5363c227/WebBoard.png?v=2">
-    
+
     <!-- GLOBAL ERROR HANDLER: Displays errors on screen to help debug blank deployments -->
     <script>
         window.onerror = function(msg, url, line, col, error) {
@@ -29,7 +29,7 @@
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
         }
-        
+
         /* Loading Overlay - Pure CSS to ensure it renders before external scripts */
         #app-loading {
             position: fixed;
@@ -45,7 +45,7 @@
             color: #4b5563;
             transition: opacity 0.3s ease-out;
         }
-        
+
         .loading-spinner {
             width: 40px;
             height: 40px;
@@ -94,7 +94,8 @@
             },
         }
     </script>
-    
+    <link rel="stylesheet" href="assets/whiteboard.css">
+
     <style>
         /* Basic styles for a smooth experience */
         body, html {
@@ -106,7 +107,7 @@
             overscroll-behavior: none; /* Prevents pull-to-refresh */
             background-color: #f3f4f6; /* Fallback bg */
         }
-        
+
         /* View Management */
         .view {
             display: none;
@@ -114,11 +115,11 @@
             height: 100%;
             position: relative;
         }
-        
+
         .view.active {
             display: block;
         }
-        
+
         /* Canvas fills entire viewport with no offset */
         #whiteboard {
             position: fixed;
@@ -127,18 +128,18 @@
             width: 100%;
             height: 100%;
         }
-        
+
         /* Homepage styles */
         #homepage-view {
             overflow-y: auto;
             background-color: #f3f4f6;
         }
-        
+
         /* Whiteboard view */
         #whiteboard-view {
             overflow: hidden;
         }
-        
+
         /* Floating header containers - each is independent and floating */
         .floating-container {
             position: fixed;
@@ -148,7 +149,7 @@
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
             padding: 12px 16px;
         }
-        
+
         /* Logo container - top left */
         .header-logo-container {
             top: 16px;
@@ -158,18 +159,18 @@
             gap: 12px;
             cursor: pointer;
         }
-        
+
         .header-logo-container img {
             height: 32px;
             width: 32px;
         }
-        
+
         .header-logo-container span {
             font-size: 20px;
             font-weight: 600;
             color: #1f2937;
         }
-        
+
         /* Search/Toolbar container - top center */
         .header-center-container {
             top: 16px;
@@ -179,7 +180,7 @@
             align-items: center;
             gap: 12px;
         }
-        
+
         .header-search {
             padding: 8px 16px;
             border: 1px solid #d1d5db;
@@ -187,7 +188,7 @@
             font-size: 14px;
             min-width: 300px;
         }
-        
+
         /* User account container - top right */
         .header-account-container {
             top: 16px;
@@ -196,7 +197,7 @@
             align-items: center;
             gap: 12px;
         }
-        
+
         .user-profile {
             display: flex;
             align-items: center;
@@ -206,18 +207,18 @@
             cursor: pointer;
             position: relative;
         }
-        
+
         .user-profile:hover {
             background-color: #f3f4f6;
         }
-        
+
         .user-avatar {
             width: 32px;
             height: 32px;
             border-radius: 50%;
             border: 2px solid #e5e7eb;
         }
-        
+
         .user-menu {
             display: none;
             position: absolute;
@@ -230,11 +231,11 @@
             min-width: 200px;
             z-index: 1000;
         }
-        
+
         .user-menu.active {
             display: block;
         }
-        
+
         .user-menu button {
             width: 100%;
             text-align: left;
@@ -244,11 +245,11 @@
             cursor: pointer;
             font-size: 14px;
         }
-        
+
         .user-menu button:hover {
             background-color: #f3f4f6;
         }
-        
+
         .btn-primary {
             padding: 8px 16px;
             background: #2563eb;
@@ -259,15 +260,15 @@
             font-size: 14px;
             font-weight: 500;
         }
-        
+
         .btn-primary:hover {
             background: #1d4ed8;
         }
-        
+
         .dropdown {
             position: relative;
         }
-        
+
         .dropdown-menu {
             display: none;
             position: absolute;
@@ -280,11 +281,11 @@
             min-width: 150px;
             z-index: 1000;
         }
-        
+
         .dropdown-menu.active {
             display: block;
         }
-        
+
         .dropdown-menu button {
             width: 100%;
             text-align: left;
@@ -294,35 +295,35 @@
             cursor: pointer;
             font-size: 14px;
         }
-        
+
         .dropdown-menu button:hover {
             background-color: #f3f4f6;
         }
-        
+
         /* Boards sections */
         .boards-container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 80px 24px 32px 24px; /* Added top padding for floating header */
         }
-        
+
         .boards-section {
             margin-bottom: 48px;
         }
-        
+
         .boards-section h2 {
             font-size: 18px;
             font-weight: 600;
             margin-bottom: 16px;
             color: #1f2937;
         }
-        
+
         .boards-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
             gap: 16px;
         }
-        
+
         .board-card {
             background: white;
             border: 1px solid #e5e7eb;
@@ -331,31 +332,31 @@
             cursor: pointer;
             transition: all 0.2s;
         }
-        
+
         .board-card:hover {
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             transform: translateY(-2px);
         }
-        
+
         .board-card h3 {
             font-size: 16px;
             font-weight: 600;
             margin: 0 0 8px 0;
             color: #1f2937;
         }
-        
+
         .board-card p {
             font-size: 14px;
             color: #6b7280;
             margin: 0;
         }
-        
+
         .board-card-actions {
             margin-top: 12px;
             display: flex;
             gap: 8px;
         }
-        
+
         .board-card-actions button {
             flex: 1;
             padding: 6px 12px;
@@ -365,11 +366,11 @@
             cursor: pointer;
             font-size: 13px;
         }
-        
+
         .board-card-actions button:hover {
             background: #f3f4f6;
         }
-        
+
         .board-card-actions .delete-btn {
             color: #dc2626;
             border-color: #dc2626;
@@ -392,23 +393,23 @@
         .board-card-actions .upload-btn:hover {
             background: #ecfdf5;
         }
-        
+
         .board-card-actions .delete-btn:hover {
             background: #fef2f2;
         }
-        
+
         .empty-state {
             text-align: center;
             padding: 48px 24px;
             color: #6b7280;
         }
-        
+
         /* Whiteboard view - show floating containers */
         #whiteboard-view.active .header-logo-container,
         #whiteboard-view.active .header-account-container {
             display: flex !important;
         }
-        
+
         /* Toolbar in whiteboard view becomes the center container */
         #whiteboard-view.active #toolbar-wrapper {
             position: fixed;
@@ -530,6 +531,106 @@
             min-width: 3.1rem;
         }
 
+        .tool-config-group {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem;
+            border-radius: 0.5rem;
+            background: #eef2f7;
+        }
+
+        .pinned-tool-configs {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .tool-config-group.collapsed .pinned-tool-configs {
+            display: none;
+        }
+
+        .tool-mini-btn,
+        .pinned-config-btn,
+        .pin-config-btn {
+            width: 2rem;
+            height: 2rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 0;
+            border-radius: 0.375rem;
+            background: rgba(255,255,255,0.85);
+            color: #334155;
+            cursor: pointer;
+        }
+
+        .tool-mini-btn svg,
+        .pin-config-btn svg {
+            width: 1rem;
+            height: 1rem;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .tool-config-group.collapsed .tool-mini-btn svg {
+            transform: rotate(-90deg);
+        }
+
+        .pinned-config-btn {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pinned-config-btn::after {
+            content: '';
+            width: var(--dot-size, 12px);
+            height: var(--dot-size, 12px);
+            border-radius: 999px;
+            background: var(--dot-color, #000);
+            opacity: var(--dot-opacity, 1);
+            box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.16);
+        }
+
+        .popover-row-title {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .pinned-pen-editor {
+            width: 100%;
+            display: grid;
+            gap: 0.35rem;
+        }
+
+        .pinned-pen-editor-row {
+            display: grid;
+            grid-template-columns: 1fr auto auto auto;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 12px;
+            color: #334155;
+            background: #f8fafc;
+            border-radius: 0.5rem;
+            padding: 0.35rem;
+        }
+
+        .pinned-pen-editor-row button {
+            width: 1.75rem;
+            height: 1.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            background: white;
+            cursor: pointer;
+        }
+
         .tool-label {
             font-size: 0.7rem;
             font-weight: 600;
@@ -572,29 +673,29 @@
             outline: 2px solid #2563eb;
             outline-offset: 2px;
         }
-        
+
         /* Homepage view - hide whiteboard specific floating containers */
         #homepage-view.active .header-logo-container,
         #homepage-view.active .header-center-container,
         #homepage-view.active .header-account-container {
             display: flex;
         }
-        
+
         #homepage-view.active #whiteboard-view .header-logo-container,
         #homepage-view.active #whiteboard-view .header-account-container {
             display: none;
         }
-        
+
         /* Mobile responsive */
         @media (max-width: 768px) {
             .header-center-container {
                 display: none;
             }
-            
+
             .header-logo-container span {
                 display: none;
             }
-            
+
             .boards-grid {
                 grid-template-columns: 1fr;
             }
@@ -603,10 +704,10 @@
         #whiteboard {
             display: block;
             /* Changed from 'none' to 'crosshair' so cursor is visible if JS fails */
-            cursor: crosshair; 
+            cursor: crosshair;
             touch-action: none; /* Disables browser gestures like double-tap-to-zoom */
         }
-        
+
         #whiteboard.panning {
             cursor: grab;
         }
@@ -621,17 +722,17 @@
             left: 0;
             width: 20px;
             height: 20px;
-            background-color: transparent; 
-            border: 1px solid rgba(0,0,0,0.5); 
+            background-color: transparent;
+            border: 1px solid rgba(0,0,0,0.5);
             border-radius: 50%;
-            pointer-events: none; 
+            pointer-events: none;
             transform: translate(-50%, -50%);
             z-index: 9999;
             transition: width 0.1s ease, height 0.1s ease;
-            display: none; 
+            display: none;
             box-shadow: 0 0 0 1px rgba(255,255,255,0.5); /* Inner contrast ring */
         }
-        
+
         #custom-cursor-eraser {
             position: fixed;
             top: 0;
@@ -639,16 +740,16 @@
             width: 24px;
             height: 24px;
             pointer-events: none;
-            transform: translate(-4px, -22px); 
+            transform: translate(-4px, -22px);
             z-index: 9999;
-            display: none; 
+            display: none;
             filter: drop-shadow(0px 1px 2px rgba(0,0,0,0.3));
         }
-        
+
         #custom-cursor-eraser svg {
             width: 100%;
             height: 100%;
-            fill: white; 
+            fill: white;
             stroke: #333;
             stroke-width: 1.5;
         }
@@ -662,17 +763,17 @@
             transition: opacity 0.5s ease-out;
             background-color: #16a34a; /* green-600 */
         }
-        
+
         /* Custom color input */
         input[type="color"] {
             -webkit-appearance: none;
             -moz-appearance: none;
             appearance: none;
-            width: 100%; 
-            height: 40px; 
+            width: 100%;
+            height: 40px;
             padding: 0;
             border: none;
-            border-radius: 0.375rem; 
+            border-radius: 0.375rem;
             cursor: pointer;
             background-color: transparent;
         }
@@ -681,7 +782,7 @@
             border-radius: 0.375rem;
         }
         input[type="color"]::-webkit-color-swatch {
-            border: 2px solid #e2e8f0; 
+            border: 2px solid #e2e8f0;
             border-radius: 0.375rem;
         }
         input[type="color"]::-moz-color-swatch {
@@ -704,7 +805,7 @@
             height: 1.75rem; /* h-7 */
             pointer-events: none;
         }
-        
+
         .tool-btn:disabled {
             opacity: 0.3;
             cursor: not-allowed;
@@ -715,101 +816,101 @@
 
         /* NEW: Popover styles */
         .popover {
-            display: none; 
-            position: fixed; 
+            display: none;
+            position: fixed;
             background-color: white;
-            border-radius: 0.5rem; 
+            border-radius: 0.5rem;
             box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-            padding: 1rem; 
+            padding: 1rem;
             z-index: 20;
-            width: 280px; 
+            width: 280px;
             overflow-y: auto;
-            max-height: 70vh; 
+            max-height: 70vh;
         }
-        
+
         .popover.active {
             display: block;
         }
-        
+
         /* Custom Scrollbar for Popovers */
         .popover::-webkit-scrollbar {
             width: 8px;
         }
         .popover::-webkit-scrollbar-track {
-            background: #f1f5f9; 
+            background: #f1f5f9;
             border-radius: 10px;
         }
         .popover::-webkit-scrollbar-thumb {
-            background: #cbd5e1; 
+            background: #cbd5e1;
             border-radius: 10px;
         }
         .popover::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8; 
+            background: #94a3b8;
         }
 
         /* Styles for thickness input */
         .thickness-control {
             display: flex;
             align-items: center;
-            gap: 0.5rem; 
+            gap: 0.5rem;
         }
         .thickness-control input[type="number"] {
-            width: 4rem; 
+            width: 4rem;
             text-align: center;
-            border: 1px solid #d1d5db; 
-            border-radius: 0.375rem; 
-            padding: 0.25rem 0.5rem; 
-            -moz-appearance: textfield; 
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            padding: 0.25rem 0.5rem;
+            -moz-appearance: textfield;
         }
         .thickness-control input[type="number"]::-webkit-outer-spin-button,
         .thickness-control input[type="number"]::-webkit-inner-spin-button {
-            -webkit-appearance: none; 
+            -webkit-appearance: none;
             margin: 0;
         }
         .thickness-control button {
-            width: 2rem; 
-            height: 2rem; 
-            font-size: 1.25rem; 
-            font-weight: 600; 
-            border: 1px solid #d1d5db; 
-            border-radius: 0.375rem; 
+            width: 2rem;
+            height: 2rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
             display: flex;
             align-items: center;
             justify-content: center;
-            background-color: #f9fafb; 
-            color: #374151; 
+            background-color: #f9fafb;
+            color: #374151;
         }
         .thickness-control button:hover {
-            background-color: #f3f4f6; 
+            background-color: #f3f4f6;
         }
 
         /* Toolbar and tool transitions */
         #toolbar, .tool-btn, .tool-btn svg, .toolbar-drag-handle, .tool-group, .tool-label, .tool-shortcut {
             transition: all 0.15s ease-in-out;
         }
-        
+
         /* Custom scrollbar for toolbar */
         #toolbar::-webkit-scrollbar {
-            height: 4px; 
+            height: 4px;
         }
         #toolbar::-webkit-scrollbar-track {
             background: transparent;
         }
         #toolbar::-webkit-scrollbar-thumb {
-            background: #cbd5e1; 
+            background: #cbd5e1;
             border-radius: 10px;
         }
         #toolbar::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8; 
+            background: #94a3b8;
         }
-        
+
         /* Preview box styles */
         .preview-box {
             width: 100%;
             height: 60px;
-            background-color: #f3f4f6; 
-            border: 1px solid #e5e7eb; 
-            border-radius: 0.375rem; 
+            background-color: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.375rem;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -817,19 +918,19 @@
         }
         #pen-preview {
             width: 100%;
-            height: 5px; 
+            height: 5px;
             background-color: #000;
             border-radius: 99px;
             transition: height 0.1s ease;
         }
         #eraser-preview {
-            width: 20px; 
-            height: 20px; 
-            background-color: #9ca3af; 
+            width: 20px;
+            height: 20px;
+            background-color: #9ca3af;
             border-radius: 50%;
             transition: all 0.1s ease;
         }
-        
+
         /* Text tool styles - floating transparent editor */
         .text-input-overlay {
             position: fixed;
@@ -849,11 +950,11 @@
             display: flex;
             flex-direction: column;
         }
-        
+
         .text-input-overlay.active {
             display: flex;
         }
-        
+
         .text-input-toolbar {
             display: flex;
             gap: 4px;
@@ -865,7 +966,7 @@
             flex-wrap: wrap;
             justify-content: flex-start;
         }
-        
+
         .text-input-toolbar button,
         .text-input-toolbar select {
             padding: 4px 8px;
@@ -876,17 +977,17 @@
             font-size: 12px;
             transition: all 0.2s;
         }
-        
+
         .text-input-toolbar button:hover {
             background: #e5e7eb;
         }
-        
+
         .text-input-toolbar button.active {
             background: #dbeafe;
             border-color: #2563eb;
             color: #2563eb;
         }
-        
+
         .text-editor-surface {
             flex: 1;
             display: flex;
@@ -906,7 +1007,7 @@
         .text-input-overlay.toolbar-below .text-editor-surface {
             border-radius: 13px 13px 0 0;
         }
-        
+
         .text-input-overlay textarea {
             width: 100%;
             min-height: 100%;
@@ -931,7 +1032,7 @@
             border-top: 1px solid rgba(226, 232, 240, 0.8);
             border-radius: 0 0 13px 13px;
         }
-        
+
         .text-input-footer button {
             padding: 6px 16px;
             border: 1px solid #d1d5db;
@@ -940,21 +1041,21 @@
             font-size: 14px;
             transition: all 0.2s;
         }
-        
+
         .text-input-footer button.primary {
             background: #2563eb;
             color: white;
             border-color: #2563eb;
         }
-        
+
         .text-input-footer button.primary:hover {
             background: #1d4ed8;
         }
-        
+
         .text-input-footer button.secondary {
             background: white;
         }
-        
+
         .text-input-footer button.secondary:hover {
             background: #f3f4f6;
         }
@@ -1202,7 +1303,119 @@
             border-color: #2563eb;
             color: #1d4ed8;
         }
-        
+
+        .pen-type-grid,
+        .line-style-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 6px;
+            width: 100%;
+        }
+
+        .pen-type-grid button,
+        .line-style-grid button {
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            background: white;
+            padding: 8px 6px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .pen-type-grid button.active,
+        .line-style-grid button.active {
+            background: #dbeafe;
+            border-color: #2563eb;
+            color: #1d4ed8;
+        }
+
+        .preset-colors {
+            width: 100%;
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+
+        .preset-color-btn {
+            aspect-ratio: 1;
+            border: 2px solid #e2e8f0;
+            border-radius: 999px;
+            cursor: pointer;
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.65);
+        }
+
+        .preset-color-btn.active {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 2px #bfdbfe;
+        }
+
+        .feature-guide {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 10000;
+            pointer-events: none;
+        }
+
+        .feature-guide.active {
+            display: block;
+        }
+
+        .guide-spotlight {
+            position: fixed;
+            border: 2px solid #2563eb;
+            border-radius: 10px;
+            box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.42);
+            transition: all 0.18s ease;
+        }
+
+        .guide-card {
+            position: fixed;
+            width: min(340px, calc(100vw - 24px));
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.24);
+            padding: 16px;
+            pointer-events: auto;
+            color: #0f172a;
+        }
+
+        .guide-card-header,
+        .guide-actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .guide-card h2 {
+            margin: 10px 0 6px;
+            font-size: 18px;
+            line-height: 1.25;
+        }
+
+        .guide-card p {
+            margin: 0 0 14px;
+            color: #475569;
+            font-size: 14px;
+            line-height: 1.45;
+        }
+
+        .guide-card button {
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            background: white;
+            padding: 7px 10px;
+            cursor: pointer;
+        }
+
+        #guide-next-btn {
+            background: #2563eb;
+            border-color: #2563eb;
+            color: white;
+        }
+
         /* Custom prompt modal */
         .custom-modal-overlay {
             display: none;
@@ -1216,11 +1429,11 @@
             align-items: center;
             justify-content: center;
         }
-        
+
         .custom-modal-overlay.active {
             display: flex;
         }
-        
+
         .custom-modal {
             background: white;
             border-radius: 12px;
@@ -1229,14 +1442,14 @@
             max-width: 500px;
             padding: 24px;
         }
-        
+
         .custom-modal h3 {
             margin: 0 0 16px 0;
             font-size: 20px;
             font-weight: 600;
             color: #1f2937;
         }
-        
+
         .custom-modal input {
             width: 100%;
             padding: 10px 12px;
@@ -1247,17 +1460,17 @@
             margin-bottom: 20px;
             box-sizing: border-box;
         }
-        
+
         .custom-modal input:focus {
             border-color: #2563eb;
         }
-        
+
         .custom-modal-buttons {
             display: flex;
             justify-content: flex-end;
             gap: 12px;
         }
-        
+
         .custom-modal-buttons button {
             padding: 10px 20px;
             border: 1px solid #d1d5db;
@@ -1267,22 +1480,22 @@
             font-weight: 500;
             transition: all 0.2s;
         }
-        
+
         .custom-modal-buttons button.primary {
             background: #2563eb;
             color: white;
             border-color: #2563eb;
         }
-        
+
         .custom-modal-buttons button.primary:hover {
             background: #1d4ed8;
         }
-        
+
         .custom-modal-buttons button.secondary {
             background: white;
             color: #374151;
         }
-        
+
         .custom-modal-buttons button.secondary:hover {
             background: #f3f4f6;
         }
@@ -1299,7 +1512,7 @@
         <h2 style="font-size: 1.25rem; font-weight: 600;">Loading Whiteboard...</h2>
         <p style="font-size: 0.875rem; margin-top: 0.5rem;">Init...</p>
     </div>
-    
+
     <!-- Homepage View -->
     <div id="homepage-view" class="view active">
         <!-- Floating Logo Container -->
@@ -1307,7 +1520,7 @@
             <img src="WebBoard.png" alt="Webboard Logo">
             <span>Webboard</span>
         </div>
-        
+
         <!-- Floating Search/New Board Container -->
         <div class="floating-container header-center-container">
             <input type="text" class="header-search" placeholder="Search boards..." id="board-search">
@@ -1319,7 +1532,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Floating Account Container -->
         <div class="floating-container header-account-container">
             <div id="buttonDiv" style="display: flex; align-items: center;"></div>
@@ -1333,7 +1546,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Boards Container -->
         <div class="boards-container">
             <!-- Local Boards Section -->
@@ -1343,7 +1556,7 @@
                     <!-- Local boards will be rendered here -->
                 </div>
             </div>
-            
+
             <!-- Cloud Boards Section -->
             <div class="boards-section" id="cloud-boards-section" style="display: none;">
                 <h2><span id="cloud-boards-title">My Boards</span></h2>
@@ -1353,7 +1566,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Whiteboard View -->
     <div id="whiteboard-view" class="view">
         <!-- Floating Logo Container (shared, will be visible in whiteboard view) -->
@@ -1361,7 +1574,7 @@
             <img src="WebBoard.png" alt="Webboard Logo">
             <span>Webboard</span>
         </div>
-        
+
         <!-- Floating Account Container (shared, will be visible in whiteboard view) -->
         <div class="floating-container header-account-container" style="display: none;">
             <button id="save-drawing-btn-header" onclick="window.promptSaveDrawing()" class="btn-primary" style="display: none;">
@@ -1373,7 +1586,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Toolbar wrapper (acts as center floating container in whiteboard view) -->
         <div id="toolbar-wrapper" class="pointer-events-none toolbar-dock-top">
             <div id="toolbar" class="relative flex items-center justify-start flex-nowrap select-none overflow-x-auto max-w-[95vw] pointer-events-auto">
@@ -1398,12 +1611,18 @@
                     <div class="tool-meta"><span class="tool-label">Move</span><span class="tool-shortcut">1</span></div>
                 </div>
                 <div id="pen-tool-wrapper" class="tool-group">
-                    <button id="pen-btn" class="tool-btn tool-action rounded-md active" title="Pen (2)">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 pointer-events-none" style="stroke: #000000;">
-                            <path d="M14.5 3.5 20.5 9.5 9 21H3v-6Z"></path>
-                            <path d="M14.5 3.5 10 8"></path>
-                        </svg>
-                    </button>
+                    <div id="pen-config-group" class="tool-config-group">
+                        <button id="pen-btn" class="tool-btn tool-action rounded-md active" title="Pen (2)">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 pointer-events-none" style="stroke: #000000;">
+                                <path d="M14.5 3.5 20.5 9.5 9 21H3v-6Z"></path>
+                                <path d="M14.5 3.5 10 8"></path>
+                            </svg>
+                        </button>
+                        <div id="pinned-pen-configs" class="pinned-tool-configs"></div>
+                        <button id="pen-config-collapse-btn" class="tool-mini-btn" type="button" title="Collapse pen presets" aria-label="Collapse pen presets">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 10 4 4 4-4"></path></svg>
+                        </button>
+                    </div>
                     <div class="tool-meta"><span class="tool-label">Pen</span><span class="tool-shortcut">2</span></div>
                 </div>
                 <div id="eraser-tool-wrapper" class="tool-group">
@@ -1446,7 +1665,7 @@
                     <div class="tool-meta"><span class="tool-label">Redo</span><span class="tool-shortcut">Ctrl+Y</span></div>
                 </div>
                 <div class="flex flex-col items-center">
-                    <button id="line-btn" class="tool-btn rounded-md hover:bg-gray-200" title="Line">
+                    <button id="line-btn" class="tool-btn tool-action rounded-md hover:bg-gray-200" title="Line">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 pointer-events-none">
                             <line x1="5" y1="12" x2="19" y2="12"></line>
                         </svg>
@@ -1488,7 +1707,7 @@
                         </svg>
                     </button>
                 </div>
-                
+
             </div>
         </div>
 
@@ -1500,6 +1719,13 @@
         <!-- Canvas -->
         <canvas id="whiteboard"></canvas>
         <div id="board-controls" class="board-controls">
+            <button id="guide-open-btn" class="board-theme-toggle" type="button" title="Open guide" aria-label="Open guide">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M9.1 9a3 3 0 1 1 5.8 1c-.5.9-1.5 1.3-2.2 2-.5.5-.7 1-.7 2"></path>
+                    <path d="M12 17h.01"></path>
+                </svg>
+            </button>
             <button id="theme-toggle-btn" class="board-theme-toggle" type="button" title="Toggle dark mode" aria-label="Toggle dark mode" aria-pressed="false">
                 <svg id="theme-toggle-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
@@ -1522,13 +1748,28 @@
                 </div>
             </div>
         </div>
+        <div id="feature-guide" class="feature-guide" aria-hidden="true">
+            <div id="guide-spotlight" class="guide-spotlight"></div>
+            <section id="guide-card" class="guide-card" role="dialog" aria-modal="true" aria-labelledby="guide-title">
+                <div class="guide-card-header">
+                    <span id="guide-step-count"></span>
+                    <button id="guide-close-btn" type="button" title="Close guide" aria-label="Close guide">x</button>
+                </div>
+                <h2 id="guide-title"></h2>
+                <p id="guide-body"></p>
+                <div class="guide-actions">
+                    <button id="guide-prev-btn" type="button">Previous</button>
+                    <button id="guide-next-btn" type="button">Next</button>
+                </div>
+            </section>
+        </div>
         <div id="custom-cursor-circle"></div>
         <div id="custom-cursor-eraser">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M16.24 3.56l4.95 4.94c.78.79.78 2.05 0 2.84L12 20.53a4 4 0 0 1-5.66 0L2.81 17c-.78-.79-.78-2.05 0-2.84l10.6-10.6c.79-.78 2.05-.78 2.83 0M4.22 15.58l3.54 3.53c.78.79 2.04.79 2.83 0l3.53-3.53l-4.95-4.95l-4.95 4.95z"/>
             </svg>
         </div>
-        
+
         <!-- Text input overlay with Microsoft Office-like interface -->
         <div class="text-input-overlay" id="text-input-overlay" aria-hidden="true">
             <div class="text-input-toolbar" id="text-input-toolbar">
@@ -1563,7 +1804,7 @@
                 <textarea id="text-input" placeholder="Enter text here..."></textarea>
             </div>
         </div>
-        
+
         <!-- Custom Prompt Modal -->
         <div class="custom-modal-overlay" id="custom-modal-overlay">
             <div class="custom-modal">
@@ -1594,7 +1835,25 @@
                 </div>
             </div>
             <div class="flex flex-col items-center">
+                <div class="popover-row-title">
+                    <label class="text-sm font-medium text-gray-700">Pinned Setup</label>
+                    <button id="pin-pen-config-btn" class="pin-config-btn" type="button" title="Pin current pen setup" aria-label="Pin current pen setup">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"></path><path d="M5 17h14"></path><path d="m7 17 1-9-2-3h12l-2 3 1 9"></path></svg>
+                    </button>
+                </div>
+                <div id="pinned-pen-editor" class="pinned-pen-editor"></div>
+            </div>
+            <div class="flex flex-col items-center">
+                <label class="text-sm font-medium text-gray-700 mb-2">Pen Type</label>
+                <div class="pen-type-grid">
+                    <button class="pen-type-option active" data-pen-type="default">Default</button>
+                    <button class="pen-type-option" data-pen-type="highlighter">Highlighter</button>
+                    <button class="pen-type-option" data-pen-type="spray">Spray</button>
+                </div>
+            </div>
+            <div class="flex flex-col items-center">
                 <label class="text-sm font-medium text-gray-700 mb-2">Brush Color</label>
+                <div id="preset-colors" class="preset-colors" aria-label="Preset colors"></div>
                 <input type="color" id="color-picker" value="#000000" title="Brush Color">
             </div>
             <div class="flex flex-col items-center">
@@ -1605,6 +1864,18 @@
                     <button data-action="increase" title="Increase size">+</button>
                 </div>
                 <span id="pen-size-label" class="text-xs text-gray-500 mt-1">5px</span>
+            </div>
+        </div>
+    </div>
+    <div id="line-popover" class="popover">
+        <div class="flex flex-col gap-4">
+            <div class="flex flex-col items-center">
+                <label class="text-sm font-medium text-gray-700 mb-2">Line Style</label>
+                <div class="line-style-grid">
+                    <button class="line-style-option active" data-line-style="solid">Solid</button>
+                    <button class="line-style-option" data-line-style="dotted">Dotted</button>
+                    <button class="line-style-option" data-line-style="dashed">Dashed</button>
+                </div>
             </div>
         </div>
     </div>
@@ -1690,7 +1961,7 @@
     <script src="https://accounts.google.com/gsi/client" async defer onload="if(window.initGoogleAuth) window.initGoogleAuth()"></script>
 
     <script>
-    
+
     // ===== CONFIGURATION =====
     // ⚠️ IMPORTANT: Google Sign-In Configuration
     // The default Client ID below is a demo ID and will show "Access blocked: Authorization error"
@@ -1699,12 +1970,12 @@
     // 2. Create a new OAuth 2.0 Client ID (Web application type)
     // 3. Add your domain to "Authorized JavaScript origins"
     // 4. Replace the GOOGLE_CLIENT_ID below with your Client ID
-    // 
+    //
     // For detailed instructions, see: ENV_SETUP_GUIDE.md
     const GOOGLE_CLIENT_ID = '263202480558-jm6e5brpr0l00nlrcrer2vjvvtpcfr1r.apps.googleusercontent.com';
-    
+
     // ===== Consolidated Application Logic =====
-    
+
     // Safety Timeout: If app doesn't load in 5 seconds, hide loader anyway so user can see what's wrong (or right)
     setTimeout(function() {
         var loader = document.getElementById('app-loading');
@@ -1716,13 +1987,13 @@
     }, 5000);
 
     // --- Authentication ---
-    
+
     window.initGoogleAuth = function() {
         console.log("initGoogleAuth called");
         if (typeof google === 'undefined' || !google.accounts) {
             console.error("Google library not loaded. Check network connection.");
             console.log("typeof google:", typeof google);
-            
+
             // Show error message to user
             const btnDiv = document.getElementById('buttonDiv');
             if (btnDiv) {
@@ -1737,27 +2008,27 @@
                 callback: window.handleCredentialResponse,
                 auto_select: false
             });
-            
+
             const btnDiv = document.getElementById('buttonDiv');
             console.log("buttonDiv element:", btnDiv);
             console.log("buttonDiv display style:", btnDiv ? btnDiv.style.display : 'element not found');
-            
+
             if (btnDiv) {
                 // Clear any previous error messages
                 btnDiv.innerHTML = '';
-                
+
                 google.accounts.id.renderButton(
                     btnDiv,
                     { theme: 'outline', size: 'large', locale: 'en' }
                 );
                 console.log("Google Sign-In button rendered successfully");
-                
+
             } else {
                 console.error("buttonDiv element not found!");
             }
         } catch (e) {
             console.error("Auth Init Error:", e);
-            
+
             // Show error to user
             const btnDiv = document.getElementById('buttonDiv');
             if (btnDiv) {
@@ -1769,7 +2040,7 @@
     window.handleCredentialResponse = async function(response) {
       try {
         console.log("Authenticating with backend...");
-        
+
         // Send credential to backend
         const authResponse = await fetch('/api/google', {
           method: 'POST',
@@ -1778,7 +2049,7 @@
           },
           body: JSON.stringify({ credential: response.credential })
         });
-        
+
         if (!authResponse.ok) {
           let errorMessage = 'Authentication failed';
           // Clone response so we can read it multiple times if needed
@@ -1798,16 +2069,16 @@
           }
           throw new Error(errorMessage);
         }
-        
+
         const authData = await authResponse.json();
-        
+
         // Store auth data
         localStorage.setItem('authToken', authData.token);
         localStorage.setItem('userId', authData.user.userId);
         localStorage.setItem('userEmail', authData.user.email);
         localStorage.setItem('userName', authData.user.name);
         localStorage.setItem('userPicture', authData.user.picture || '');
-        
+
         showNotification('Signed in successfully!', 'success');
         updateAuthUI();
       } catch (error) {
@@ -1815,7 +2086,7 @@
         showNotification('Sign-in failed: ' + error.message, 'error');
       }
     };
-    
+
     function showNotification(message, type) {
       const notif = document.createElement('div');
       notif.className = `notification notification-${type}`;
@@ -1829,7 +2100,7 @@
       document.body.appendChild(notif);
       setTimeout(() => notif.remove(), 3000);
     }
-    
+
     function updateAuthUI() {
       const token = localStorage.getItem('authToken');
       const userEmail = localStorage.getItem('userEmail');
@@ -1841,9 +2112,9 @@
       const saveBtn = document.getElementById('save-drawing-btn-header');
       const cloudBoardOption = document.getElementById('cloud-board-option');
       const cloudBoardsSection = document.getElementById('cloud-boards-section');
-      
+
       console.log("updateAuthUI called - token:", token ? "exists" : "none", "email:", userEmail);
-      
+
       if (token && userEmail) {
         console.log("User is signed in");
         if(btnDiv) btnDiv.style.display = 'none';
@@ -1852,23 +2123,23 @@
         // Save button visibility will be controlled by updateSaveButtonVisibility based on board type
         if(cloudBoardOption) cloudBoardOption.style.display = 'block';
         if(cloudBoardsSection) cloudBoardsSection.style.display = 'block';
-        
+
         // Update user profile on homepage
         const userNameEl = document.getElementById('user-name');
         const userAvatarEl = document.getElementById('user-avatar');
         if (userNameEl) userNameEl.textContent = userName || userEmail;
         if (userAvatarEl && userPicture) userAvatarEl.src = userPicture;
         else if (userAvatarEl) userAvatarEl.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23999"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>';
-        
+
         // Update user profile on whiteboard
         const userAvatarWhiteboardEl = document.getElementById('user-avatar-whiteboard');
         if (userAvatarWhiteboardEl && userPicture) userAvatarWhiteboardEl.src = userPicture;
         else if (userAvatarWhiteboardEl) userAvatarWhiteboardEl.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23999"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>';
-        
+
         // Update cloud boards title
         const cloudBoardsTitle = document.getElementById('cloud-boards-title');
         if (cloudBoardsTitle) cloudBoardsTitle.textContent = `${userName || userEmail}'s Boards`;
-        
+
         // Load cloud boards
         if (window.loadCloudBoards) window.loadCloudBoards();
       } else {
@@ -1880,11 +2151,11 @@
         if(cloudBoardOption) cloudBoardOption.style.display = 'none';
         if(cloudBoardsSection) cloudBoardsSection.style.display = 'none';
       }
-      
+
       // Refresh boards display
       if (window.renderLocalBoards) window.renderLocalBoards();
     }
-    
+
     window.signOut = function() {
       console.log("Signing out...");
       localStorage.removeItem('authToken');
@@ -1901,10 +2172,10 @@
         window.initGoogleAuth();
       }, 100);
     }
-    
+
     // --- Custom Prompt Modal ---
     let customModalResolve = null;
-    
+
     window.customPrompt = function(title, placeholder, defaultValue = '') {
       return new Promise((resolve) => {
         const overlay = document.getElementById('custom-modal-overlay');
@@ -1912,21 +2183,21 @@
         const modalInput = document.getElementById('modal-input');
         const cancelBtn = document.getElementById('modal-cancel');
         const confirmBtn = document.getElementById('modal-confirm');
-        
+
         // Ensure the modal is not trapped inside a hidden view container
         if (overlay && overlay.parentElement !== document.body) {
           document.body.appendChild(overlay);
         }
-        
+
         customModalResolve = resolve;
-        
+
         modalTitle.textContent = title;
         modalInput.placeholder = placeholder;
         modalInput.value = defaultValue;
         overlay.classList.add('active');
         modalInput.focus();
         modalInput.select();
-        
+
         // Handle Enter key
         const handleEnter = (e) => {
           if (e.key === 'Enter') {
@@ -1937,26 +2208,26 @@
             cancelBtn.click();
           }
         };
-        
+
         modalInput.addEventListener('keydown', handleEnter);
-        
+
         const cleanup = () => {
           modalInput.removeEventListener('keydown', handleEnter);
           overlay.classList.remove('active');
           modalInput.value = '';
         };
-        
+
         cancelBtn.onclick = () => {
           cleanup();
           resolve(null);
         };
-        
+
         confirmBtn.onclick = () => {
           const value = modalInput.value.trim();
           cleanup();
           resolve(value || null);
         };
-        
+
         // Click outside to cancel
         overlay.onclick = (e) => {
           if (e.target === overlay) {
@@ -1965,7 +2236,7 @@
         };
       });
     }
-    
+
     // --- View Management ---
     window.goToHomepage = function() {
       document.getElementById('homepage-view').classList.add('active');
@@ -1979,7 +2250,7 @@
         window.loadCloudBoards();
       }
     }
-    
+
     window.goToWhiteboard = function(boardId) {
       document.getElementById('homepage-view').classList.remove('active');
       document.getElementById('whiteboard-view').classList.add('active');
@@ -1995,30 +2266,92 @@
       if (window.updateSaveButtonVisibility) {
         window.updateSaveButtonVisibility();
       }
+      if (window.openWhiteboardGuide) {
+        setTimeout(() => window.openWhiteboardGuide(false), 400);
+      }
     }
-    
+
+    // --- Larger local persistence (IndexedDB, with localStorage fallback) ---
+    const whiteboardStorage = (() => {
+      const dbName = 'webboard-local-store';
+      const storeName = 'boards';
+      let dbPromise = null;
+
+      function openDb() {
+        if (dbPromise) return dbPromise;
+        dbPromise = new Promise((resolve, reject) => {
+          if (!('indexedDB' in window)) {
+            reject(new Error('IndexedDB unavailable'));
+            return;
+          }
+          const request = indexedDB.open(dbName, 1);
+          request.onupgradeneeded = () => {
+            const db = request.result;
+            if (!db.objectStoreNames.contains(storeName)) {
+              db.createObjectStore(storeName);
+            }
+          };
+          request.onsuccess = () => resolve(request.result);
+          request.onerror = () => reject(request.error);
+        });
+        return dbPromise;
+      }
+
+      async function set(key, value) {
+        try {
+          const db = await openDb();
+          await new Promise((resolve, reject) => {
+            const tx = db.transaction(storeName, 'readwrite');
+            tx.objectStore(storeName).put(value, key);
+            tx.oncomplete = resolve;
+            tx.onerror = () => reject(tx.error);
+          });
+        } catch (error) {
+          localStorage.setItem(key, JSON.stringify(value));
+        }
+      }
+
+      async function get(key) {
+        try {
+          const db = await openDb();
+          return await new Promise((resolve, reject) => {
+            const tx = db.transaction(storeName, 'readonly');
+            const request = tx.objectStore(storeName).get(key);
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error);
+          });
+        } catch (error) {
+          const value = localStorage.getItem(key);
+          return value ? JSON.parse(value) : null;
+        }
+      }
+
+      return { set, get };
+    })();
+    window.whiteboardStorage = whiteboardStorage;
+
     // --- Local Board Management ---
     let currentBoardId = null;
     let currentBoardType = null; // 'local' or 'cloud'
     let currentCloudBoardId = null; // Server-assigned ID for cloud boards
     let currentCloudBoardTitle = null; // Title for cloud boards
-    
+
     window.getCurrentBoardId = function() {
       return currentBoardId;
     }
-    
+
     window.getCurrentBoardType = function() {
       return currentBoardType;
     }
-    
+
     window.setCurrentBoardId = function(id) {
       currentBoardId = id;
     }
-    
+
     window.updateSaveButtonVisibility = function() {
       const saveBtn = document.getElementById('save-drawing-btn-header');
       const token = localStorage.getItem('authToken');
-      
+
       // Show save button only for cloud boards when user is signed in
       if (saveBtn) {
         if (token && currentBoardType === 'cloud') {
@@ -2028,31 +2361,33 @@
         }
       }
     }
-    
+
     window.createNewBoard = async function(type) {
       if (type === 'cloud' && !localStorage.getItem('authToken')) {
         showNotification('Please sign in to create cloud boards', 'error');
         return;
       }
-      
+
       const boardTitle = await window.customPrompt('Create New Board', 'Enter board title', 'Untitled Board');
       if (!boardTitle) return;
-      
+
       const boardId = 'board_' + Date.now();
-      
+
       if (type === 'local') {
         const board = {
           id: boardId,
           title: boardTitle,
           type: 'local',
           lastModified: Date.now(),
-          data: { strokes: [], backgroundColor: '#FFFFFF', backgroundPattern: 'plain', viewOffset: { x: 0, y: 0 }, viewZoom: 1 }
+          dataKey: `drawing:${boardId}`,
+          data: null
         };
-        
+        whiteboardStorage.set(board.dataKey, { strokes: [], backgroundColor: '#FFFFFF', backgroundPattern: 'plain', viewOffset: { x: 0, y: 0 }, viewZoom: 1 });
+
         const boards = JSON.parse(localStorage.getItem('localBoards') || '[]');
         boards.push(board);
         localStorage.setItem('localBoards', JSON.stringify(boards));
-        
+
         currentBoardId = boardId;
         currentBoardType = 'local';
         window.goToWhiteboard(boardId);
@@ -2065,30 +2400,34 @@
         window.goToWhiteboard(); // No boardId = blank canvas
       }
     }
-    
-    window.loadBoard = function(boardId) {
+
+    window.loadBoard = async function(boardId) {
       const boards = JSON.parse(localStorage.getItem('localBoards') || '[]');
       const board = boards.find(b => b.id === boardId);
-      
+
       if (board) {
         currentBoardId = boardId;
         currentBoardType = 'local'; // Local board
         currentCloudBoardId = null;
         currentCloudBoardTitle = null;
         if (window.loadDrawingData) {
-          window.loadDrawingData(board.data);
+          const boardData = board.dataKey ? await whiteboardStorage.get(board.dataKey) : board.data;
+          window.loadDrawingData(boardData || { strokes: [] });
         }
       }
     }
-    
+
     window.saveCurrentLocalBoard = function() {
       if (!currentBoardId) return;
-      
+
       const boards = JSON.parse(localStorage.getItem('localBoards') || '[]');
       const boardIndex = boards.findIndex(b => b.id === currentBoardId);
-      
+
       if (boardIndex !== -1 && window.getDrawingData) {
-        boards[boardIndex].data = window.getDrawingData();
+        const dataKey = boards[boardIndex].dataKey || `drawing:${boards[boardIndex].id}`;
+        boards[boardIndex].dataKey = dataKey;
+        boards[boardIndex].data = null;
+        whiteboardStorage.set(dataKey, window.getDrawingData());
         boards[boardIndex].lastModified = Date.now();
         localStorage.setItem('localBoards', JSON.stringify(boards));
       }
@@ -2130,6 +2469,7 @@
             const board = boards[boardIndex];
             const uploadTitle = await window.customPrompt('Upload to Cloud', 'Cloud file name', board.title || 'Untitled Board');
             if (!uploadTitle) return;
+            const drawingData = board.dataKey ? await whiteboardStorage.get(board.dataKey) : board.data;
 
             try {
                 const response = await fetch('/api/save', {
@@ -2140,7 +2480,7 @@
                     },
                     body: JSON.stringify({
                         title: uploadTitle,
-                        drawingData: board.data || { strokes: [] }
+                        drawingData: drawingData || { strokes: [] }
                     })
                 });
 
@@ -2159,30 +2499,30 @@
                 showNotification('Failed to upload local board', 'error');
             }
         }
-    
+
     window.deleteLocalBoard = function(boardId) {
       if (!confirm('Delete this board?')) return;
-      
+
       const boards = JSON.parse(localStorage.getItem('localBoards') || '[]');
       const filtered = boards.filter(b => b.id !== boardId);
       localStorage.setItem('localBoards', JSON.stringify(filtered));
       window.renderLocalBoards();
       showNotification('Board deleted', 'success');
     }
-    
+
     window.renderLocalBoards = function() {
       const grid = document.getElementById('local-boards-grid');
       if (!grid) return;
-      
+
       const boards = JSON.parse(localStorage.getItem('localBoards') || '[]');
-      
+
       if (boards.length === 0) {
         grid.innerHTML = '<div class="empty-state">No local boards yet. Create one to get started!</div>';
         return;
       }
 
             const canUploadToCloud = !!localStorage.getItem('authToken');
-      
+
       grid.innerHTML = boards.map(board => `
         <div class="board-card" onclick="window.goToWhiteboard('${board.id}')">
           <h3>${board.title}</h3>
@@ -2195,28 +2535,28 @@
         </div>
       `).join('');
     }
-    
+
     window.loadCloudBoards = async function() {
       const grid = document.getElementById('cloud-boards-grid');
       if (!grid) return;
-      
+
       try {
         const token = localStorage.getItem('authToken');
         if (!token) return;
-        
+
         const response = await fetch('/api/list', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
-        
+
         if (!response.ok) throw new Error('Failed to load cloud boards');
-        
+
         const drawings = await response.json();
-        
+
         if (drawings.length === 0) {
           grid.innerHTML = '<div class="empty-state">No cloud boards yet.</div>';
           return;
         }
-        
+
         grid.innerHTML = drawings.map(drawing => `
           <div class="board-card" onclick="window.loadCloudBoard('${drawing.id}')">
             <h3>${drawing.title}</h3>
@@ -2231,16 +2571,16 @@
         grid.innerHTML = '<div class="empty-state">Failed to load cloud boards</div>';
       }
     }
-    
+
     window.loadCloudBoard = async function(drawingId) {
       try {
         const token = localStorage.getItem('authToken');
         const response = await fetch(`/api/load/${drawingId}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
-        
+
         if (!response.ok) throw new Error('Failed to load drawing');
-        
+
         const drawing = await response.json();
         currentBoardId = null; // Cloud board, not local
         currentBoardType = 'cloud';
@@ -2255,19 +2595,19 @@
         showNotification('Failed to load: ' + error.message, 'error');
       }
     }
-    
+
     window.deleteCloudBoard = async function(drawingId) {
       if (!confirm('Delete this cloud board?')) return;
-      
+
       try {
         const token = localStorage.getItem('authToken');
         const response = await fetch(`/api/delete/${drawingId}`, {
           method: 'DELETE',
           headers: { 'Authorization': `Bearer ${token}` }
         });
-        
+
         if (!response.ok) throw new Error('Failed to delete');
-        
+
         window.loadCloudBoards();
         showNotification('Board deleted', 'success');
       } catch (error) {
@@ -2275,7 +2615,7 @@
         showNotification('Failed to delete: ' + error.message, 'error');
       }
     }
-    
+
     // Manual save for cloud boards - updates existing or creates new
     window.promptSaveDrawing = async function() {
       try {
@@ -2284,10 +2624,10 @@
           showNotification('Please sign in first', 'error');
           return;
         }
-        
+
         // Get the current drawing data
         const drawingData = window.getDrawingData ? window.getDrawingData() : { strokes: [] };
-        
+
         // Determine if this is an update or new save
         if (currentCloudBoardId) {
           // Update existing board - include ID in the save request
@@ -2304,18 +2644,18 @@
               drawingData: drawingData
             })
           });
-          
+
           if (!response.ok) {
             throw new Error('Failed to update board');
           }
-          
+
           console.log('Board updated successfully');
           showNotification(`Board "${currentCloudBoardTitle}" updated!`, 'success');
         } else {
           // New save - use title from creation or ask
           const title = currentCloudBoardTitle || await window.customPrompt('Save Board', 'Enter board title', `Board-${new Date().toLocaleDateString()}`);
           if (!title) return;
-          
+
           console.log('Creating new cloud board with title:', title);
           const response = await fetch('/api/save', {
             method: 'POST',
@@ -2328,11 +2668,11 @@
               drawingData: drawingData
             })
           });
-          
+
           if (!response.ok) {
             throw new Error('Failed to save board');
           }
-          
+
           const result = await response.json();
           currentCloudBoardId = result.id || result.drawingId; // Store the server-assigned ID
           currentCloudBoardTitle = title;
@@ -2344,7 +2684,7 @@
         showNotification('Failed to save: ' + error.message, 'error');
       }
     }
-    
+
     function initAuthStatus() {
       updateAuthUI();
       // Also try to initialize Google Auth if library is already loaded
@@ -2370,38 +2710,38 @@
             }, 500);
 
             initAuthStatus();
-            
+
             // --- Homepage UI Initialization ---
             const newBoardBtn = document.getElementById('new-board-btn');
             const newBoardMenu = document.getElementById('new-board-menu');
             const userProfileBtn = document.getElementById('user-profile-btn');
             const userMenu = document.getElementById('user-menu');
             const boardSearch = document.getElementById('board-search');
-            
+
             // New board dropdown
             if (newBoardBtn && newBoardMenu) {
                 newBoardBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
                     newBoardMenu.classList.toggle('active');
                 });
-                
+
                 document.addEventListener('click', () => {
                     newBoardMenu.classList.remove('active');
                 });
             }
-            
+
             // User menu dropdown
             if (userProfileBtn && userMenu) {
                 userProfileBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
                     userMenu.classList.toggle('active');
                 });
-                
+
                 document.addEventListener('click', () => {
                     userMenu.classList.remove('active');
                 });
             }
-            
+
             // Board search
             if (boardSearch) {
                 boardSearch.addEventListener('input', (e) => {
@@ -2412,19 +2752,19 @@
                     });
                 });
             }
-            
+
             // Initialize boards on homepage
             window.renderLocalBoards();
             if (localStorage.getItem('authToken')) {
                 window.loadCloudBoards();
             }
-            
+
             // --- All app variables ---
             const canvas = document.getElementById('whiteboard');
             if(!canvas) throw new Error("Canvas element not found");
 
             // Use 'true' alpha to be safe against compositing bugs in some browsers
-            const ctx = canvas.getContext('2d', { alpha: true }); 
+            const ctx = canvas.getContext('2d', { alpha: true });
 
             const toolbar = document.getElementById('toolbar');
             const toolbarDragHandle = document.getElementById('toolbar-drag-handle');
@@ -2450,9 +2790,19 @@
             const undoBtn = document.getElementById('undo-btn');
             const redoBtn = document.getElementById('redo-btn');
             const clearBtn = document.getElementById('clear-btn');
+            const guideOpenBtn = document.getElementById('guide-open-btn');
+            const featureGuide = document.getElementById('feature-guide');
+            const guideSpotlight = document.getElementById('guide-spotlight');
+            const guideCard = document.getElementById('guide-card');
+            const guideTitle = document.getElementById('guide-title');
+            const guideBody = document.getElementById('guide-body');
+            const guideStepCount = document.getElementById('guide-step-count');
+            const guidePrevBtn = document.getElementById('guide-prev-btn');
+            const guideNextBtn = document.getElementById('guide-next-btn');
+            const guideCloseBtn = document.getElementById('guide-close-btn');
             const trianglePopover = document.getElementById('triangle-popover');
             const triangleOptionButtons = trianglePopover ? Array.from(trianglePopover.querySelectorAll('.triangle-option')) : [];
-            
+
             // Text tool elements
             const textInputOverlay = document.getElementById('text-input-overlay');
             const textInputToolbar = document.getElementById('text-input-toolbar');
@@ -2464,32 +2814,41 @@
             const textUnderlineBtn = document.getElementById('text-underline');
             const textSubmitBtn = document.getElementById('text-submit');
             const textCancelBtn = document.getElementById('text-cancel');
-            
+
             // Text formatting state
             let textBold = false;
             let textItalic = false;
             let textUnderline = false;
-            
+
             // (Canvas Tool)
             const canvasBtn = document.getElementById('canvas-btn');
             const canvasIconBg = document.getElementById('canvas-icon-bg');
             const canvasIconRuled = document.getElementById('canvas-icon-ruled');
             const canvasIconGrid = document.getElementById('canvas-icon-grid');
-            
+
             // (Popovers)
             const penPopover = document.getElementById('pen-popover');
             const eraserPopover = document.getElementById('eraser-popover');
             const canvasPopover = document.getElementById('canvas-popover');
+            const linePopover = document.getElementById('line-popover');
             const penDrawBtn = document.getElementById('pen-draw-btn');
             const penCutBtn = document.getElementById('pen-cut-btn');
-            
+
             // (Pen Popover)
             const colorPicker = document.getElementById('color-picker');
+            const presetColorsEl = document.getElementById('preset-colors');
+            const penTypeButtons = Array.from(document.querySelectorAll('.pen-type-option'));
+            const lineStyleButtons = Array.from(document.querySelectorAll('.line-style-option'));
+            const pinPenConfigBtn = document.getElementById('pin-pen-config-btn');
+            const pinnedPenConfigsEl = document.getElementById('pinned-pen-configs');
+            const pinnedPenEditorEl = document.getElementById('pinned-pen-editor');
+            const penConfigGroup = document.getElementById('pen-config-group');
+            const penConfigCollapseBtn = document.getElementById('pen-config-collapse-btn');
             const penThicknessControl = document.querySelector('.thickness-control[data-type="pen"]');
             const penThicknessInput = penThicknessControl.querySelector('input[type="number"]');
             const penSizeLabel = document.getElementById('pen-size-label');
             const penPreview = document.getElementById('pen-preview');
-            
+
             // (Eraser Popover)
             const eraserThicknessControl = document.querySelector('.thickness-control[data-type="eraser"]');
             const eraserThicknessInput = eraserThicknessControl.querySelector('input[type="number"]');
@@ -2498,11 +2857,11 @@
             const pixelEraserBtn = document.getElementById('pixel-eraser-btn');
             const cutEraserBtn = document.getElementById('cut-eraser-btn');
             const eraserPreview = document.getElementById('eraser-preview');
-            
+
             // (Canvas Popover)
             const bgColorPicker = document.getElementById('bg-color-picker');
             const bgPatternSelector = document.getElementById('bg-pattern');
-            
+
             const toolButtons = [
                 { el: moveBtn, tool: 'move' },
                 { el: penBtn, tool: 'pen' },
@@ -2513,56 +2872,65 @@
                 { el: circleBtn, tool: 'circle' },
                 { el: triangleBtn, tool: 'triangle' },
             ];
-            
+
             const saveIndicator = document.getElementById('save-indicator');
             const confirmModal = document.getElementById('confirm-modal');
             const cancelClearBtn = document.getElementById('cancel-clear');
             const confirmClearBtn = document.getElementById('confirm-clear');
 
             // --- (LOCAL STATE) ---
-            let strokes = []; 
-            let currentPath = null; 
+            let strokes = [];
+            let currentPath = null;
             let undoStack = [];
             let redoStack = [];
-            
+
             let viewOffset = { x: 0, y: 0 };
-            let viewZoom = 1; 
+            let viewZoom = 1;
             let lastPanPos = { x: 0, y: 0 };
-            
+
             let isDrawing = false;
             let isPanning = false;
             let didDeleteInStroke = false;
-            let wheelSaveTimer = null; 
+            let wheelSaveTimer = null;
 
             let currentColor = '#000000';
             let currentBrushSize = 5;
-            let currentTool = 'pen'; 
-            let originalTool = 'pen'; 
+            let currentTool = 'pen';
+            let originalTool = 'pen';
+            let currentPenType = 'default';
+            let currentLineStyle = 'solid';
+            let currentResizeHandle = null;
+            let rotateStartAngle = 0;
+            let rotateStartValue = 0;
+            let activeStrokeCenter = null;
             let selectedStrokeIndex = -1;
             let movingStrokeIndex = -1;
             let lastMovePoint = null;
             let hasMovedShape = false;
             let moveInteractionMode = 'none'; // 'none' | 'move' | 'resize'
-            
+
             let currentEraserMode = 'object';
             let currentEraserSize = 20;
             let currentPenMode = 'draw';
             let currentTriangleType = 'isosceles';
-            
+
             let backgroundColor = '#FFFFFF';
             let backgroundPattern = 'plain';
             let toolbarDockPosition = localStorage.getItem('whiteboardToolbarDock') || 'top';
             let isDarkMode = localStorage.getItem('whiteboardThemeMode') === 'dark';
-            
+
             let isTwoFingerPanning = false;
             let lastTouchMidpoint = { x: 0, y: 0 };
             let lastTouchDistance = 0; // For pinch-zoom
             let isEraserGesture = false;
             let eraserHistorySnapshot = null;
-            
+            let splitGesture = null;
+            let pinnedPenConfigs = [];
+            let isPenGroupCollapsed = localStorage.getItem('whiteboardPenGroupCollapsed') === 'true';
+
             // Hold-to-erase state
             let touchHoldTimer = null;
-            const TOUCH_HOLD_DURATION = 500; 
+            const TOUCH_HOLD_DURATION = 500;
             const TOOL_DOUBLE_TAP_DURATION = 300;
             const TOOL_LONG_PRESS_DURATION = 420;
             let toolbarDragState = null;
@@ -2572,10 +2940,11 @@
             let lastToolTapButton = null;
             let suppressNextToolClick = false;
             let zoomSaveTimer = null;
-            
+
             const MIN_ZOOM = 0.1;
             const MAX_ZOOM = 10.0;
             const ZOOM_STEP = 0.1;
+            const PRESET_COLORS = ['#000000', '#EF4444', '#F97316', '#FACC15', '#22C55E', '#06B6D4', '#2563EB', '#7C3AED', '#EC4899', '#64748B', '#FFFFFF', '#A16207'];
 
             // CRITICAL FIX: High DPI (Retina) Support with Safety Check
             let dpr = window.devicePixelRatio || 1;
@@ -2583,15 +2952,15 @@
 
             // --- Coordinate Conversion ---
             function screenToWorld(screenX, screenY) {
-                return { 
-                    x: (screenX - viewOffset.x) / viewZoom, 
-                    y: (screenY - viewOffset.y) / viewZoom 
+                return {
+                    x: (screenX - viewOffset.x) / viewZoom,
+                    y: (screenY - viewOffset.y) / viewZoom
                 };
             }
             function worldToScreen(worldX, worldY) {
-                return { 
-                    x: worldX * viewZoom + viewOffset.x, 
-                    y: worldY * viewZoom + viewOffset.y 
+                return {
+                    x: worldX * viewZoom + viewOffset.x,
+                    y: worldY * viewZoom + viewOffset.y
                 };
             }
 
@@ -2655,6 +3024,7 @@
                 eraserPopover.classList.remove('active');
                 canvasPopover.classList.remove('active');
                 trianglePopover.classList.remove('active');
+                linePopover.classList.remove('active');
             }
 
             function updateToolbarDock(position, persist = true) {
@@ -2757,6 +3127,7 @@
                     eraser: eraserPopover,
                     canvas: canvasPopover,
                     triangle: trianglePopover,
+                    line: linePopover,
                 };
                 const popover = popoverMap[tool];
                 if (!popover || !buttonEl) return;
@@ -2782,6 +3153,11 @@
                 if (!keepSettingsOpen) {
                     closeAllToolPopovers();
                 }
+                if (tool === 'pen') {
+                    setPenGroupCollapsed(false);
+                } else if (pinnedPenConfigs.length > 0) {
+                    setPenGroupCollapsed(true);
+                }
             }
 
             function showToolSettings(tool, buttonEl) {
@@ -2796,6 +3172,121 @@
                 if (penCutBtn) {
                     penCutBtn.classList.toggle('active', currentPenMode === 'cut');
                 }
+            }
+
+            function syncPresetColorButtons() {
+                if (!presetColorsEl) return;
+                presetColorsEl.querySelectorAll('.preset-color-btn').forEach((button) => {
+                    button.classList.toggle('active', button.dataset.color.toLowerCase() === currentColor.toLowerCase());
+                });
+            }
+
+            function setCurrentColor(color) {
+                currentColor = color;
+                colorPicker.value = color;
+                penBtn.querySelector('svg').style.stroke = color;
+                penPreview.style.backgroundColor = color;
+                syncPresetColorButtons();
+            }
+
+            function updatePenTypeButtons() {
+                penTypeButtons.forEach((button) => {
+                    button.classList.toggle('active', button.dataset.penType === currentPenType);
+                });
+                penPreview.style.opacity = currentPenType === 'highlighter' ? '0.45' : '1';
+                penPreview.style.borderRadius = currentPenType === 'spray' ? '999px' : '4px';
+            }
+
+            function updateLineStyleButtons() {
+                lineStyleButtons.forEach((button) => {
+                    button.classList.toggle('active', button.dataset.lineStyle === currentLineStyle);
+                });
+            }
+
+            function getCurrentPenConfig() {
+                return {
+                    id: `pen_${Date.now()}_${Math.round(Math.random() * 1000)}`,
+                    color: currentColor,
+                    size: currentBrushSize,
+                    type: currentPenType
+                };
+            }
+
+            function savePinnedPenConfigs() {
+                localStorage.setItem('whiteboardPinnedPens', JSON.stringify(pinnedPenConfigs));
+            }
+
+            function applyPenConfig(config) {
+                if (!config) return;
+                currentPenType = config.type || 'default';
+                setCurrentColor(config.color || '#000000');
+                const input = penThicknessControl.querySelector('input[type="number"]');
+                input.value = config.size || 5;
+                input.dispatchEvent(new Event('input'));
+                updatePenTypeButtons();
+                selectTool('pen');
+                setPenGroupCollapsed(false);
+            }
+
+            function renderPinnedPenConfigs() {
+                if (!pinnedPenConfigsEl || !pinnedPenEditorEl) return;
+                pinnedPenConfigsEl.innerHTML = '';
+                pinnedPenEditorEl.innerHTML = '';
+                pinnedPenConfigs.forEach((config, index) => {
+                    const button = document.createElement('button');
+                    button.className = 'pinned-config-btn';
+                    button.type = 'button';
+                    button.title = `${config.type || 'default'} pen, ${config.size || 5}px`;
+                    button.style.setProperty('--dot-color', config.color || '#000');
+                    button.style.setProperty('--dot-size', `${Math.max(8, Math.min(18, config.size || 5))}px`);
+                    button.style.setProperty('--dot-opacity', config.type === 'highlighter' ? '0.45' : '1');
+                    button.addEventListener('click', (event) => {
+                        event.stopPropagation();
+                        applyPenConfig(config);
+                    });
+                    pinnedPenConfigsEl.appendChild(button);
+
+                    const row = document.createElement('div');
+                    row.className = 'pinned-pen-editor-row';
+                    row.innerHTML = `<span>${config.type || 'default'} ${config.size || 5}px</span>`;
+                    const up = document.createElement('button');
+                    up.type = 'button';
+                    up.textContent = '^';
+                    up.title = 'Move up';
+                    up.disabled = index === 0;
+                    up.addEventListener('click', () => {
+                        [pinnedPenConfigs[index - 1], pinnedPenConfigs[index]] = [pinnedPenConfigs[index], pinnedPenConfigs[index - 1]];
+                        savePinnedPenConfigs();
+                        renderPinnedPenConfigs();
+                    });
+                    const down = document.createElement('button');
+                    down.type = 'button';
+                    down.textContent = 'v';
+                    down.title = 'Move down';
+                    down.disabled = index === pinnedPenConfigs.length - 1;
+                    down.addEventListener('click', () => {
+                        [pinnedPenConfigs[index + 1], pinnedPenConfigs[index]] = [pinnedPenConfigs[index], pinnedPenConfigs[index + 1]];
+                        savePinnedPenConfigs();
+                        renderPinnedPenConfigs();
+                    });
+                    const remove = document.createElement('button');
+                    remove.type = 'button';
+                    remove.textContent = 'x';
+                    remove.title = 'Remove';
+                    remove.addEventListener('click', () => {
+                        pinnedPenConfigs.splice(index, 1);
+                        savePinnedPenConfigs();
+                        renderPinnedPenConfigs();
+                    });
+                    row.append(up, down, remove);
+                    pinnedPenEditorEl.appendChild(row);
+                });
+            }
+
+            function setPenGroupCollapsed(collapsed) {
+                isPenGroupCollapsed = collapsed;
+                penConfigGroup.classList.toggle('collapsed', collapsed);
+                localStorage.setItem('whiteboardPenGroupCollapsed', collapsed ? 'true' : 'false');
             }
 
             if (penDrawBtn) {
@@ -2869,16 +3360,16 @@
                 canvasIconBg.setAttribute('fill', backgroundColor);
                 canvasIconRuled.style.display = backgroundPattern === 'ruled' ? 'block' : 'none';
                 canvasIconGrid.style.display = backgroundPattern === 'grid' ? 'block' : 'none';
-                
+
                 // Contrast check for icon lines
-                const isDarkBg = (parseInt(backgroundColor.substr(1, 2), 16) * 0.299 + 
-                                  parseInt(backgroundColor.substr(3, 2), 16) * 0.587 + 
+                const isDarkBg = (parseInt(backgroundColor.substr(1, 2), 16) * 0.299 +
+                                  parseInt(backgroundColor.substr(3, 2), 16) * 0.587 +
                                   parseInt(backgroundColor.substr(5, 2), 16) * 0.114) < 186;
                 const patternColor = isDarkBg ? '#FFFFFF' : '#d1d5db';
                 canvasIconRuled.setAttribute('stroke', patternColor);
                 canvasIconGrid.setAttribute('stroke', patternColor);
             }
-            
+
             function drawBackground() {
                 // Safety check for dimensions
                 if (canvas.width === 0 || canvas.height === 0) return;
@@ -2889,25 +3380,25 @@
 
                 ctx.fillStyle = backgroundColor;
                 ctx.fillRect(0, 0, logicalW, logicalH);
-                
+
                 if (backgroundPattern === 'plain') return;
-                
+
                 ctx.strokeStyle = '#E2E8F0';
-                const isDarkBg = (parseInt(backgroundColor.substr(1, 2), 16) * 0.299 + 
-                                  parseInt(backgroundColor.substr(3, 2), 16) * 0.587 + 
+                const isDarkBg = (parseInt(backgroundColor.substr(1, 2), 16) * 0.299 +
+                                  parseInt(backgroundColor.substr(3, 2), 16) * 0.587 +
                                   parseInt(backgroundColor.substr(5, 2), 16) * 0.114) < 186;
                 if(isDarkBg) ctx.strokeStyle = 'rgba(255,255,255,0.1)';
 
                 ctx.lineWidth = 1;
                 ctx.beginPath();
-                
-                const worldLineSpacing = 30; 
+
+                const worldLineSpacing = 30;
                 const screenLineSpacing = worldLineSpacing * viewZoom;
-                
+
                 if (screenLineSpacing > 5) {
                     const startX = viewOffset.x % screenLineSpacing;
                     const startY = viewOffset.y % screenLineSpacing;
-                    
+
                     if (backgroundPattern === 'ruled') {
                         for (let y = startY; y < logicalH; y += screenLineSpacing) {
                             ctx.moveTo(0, y);
@@ -2931,16 +3422,16 @@
                 dpr = window.devicePixelRatio || 1;
                 // Safety check for dpr
                 if(isNaN(dpr) || dpr <= 0) dpr = 1;
-                
+
                 // Set physical pixel size
                 canvas.width = window.innerWidth * dpr;
                 canvas.height = window.innerHeight * dpr;
-                
+
                 // Set CSS display size (logical pixels)
                 canvas.style.width = `${window.innerWidth}px`;
                 canvas.style.height = `${window.innerHeight}px`;
-                
-                render(); 
+
+                render();
             }
 
             // --- Local Storage ---
@@ -2950,10 +3441,11 @@
                     saveIndicator.style.opacity = '0';
                 }, 1500);
             }
-            
+
             function saveViewTransform() {
                 try {
                     localStorage.setItem('whiteboardView', JSON.stringify({ offset: viewOffset, zoom: viewZoom }));
+                    whiteboardStorage.set('whiteboardView', { offset: viewOffset, zoom: viewZoom });
                 } catch (e) {
                     console.error("Error saving view transform", e);
                 }
@@ -2961,10 +3453,19 @@
 
             function saveStrokesAndSettings() {
                 try {
-                    localStorage.setItem('whiteboardStrokes', JSON.stringify(strokes));
+                    whiteboardStorage.set('whiteboardStrokes', strokes);
+                    try {
+                        if (strokes.length <= 200) {
+                            localStorage.setItem('whiteboardStrokes', JSON.stringify(strokes));
+                        } else {
+                            localStorage.removeItem('whiteboardStrokes');
+                        }
+                    } catch (storageError) {
+                        localStorage.removeItem('whiteboardStrokes');
+                    }
                     localStorage.setItem('whiteboardBgColor', backgroundColor);
                     localStorage.setItem('whiteboardBgPattern', backgroundPattern);
-                    
+
                     // Also save to current local board if one is active
                     if (window.saveCurrentLocalBoard) {
                         window.saveCurrentLocalBoard();
@@ -2975,18 +3476,19 @@
                 }
             }
 
-            function loadFromStorage() {
+            async function loadFromStorage() {
                 backgroundColor = localStorage.getItem('whiteboardBgColor') || '#FFFFFF';
                 backgroundPattern = localStorage.getItem('whiteboardBgPattern') || 'plain';
-                
+
                 bgColorPicker.value = backgroundColor;
                 bgPatternSelector.value = backgroundPattern;
                 updateCanvasIconPreview();
 
+                const storedViewData = await whiteboardStorage.get('whiteboardView');
                 const viewDataStr = localStorage.getItem('whiteboardView');
-                if (viewDataStr) {
+                if (storedViewData || viewDataStr) {
                     try {
-                        const viewData = JSON.parse(viewDataStr);
+                        const viewData = storedViewData || JSON.parse(viewDataStr);
                         if (viewData) {
                             viewOffset = viewData.offset || { x: 0, y: 0 };
                             viewZoom = viewData.zoom || 1;
@@ -2996,29 +3498,30 @@
                         viewZoom = 1;
                     }
                 }
-                
+
+                const storedStrokes = await whiteboardStorage.get('whiteboardStrokes');
                 const strokesData = localStorage.getItem('whiteboardStrokes');
-                if (strokesData) {
+                if (storedStrokes || strokesData) {
                      try {
-                        strokes = JSON.parse(strokesData);
+                        strokes = Array.isArray(storedStrokes) ? storedStrokes : JSON.parse(strokesData);
                      } catch (e) {
                         strokes = [];
                      }
                 }
-                
+
                 undoStack = [];
                 redoStack = [];
                 updateUndoRedoButtons();
                 syncZoomControls();
-                
+
                 render();
             }
-            
+
             // Simple autosave alias
             function autosave() {
                 saveStrokesAndSettings();
             }
-            
+
             // Function to clear canvas for new board
             window.clearCanvasForNewBoard = function() {
                 strokes = [];
@@ -3031,7 +3534,7 @@
                 backgroundPattern = 'plain';
                 viewOffset = { x: 0, y: 0 };
                 viewZoom = 1;
-                
+
                 bgColorPicker.value = backgroundColor;
                 bgPatternSelector.value = backgroundPattern;
                 updateCanvasIconPreview();
@@ -3042,21 +3545,21 @@
 
             // --- History (Undo/Redo) ---
             function addHistoryAction() {
-                redoStack = []; 
+                redoStack = [];
                 try {
                     undoStack.push(JSON.stringify(strokes));
                 } catch (e) { console.warn("History full"); }
-                if (undoStack.length > 50) { 
+                if (undoStack.length > 50) {
                     undoStack.shift();
                 }
                 updateUndoRedoButtons();
             }
-            
+
             function updateUndoRedoButtons() {
                 undoBtn.disabled = undoStack.length === 0;
                 redoBtn.disabled = redoStack.length === 0;
             }
-            
+
             function undo() {
                 if (undoStack.length === 0) return;
                 redoStack.push(JSON.stringify(strokes));
@@ -3070,7 +3573,7 @@
                     saveStrokesAndSettings();
                 } catch(e) { console.error("Undo error", e); }
             }
-            
+
             function redo() {
                 if (redoStack.length === 0) return;
                 undoStack.push(JSON.stringify(strokes));
@@ -3086,28 +3589,118 @@
             }
 
             // --- Shape Drawing Functions ---
+            function getStrokeCenter(stroke) {
+                const bounds = getStrokeBounds(stroke);
+                if (!bounds) return { x: 0, y: 0 };
+                return { x: (bounds.minX + bounds.maxX) / 2, y: (bounds.minY + bounds.maxY) / 2 };
+            }
+
+            function withStrokeRotation(stroke, drawFn) {
+                if (!stroke.rotation) {
+                    drawFn();
+                    return;
+                }
+                const center = getStrokeCenter(stroke);
+                ctx.save();
+                ctx.translate(center.x, center.y);
+                ctx.rotate(stroke.rotation);
+                ctx.translate(-center.x, -center.y);
+                drawFn();
+                ctx.restore();
+            }
+
+            function rotatePointAround(point, center, angle) {
+                if (!angle) return { x: point.x, y: point.y };
+                const cos = Math.cos(angle);
+                const sin = Math.sin(angle);
+                const dx = point.x - center.x;
+                const dy = point.y - center.y;
+                return {
+                    x: center.x + dx * cos - dy * sin,
+                    y: center.y + dx * sin + dy * cos
+                };
+            }
+
+            function pointToStrokeLocal(point, stroke) {
+                if (!stroke?.rotation) return point;
+                return rotatePointAround(point, getStrokeCenter(stroke), -stroke.rotation);
+            }
+
+            function applyLineStyle(stroke) {
+                if (stroke.lineStyle === 'dotted') {
+                    ctx.setLineDash([0.1, Math.max(4, (stroke.size || 2) * 2.4)]);
+                    ctx.lineCap = 'round';
+                } else if (stroke.lineStyle === 'dashed') {
+                    ctx.setLineDash([Math.max(8, (stroke.size || 2) * 3), Math.max(6, (stroke.size || 2) * 2)]);
+                } else {
+                    ctx.setLineDash([]);
+                }
+            }
+
+            function drawSmoothPath(points) {
+                if (!points || points.length < 2) return;
+                ctx.moveTo(points[0].x, points[0].y);
+                if (points.length === 2) {
+                    ctx.lineTo(points[1].x, points[1].y);
+                    return;
+                }
+                for (let i = 1; i < points.length - 1; i++) {
+                    const midX = (points[i].x + points[i + 1].x) / 2;
+                    const midY = (points[i].y + points[i + 1].y) / 2;
+                    ctx.quadraticCurveTo(points[i].x, points[i].y, midX, midY);
+                }
+                ctx.lineTo(points[points.length - 1].x, points[points.length - 1].y);
+            }
+
+            function drawVariablePen(stroke) {
+                const points = stroke.points || [];
+                if (points.length < 2) return;
+                for (let i = 1; i < points.length; i++) {
+                    const prev = points[i - 1];
+                    const point = points[i];
+                    ctx.beginPath();
+                    ctx.lineWidth = point.w || stroke.size || 1;
+                    ctx.moveTo(prev.x, prev.y);
+                    ctx.lineTo(point.x, point.y);
+                    ctx.stroke();
+                }
+            }
+
+            function drawSprayStroke(stroke) {
+                ctx.save();
+                ctx.fillStyle = stroke.color;
+                const dots = stroke.dots || stroke.points || [];
+                dots.forEach((dot) => {
+                    ctx.globalAlpha = dot.a || 0.28;
+                    ctx.beginPath();
+                    ctx.arc(dot.x, dot.y, dot.r || Math.max(0.6, (stroke.size || 4) * 0.08), 0, Math.PI * 2);
+                    ctx.fill();
+                });
+                ctx.restore();
+            }
+
             function drawStroke(stroke) {
                 // Handle text rendering
                 if (stroke.type === 'text') {
                     ctx.fillStyle = stroke.color;
-                    
+
                     // Build font string with formatting
                     let fontStyle = '';
                     if (stroke.italic) fontStyle += 'italic ';
                     if (stroke.bold) fontStyle += 'bold ';
-                    
+
                     const fontSize = stroke.fontSize || 16;
                     const fontFamily = stroke.fontFamily || 'Arial, sans-serif';
                     ctx.font = `${fontStyle}${fontSize}px ${fontFamily}`;
-                    
+
                     // Handle multi-line text
                     const lines = stroke.text.split('\n');
                     const lineHeight = fontSize * 1.2;
-                    
+
                     lines.forEach((line, index) => {
                         const y = stroke.y + (index * lineHeight);
                         ctx.fillText(line, stroke.x, y);
-                        
+
                         // Draw underline if needed
                         if (stroke.underline) {
                             const textWidth = ctx.measureText(line).width;
@@ -3121,12 +3714,45 @@
                     });
                     return;
                 }
-                
+
                 ctx.strokeStyle = stroke.color;
                 ctx.lineWidth = stroke.size;
                 ctx.lineCap = 'round';
                 ctx.lineJoin = 'round';
                 ctx.miterLimit = 2;
+                if (stroke.tool === 'pixel-eraser') {
+                    ctx.save();
+                    ctx.globalCompositeOperation = 'destination-out';
+                    ctx.strokeStyle = 'rgba(0,0,0,1)';
+                    ctx.lineWidth = stroke.size;
+                    ctx.lineCap = 'round';
+                    ctx.lineJoin = 'round';
+                    ctx.beginPath();
+                    drawSmoothPath(stroke.points);
+                    ctx.stroke();
+                    ctx.globalCompositeOperation = 'destination-over';
+                    ctx.fillStyle = backgroundColor;
+                    const topLeft = screenToWorld(0, 0);
+                    const bottomRight = screenToWorld(canvas.width / dpr, canvas.height / dpr);
+                    ctx.fillRect(topLeft.x - 20, topLeft.y - 20, (bottomRight.x - topLeft.x) + 40, (bottomRight.y - topLeft.y) + 40);
+                    ctx.restore();
+                    return;
+                }
+                if (stroke.tool === 'spray') {
+                    drawSprayStroke(stroke);
+                    return;
+                }
+                if (stroke.tool === 'highlighter') {
+                    ctx.save();
+                    ctx.globalAlpha = 0.34;
+                    ctx.globalCompositeOperation = 'multiply';
+                    ctx.lineWidth = stroke.size;
+                    ctx.beginPath();
+                    drawSmoothPath(stroke.points);
+                    ctx.stroke();
+                    ctx.restore();
+                    return;
+                }
                 ctx.beginPath();
                 switch (stroke.tool) {
                     case 'pen':
@@ -3139,17 +3765,11 @@
                              }
                              return;
                         }
-                        ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
-                        if (stroke.points.length === 2) {
-                            ctx.lineTo(stroke.points[1].x, stroke.points[1].y);
-                            break;
+                        if (stroke.variableWidth) {
+                            drawVariablePen(stroke);
+                            return;
                         }
-                        for (let i = 1; i < stroke.points.length - 1; i++) {
-                            const midX = (stroke.points[i].x + stroke.points[i + 1].x) / 2;
-                            const midY = (stroke.points[i].y + stroke.points[i + 1].y) / 2;
-                            ctx.quadraticCurveTo(stroke.points[i].x, stroke.points[i].y, midX, midY);
-                        }
-                        ctx.lineTo(stroke.points[stroke.points.length - 1].x, stroke.points[stroke.points.length - 1].y);
+                        drawSmoothPath(stroke.points);
                         break;
                     case 'cut':
                         if (stroke.points.length < 2) return;
@@ -3165,16 +3785,23 @@
                         ctx.restore();
                         return;
                     case 'line':
+                    case 'split':
                         if (stroke.points.length < 2) return;
-                        ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
-                        ctx.lineTo(stroke.points[1].x, stroke.points[1].y);
-                        break;
+                        applyLineStyle(stroke);
+                        withStrokeRotation(stroke, () => {
+                            ctx.beginPath();
+                            ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
+                            ctx.lineTo(stroke.points[1].x, stroke.points[1].y);
+                            ctx.stroke();
+                        });
+                        ctx.setLineDash([]);
+                        return;
                     case 'rect':
                         if (stroke.points.length < 2) return;
                         const p1 = stroke.points[0];
                         const p2 = stroke.points[1];
-                        ctx.strokeRect(p1.x, p1.y, p2.x - p1.x, p2.y - p1.y);
-                        break;
+                        withStrokeRotation(stroke, () => ctx.strokeRect(p1.x, p1.y, p2.x - p1.x, p2.y - p1.y));
+                        return;
                     case 'circle':
                         if (stroke.points.length < 2) return;
                         const center = stroke.points[0];
@@ -3186,23 +3813,28 @@
                         if (stroke.points.length < 2) return;
                         const trianglePoints = getTrianglePoints(stroke);
                         if (!trianglePoints) return;
-                        ctx.moveTo(trianglePoints[0].x, trianglePoints[0].y);
-                        ctx.lineTo(trianglePoints[1].x, trianglePoints[1].y);
-                        ctx.lineTo(trianglePoints[2].x, trianglePoints[2].y);
-                        ctx.closePath();
-                        break;
+                        withStrokeRotation(stroke, () => {
+                            ctx.beginPath();
+                            ctx.moveTo(trianglePoints[0].x, trianglePoints[0].y);
+                            ctx.lineTo(trianglePoints[1].x, trianglePoints[1].y);
+                            ctx.lineTo(trianglePoints[2].x, trianglePoints[2].y);
+                            ctx.closePath();
+                            ctx.stroke();
+                        });
+                        return;
                 }
+                ctx.setLineDash([]);
                 ctx.stroke();
             }
 
             // --- Main Render Loop ---
             function render() {
                 if (!ctx) return;
-                
+
                 // CRITICAL FIX: Reset transform to identity then clear using physical pixels
                 ctx.setTransform(1, 0, 0, 1, 0, 0);
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
-                
+
                 // CRITICAL FIX: Scale by Device Pixel Ratio for crisp text/lines
                 // If dpr is weird, default to 1
                 if(isNaN(dpr) || dpr <= 0) dpr = 1;
@@ -3211,11 +3843,11 @@
                 ctx.imageSmoothingQuality = 'high';
 
                 drawBackground();
-                
+
                 ctx.save();
                 ctx.translate(viewOffset.x, viewOffset.y);
                 ctx.scale(viewZoom, viewZoom);
-                
+
                 strokes.forEach(drawStroke);
                 if (currentPath) {
                     drawStroke(currentPath);
@@ -3236,21 +3868,29 @@
                     const lines = stroke.text.split('\n');
                     const lineHeight = fontSize * 1.2;
                     const totalHeight = lines.length * lineHeight;
-                    
+
                     // Estimate text width (use longest line)
                     const maxLineLength = Math.max(...lines.map(l => l.length));
                     const textWidth = maxLineLength * fontSize * 0.6; // Approximate
-                    
+
                     return (worldPoint.x >= stroke.x - 10 && worldPoint.x <= stroke.x + textWidth + 10 &&
                             worldPoint.y >= stroke.y - fontSize && worldPoint.y <= stroke.y + totalHeight);
                 }
-                
-                const screenPixelTolerance = 5 / viewZoom; 
+
+                const testPoint = pointToStrokeLocal(worldPoint, stroke);
+                const screenPixelTolerance = 5 / viewZoom;
                 const tolerance = (currentEraserMode === 'object' ? currentEraserSize : stroke.size) + screenPixelTolerance;
                 switch (stroke.tool) {
                     case 'pen':
-                        return stroke.points.some(p => getDistance(worldPoint, p) < tolerance);
+                    case 'highlighter':
+                    case 'pixel-eraser':
+                        return stroke.points.some(p => getDistance(testPoint, p) < tolerance);
+                    case 'spray': {
+                        const dots = stroke.dots || stroke.points || [];
+                        return dots.some(p => getDistance(testPoint, p) < tolerance);
+                    }
                     case 'line':
+                    case 'split':
                     case 'rect':
                     case 'circle':
                         const p1 = stroke.points[0];
@@ -3262,11 +3902,11 @@
                         if (stroke.tool === 'circle') {
                             const center = stroke.points[0];
                             const radius = getDistance(stroke.points[0], stroke.points[1]);
-                            const distToCenter = getDistance(worldPoint, center);
+                            const distToCenter = getDistance(testPoint, center);
                             return Math.abs(distToCenter - radius) < tolerance;
                         }
-                        return (worldPoint.x >= minX && worldPoint.x <= maxX &&
-                                worldPoint.y >= minY && worldPoint.y <= maxY);
+                        return (testPoint.x >= minX && testPoint.x <= maxX &&
+                                testPoint.y >= minY && testPoint.y <= maxY);
                     case 'triangle': {
                         const trianglePoints = getTrianglePoints(stroke);
                         if (!trianglePoints) return false;
@@ -3274,20 +3914,24 @@
                         const maxXTriangle = Math.max(...trianglePoints.map(p => p.x)) + tolerance;
                         const minYTriangle = Math.min(...trianglePoints.map(p => p.y)) - tolerance;
                         const maxYTriangle = Math.max(...trianglePoints.map(p => p.y)) + tolerance;
-                        if (worldPoint.x < minXTriangle || worldPoint.x > maxXTriangle || worldPoint.y < minYTriangle || worldPoint.y > maxYTriangle) {
+                        if (testPoint.x < minXTriangle || testPoint.x > maxXTriangle || testPoint.y < minYTriangle || testPoint.y > maxYTriangle) {
                             return false;
                         }
                         const [a, b, c] = trianglePoints;
                         const area = Math.abs((a.x * (b.y - c.y) + b.x * (c.y - a.y) + c.x * (a.y - b.y)) / 2);
-                        const area1 = Math.abs((worldPoint.x * (b.y - c.y) + b.x * (c.y - worldPoint.y) + c.x * (worldPoint.y - b.y)) / 2);
-                        const area2 = Math.abs((a.x * (worldPoint.y - c.y) + worldPoint.x * (c.y - a.y) + c.x * (a.y - worldPoint.y)) / 2);
-                        const area3 = Math.abs((a.x * (b.y - worldPoint.y) + b.x * (worldPoint.y - a.y) + worldPoint.x * (a.y - b.y)) / 2);
+                        const area1 = Math.abs((testPoint.x * (b.y - c.y) + b.x * (c.y - testPoint.y) + c.x * (testPoint.y - b.y)) / 2);
+                        const area2 = Math.abs((a.x * (testPoint.y - c.y) + testPoint.x * (c.y - a.y) + c.x * (a.y - testPoint.y)) / 2);
+                        const area3 = Math.abs((a.x * (b.y - testPoint.y) + b.x * (testPoint.y - a.y) + testPoint.x * (a.y - b.y)) / 2);
                         return Math.abs(area - (area1 + area2 + area3)) <= Math.max(1.5, tolerance * 0.2);
                     }
                 }
                 return false;
             }
             function findAndRemoveStroke(worldPoint) {
+                // === ENFORCE ERASER-ONLY DELETION ===
+                // Only allow deletion if eraser tool is active
+                if (currentTool !== 'eraser') return false;
+
                 let didDelete = false;
                 for (let i = strokes.length - 1; i >= 0; i--) {
                     if (isPointNearStroke(worldPoint, strokes[i])) {
@@ -3298,7 +3942,7 @@
                             selectedStrokeIndex--;
                         }
                         didDelete = true;
-                        break; 
+                        break;
                     }
                 }
                 if (didDelete) {
@@ -3339,9 +3983,10 @@
                         maxY: stroke.y + totalHeight
                     };
                 }
-                if (stroke.tool === 'pen' && stroke.points?.length) {
-                    const xs = stroke.points.map(p => p.x);
-                    const ys = stroke.points.map(p => p.y);
+                if (['pen', 'highlighter', 'pixel-eraser', 'spray'].includes(stroke.tool) && (stroke.points?.length || stroke.dots?.length)) {
+                    const points = stroke.tool === 'spray' ? (stroke.dots || stroke.points) : stroke.points;
+                    const xs = points.map(p => p.x);
+                    const ys = points.map(p => p.y);
                     const pad = (stroke.size || 1) / 2;
                     return {
                         minX: Math.min(...xs) - pad,
@@ -3395,24 +4040,71 @@
                 ctx.setLineDash([6 / viewZoom, 4 / viewZoom]);
                 ctx.strokeRect(bounds.minX - pad, bounds.minY - pad, (bounds.maxX - bounds.minX) + pad * 2, (bounds.maxY - bounds.minY) + pad * 2);
                 ctx.setLineDash([]);
+
                 if (isShapeStroke(stroke)) {
-                    const handle = getShapeResizeHandlePoint(stroke);
-                    const size = 10 / viewZoom;
-                    ctx.fillRect(handle.x - size / 2, handle.y - size / 2, size, size);
-                    ctx.strokeRect(handle.x - size / 2, handle.y - size / 2, size, size);
+                    const handles = getShapeResizeHandles(stroke);
+                    const handleSize = 10 / viewZoom;
+                    for (const handle of handles) {
+                        if (handle.type === 'rotate') {
+                            ctx.beginPath();
+                            ctx.arc(handle.x, handle.y, handleSize / 1.8, 0, Math.PI * 2);
+                            ctx.fill();
+                            ctx.stroke();
+                            continue;
+                        }
+                        ctx.fillRect(handle.x - handleSize / 2, handle.y - handleSize / 2, handleSize, handleSize);
+                        ctx.strokeRect(handle.x - handleSize / 2, handle.y - handleSize / 2, handleSize, handleSize);
+                    }
                 }
                 ctx.restore();
             }
 
+            function getShapeResizeHandles(stroke) {
+                if (!isShapeStroke(stroke)) return [];
+                const bounds = getStrokeBounds(stroke);
+                if (!bounds) return [];
+
+                const center = getStrokeCenter(stroke);
+                const handles = [
+                    // Corners
+                    { x: bounds.minX, y: bounds.minY, key: 'nw', type: 'corner', cursor: 'nwse-resize' },
+                    { x: bounds.maxX, y: bounds.minY, key: 'ne', type: 'corner', cursor: 'nesw-resize' },
+                    { x: bounds.minX, y: bounds.maxY, key: 'sw', type: 'corner', cursor: 'nesw-resize' },
+                    { x: bounds.maxX, y: bounds.maxY, key: 'se', type: 'corner', cursor: 'nwse-resize' },
+                    // Edges
+                    { x: (bounds.minX + bounds.maxX) / 2, y: bounds.minY, key: 'n', type: 'edge', cursor: 'ns-resize' },
+                    { x: (bounds.minX + bounds.maxX) / 2, y: bounds.maxY, key: 's', type: 'edge', cursor: 'ns-resize' },
+                    { x: bounds.minX, y: (bounds.minY + bounds.maxY) / 2, key: 'w', type: 'edge', cursor: 'ew-resize' },
+                    { x: bounds.maxX, y: (bounds.minY + bounds.maxY) / 2, key: 'e', type: 'edge', cursor: 'ew-resize' },
+                    { x: (bounds.minX + bounds.maxX) / 2, y: bounds.minY - (28 / viewZoom), key: 'rotate', type: 'rotate', cursor: 'grab' },
+                ];
+                return handles.map((handle) => ({
+                    ...handle,
+                    ...rotatePointAround(handle, center, stroke.rotation || 0)
+                }));
+            }
+
             function getShapeResizeHandlePoint(stroke) {
-                return stroke.points[1];
+                // For compatibility, return the first (main) handle
+                const handles = getShapeResizeHandles(stroke);
+                return handles.length > 0 ? handles[0] : stroke.points[1];
             }
 
             function isPointOnResizeHandle(worldPoint, stroke) {
                 if (!isShapeStroke(stroke)) return false;
-                const handle = getShapeResizeHandlePoint(stroke);
-                const size = 12 / viewZoom;
-                return Math.abs(worldPoint.x - handle.x) <= size / 2 && Math.abs(worldPoint.y - handle.y) <= size / 2;
+                const handles = getShapeResizeHandles(stroke);
+                const handleSize = 12 / viewZoom;
+                for (const handle of handles) {
+                    if (Math.abs(worldPoint.x - handle.x) <= handleSize / 2 &&
+                        Math.abs(worldPoint.y - handle.y) <= handleSize / 2) {
+                        return handle;
+                    }
+                }
+                return null;
+            }
+
+            function getResizeHandleAtPoint(worldPoint, stroke) {
+                return isPointOnResizeHandle(worldPoint, stroke);
             }
 
             function findShapeStrokeIndex(worldPoint) {
@@ -3437,8 +4129,9 @@
             function getMoveCursorAtPoint(worldPoint) {
                 if (selectedStrokeIndex >= 0 && selectedStrokeIndex < strokes.length) {
                     const selectedStroke = strokes[selectedStrokeIndex];
-                    if (isPointOnResizeHandle(worldPoint, selectedStroke)) {
-                        return 'nwse-resize';
+                    const resizeHandle = isPointOnResizeHandle(worldPoint, selectedStroke);
+                    if (resizeHandle) {
+                        return resizeHandle.cursor || 'nwse-resize';
                     }
                 }
                 const hitIndex = findSelectableStrokeIndex(worldPoint);
@@ -3454,11 +4147,39 @@
                 }
                 if (!stroke.points) return;
                 stroke.points = stroke.points.map(p => ({ x: p.x + dx, y: p.y + dy }));
+                if (stroke.dots) {
+                    stroke.dots = stroke.dots.map(p => ({ ...p, x: p.x + dx, y: p.y + dy }));
+                }
             }
 
-            function resizeShapeToPoint(stroke, worldPoint) {
+            function resizeShapeToPoint(stroke, worldPoint, handle) {
                 if (!stroke || !isShapeStroke(stroke) || !stroke.points || stroke.points.length < 2) return;
-                stroke.points[1] = { ...stroke.points[1], x: worldPoint.x, y: worldPoint.y };
+                const localPoint = pointToStrokeLocal(worldPoint, stroke);
+                if (!handle) {
+                    stroke.points[1] = { ...stroke.points[1], x: localPoint.x, y: localPoint.y };
+                    return;
+                }
+                const bounds = getStrokeBounds(stroke);
+                if (!bounds) return;
+                let minX = bounds.minX;
+                let maxX = bounds.maxX;
+                let minY = bounds.minY;
+                let maxY = bounds.maxY;
+                if (handle.key.includes('w')) minX = localPoint.x;
+                if (handle.key.includes('e')) maxX = localPoint.x;
+                if (handle.key.includes('n')) minY = localPoint.y;
+                if (handle.key.includes('s')) maxY = localPoint.y;
+                if (minX > maxX) [minX, maxX] = [maxX, minX];
+                if (minY > maxY) [minY, maxY] = [maxY, minY];
+                if (stroke.tool === 'circle') {
+                    const center = { x: (minX + maxX) / 2, y: (minY + maxY) / 2 };
+                    const radiusPoint = { x: maxX, y: center.y };
+                    stroke.points[0] = center;
+                    stroke.points[1] = radiusPoint;
+                    return;
+                }
+                stroke.points[0] = { x: minX, y: minY };
+                stroke.points[1] = { x: maxX, y: maxY };
             }
 
             function getTrianglePoints(stroke) {
@@ -3835,16 +4556,91 @@
             function getCoords(e) {
                 return { x: e.clientX, y: e.clientY };
             }
-            
+
+            function snapPointToAxis(start, point) {
+                const dx = point.x - start.x;
+                const dy = point.y - start.y;
+                if (dx === 0 && dy === 0) return point;
+                const angle = Math.abs(Math.atan2(dy, dx) * 180 / Math.PI);
+                const snapDegrees = 1.5;
+                if (angle <= snapDegrees || Math.abs(angle - 180) <= snapDegrees) {
+                    return { x: point.x, y: start.y };
+                }
+                if (Math.abs(angle - 90) <= snapDegrees) {
+                    return { x: start.x, y: point.y };
+                }
+                return point;
+            }
+
+            function widthForSpeed(previousPoint, point, eventTime) {
+                const base = currentBrushSize;
+                const previousTime = previousPoint.t || eventTime;
+                const dt = Math.max(8, eventTime - previousTime);
+                const distance = getDistance(previousPoint, point);
+                const speed = distance / dt;
+                const normalized = Math.max(0, Math.min(1, speed / 1.2));
+                const maxShift = Math.max(0.8, base * 0.18);
+                return Math.max(1, base + maxShift - normalized * maxShift * 2);
+            }
+
+            function addSprayDots(path, point) {
+                const radius = Math.max(4, currentBrushSize * 1.2);
+                const count = Math.max(4, Math.round(currentBrushSize * 0.9));
+                path.dots = path.dots || [];
+                for (let i = 0; i < count; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const distance = Math.sqrt(Math.random()) * radius;
+                    path.dots.push({
+                        x: point.x + Math.cos(angle) * distance,
+                        y: point.y + Math.sin(angle) * distance,
+                        r: Math.max(0.6, currentBrushSize * (0.04 + Math.random() * 0.07)),
+                        a: 0.18 + Math.random() * 0.22
+                    });
+                }
+            }
+
+            function makeStrokePoint(worldPoint, eventTime) {
+                return { x: worldPoint.x, y: worldPoint.y, t: eventTime, w: currentBrushSize };
+            }
+
+            function createSplitBoard(direction, screenX, screenY) {
+                const start = screenToWorld(direction === 'horizontal' ? screenX : 0, direction === 'horizontal' ? 0 : screenY);
+                const end = screenToWorld(direction === 'horizontal' ? screenX : window.innerWidth, direction === 'horizontal' ? window.innerHeight : screenY);
+                const splitStroke = {
+                    id: Date.now(),
+                    tool: 'split',
+                    color: '#94a3b8',
+                    size: 2 / viewZoom,
+                    lineStyle: 'dashed',
+                    points: [start, end],
+                    splitDirection: direction
+                };
+                addHistoryAction();
+                strokes.push(splitStroke);
+                render();
+                saveStrokesAndSettings();
+                showNotification('Board split guide added', 'success');
+            }
+
             function startDrawing(e) {
                 // If not drawing on canvas or overlay, ignore
                 if(e.target !== canvas) return;
                 closeAllToolPopovers();
-                
+
                 if (e.target.closest('#toolbar-wrapper') || isTwoFingerPanning) {
                     return;
                 }
-                
+
+                // === STYLUS DETECTION ===
+                // If stylus is detected, force pen tool
+                if (e.pointerType === 'pen') {
+                    selectTool('pen');
+                }
+
+                // === BLOCK RIGHT-CLICK ===
+                // Ignore right-click completely
+                if (e.pointerType === 'mouse' && e.button !== 0) return;
+
                 // Text tool handling
                 if (currentTool === 'text') {
                     const { x: screenX, y: screenY } = getCoords(e);
@@ -3854,17 +4650,16 @@
                     positionTextOverlay(screenX, screenY);
                     return;
                 }
-                
+
                 if (e.pointerType === 'touch') {
                     touchHoldTimer = setTimeout(() => {
                         isEraserGesture = true;
                         originalTool = currentTool;
                         currentTool = 'eraser';
-                        
+
                         const { x: screenX, y: screenY } = getCoords(e);
                         const worldPoint = screenToWorld(screenX, screenY);
                         isDrawing = true;
-                        addHistoryAction();
                         didDeleteInStroke = false;
                         if (findAndRemoveStroke(worldPoint)) {
                             didDeleteInStroke = true;
@@ -3872,11 +4667,11 @@
 
                     }, TOUCH_HOLD_DURATION);
                 }
-                
-                if (isEraserGesture) return; 
+
+                if (isEraserGesture) return;
                 if (e.pointerType === 'mouse' && e.button !== 0) return;
                 e.preventDefault();
-                
+
                 const { x: screenX, y: screenY } = getCoords(e);
                 const worldPoint = screenToWorld(screenX, screenY);
                 if (currentTool === 'pan') {
@@ -3887,14 +4682,28 @@
                 }
                 if (currentTool === 'move') {
                     const selectedStroke = selectedStrokeIndex >= 0 ? strokes[selectedStrokeIndex] : null;
-                    if (selectedStroke && isPointOnResizeHandle(worldPoint, selectedStroke)) {
+                    const resizeHandle = selectedStroke ? isPointOnResizeHandle(worldPoint, selectedStroke) : null;
+
+                    if (resizeHandle) {
+                        // === CLICKING ON RESIZE HANDLE ===
                         movingStrokeIndex = selectedStrokeIndex;
-                        moveInteractionMode = 'resize';
+                        currentResizeHandle = resizeHandle;
+                        if (resizeHandle.type === 'rotate') {
+                            moveInteractionMode = 'rotate';
+                            activeStrokeCenter = getStrokeCenter(selectedStroke);
+                            rotateStartAngle = Math.atan2(worldPoint.y - activeStrokeCenter.y, worldPoint.x - activeStrokeCenter.x);
+                            rotateStartValue = selectedStroke.rotation || 0;
+                        } else {
+                            moveInteractionMode = 'resize';
+                        }
                         lastMovePoint = worldPoint;
                         hasMovedShape = false;
                         isDrawing = true;
                         return;
                     }
+
+                    // === CLICKING ON SHAPE BORDER OR ANYWHERE INSIDE ===
+                    // Allow selecting by clicking on any part of the shape
                     const selectableIndex = findSelectableStrokeIndex(worldPoint);
                     if (selectableIndex !== -1) {
                         selectedStrokeIndex = selectableIndex;
@@ -3934,28 +4743,39 @@
                         currentPath = { id: Date.now(), tool: 'cut', color: backgroundColor, size: currentEraserSize, points: [worldPoint] };
                         return;
                     } else { // Pixel eraser
-                        currentPath = { id: Date.now(), tool: 'pen', color: backgroundColor, size: currentEraserSize, points: [worldPoint] };
-                        return; 
+                        currentPath = { id: Date.now(), tool: 'pixel-eraser', color: 'rgba(0,0,0,1)', size: currentEraserSize, points: [worldPoint] };
+                        return;
                     }
                 }
-                currentPath = { id: Date.now(), tool: currentTool, color: currentColor, size: currentBrushSize, points: [worldPoint] };
+                const strokeTool = currentTool === 'pen' ? (currentPenType === 'spray' ? 'spray' : currentPenType === 'highlighter' ? 'highlighter' : 'pen') : currentTool;
+                const startPoint = makeStrokePoint(worldPoint, e.timeStamp || Date.now());
+                currentPath = { id: Date.now(), tool: strokeTool, color: currentColor, size: currentBrushSize, points: [startPoint] };
+                if (strokeTool === 'pen') {
+                    currentPath.variableWidth = true;
+                }
+                if (strokeTool === 'spray') {
+                    addSprayDots(currentPath, worldPoint);
+                }
                 if (['line', 'rect', 'circle', 'triangle'].includes(currentTool)) {
                     currentPath.points.push(worldPoint);
                     if (currentTool === 'triangle') {
                         currentPath.triangleType = currentTriangleType;
                     }
+                    if (currentTool === 'line') {
+                        currentPath.lineStyle = currentLineStyle;
+                    }
                 }
             }
-            
+
             function draw(e) {
                 if (touchHoldTimer) {
                     clearTimeout(touchHoldTimer);
                     touchHoldTimer = null;
                 }
-                
+
                 if ((!isDrawing && !isPanning) || isTwoFingerPanning) return;
                 e.preventDefault();
-                
+
                 const { x: screenX, y: screenY } = getCoords(e);
                 if (isPanning) {
                     const dx = screenX - lastPanPos.x;
@@ -3974,7 +4794,15 @@
                                 if (!hasMovedShape) {
                                     addHistoryAction();
                                 }
-                                resizeShapeToPoint(strokes[movingStrokeIndex], worldPoint);
+                                resizeShapeToPoint(strokes[movingStrokeIndex], worldPoint, currentResizeHandle);
+                                hasMovedShape = true;
+                                render();
+                            } else if (moveInteractionMode === 'rotate') {
+                                if (!hasMovedShape) {
+                                    addHistoryAction();
+                                }
+                                const angle = Math.atan2(worldPoint.y - activeStrokeCenter.y, worldPoint.x - activeStrokeCenter.x);
+                                strokes[movingStrokeIndex].rotation = rotateStartValue + (angle - rotateStartAngle);
                                 hasMovedShape = true;
                                 render();
                             } else {
@@ -4011,7 +4839,7 @@
                                 currentPath.points.push(worldPoint);
                                 render();
                             }
-                        } else { // Pixel eraser
+                            } else { // Pixel eraser
                             if (currentPath) {
                                 currentPath.points.push(worldPoint);
                                 render();
@@ -4022,13 +4850,25 @@
                     if (currentPath) {
                         switch (currentTool) {
                             case 'pen':
-                                currentPath.points.push(worldPoint);
+                                if (currentPath.tool === 'spray') {
+                                    currentPath.points.push(worldPoint);
+                                    addSprayDots(currentPath, worldPoint);
+                                } else if (currentPath.tool === 'highlighter') {
+                                    currentPath.points.push(worldPoint);
+                                } else {
+                                    const point = makeStrokePoint(worldPoint, e.timeStamp || Date.now());
+                                    const previous = currentPath.points[currentPath.points.length - 1];
+                                    point.w = widthForSpeed(previous, point, e.timeStamp || Date.now());
+                                    currentPath.points.push(point);
+                                }
                                 break;
                             case 'line':
+                                currentPath.points[1] = snapPointToAxis(currentPath.points[0], worldPoint);
+                                break;
                             case 'rect':
                             case 'circle':
                             case 'triangle':
-                                currentPath.points[1] = worldPoint;
+                                currentPath.points[1] = snapPointToAxis(currentPath.points[0], worldPoint);
                                 break;
                         }
                         render();
@@ -4045,7 +4885,7 @@
                 if (isPanning) {
                     isPanning = false;
                     canvas.classList.remove('panning');
-                    saveViewTransform(); 
+                    saveViewTransform();
                 }
                 if (isDrawing) {
                     isDrawing = false;
@@ -4115,6 +4955,8 @@
                         didChange = movingStrokeIndex !== -1 && hasMovedShape;
                         movingStrokeIndex = -1;
                         moveInteractionMode = 'none';
+                        currentResizeHandle = null;
+                        activeStrokeCenter = null;
                         lastMovePoint = null;
                         hasMovedShape = false;
                     } else if (currentPath) {
@@ -4144,13 +4986,13 @@
                         }
                         currentPath = null;
                     }
-                    
+
                     if (didChange) {
                         render();
-                        saveStrokesAndSettings(); 
+                        saveStrokesAndSettings();
                     }
                 }
-                
+
                 if (isEraserGesture) {
                     isEraserGesture = false;
                     currentTool = originalTool;
@@ -4170,7 +5012,7 @@
                     canvas.style.cursor = 'grab';
                 } else {
                     // Changed from none to crosshair for safety if custom cursor fails
-                    canvas.style.cursor = 'crosshair'; 
+                    canvas.style.cursor = 'crosshair';
                 }
                 customCursorCircle.style.display = 'none';
                 customCursorEraser.style.display = 'none';
@@ -4181,10 +5023,10 @@
                 }
                 render();
             }
-            
+
             function positionPopover(popover, buttonRect) {
                 const popoverWidth = popover.offsetWidth;
-                let top = buttonRect.bottom + 12; 
+                let top = buttonRect.bottom + 12;
                 let left = buttonRect.left + (buttonRect.width / 2) - (popoverWidth / 2);
                 left = Math.max(16, left);
                 if (left + popoverWidth > window.innerWidth - 16) {
@@ -4194,7 +5036,7 @@
                 popover.style.left = `${left}px`;
                 popover.style.transform = 'none';
             }
-            
+
             setupToolButton(penBtn, 'pen', true);
             setupToolButton(eraserBtn, 'eraser', true);
             setupToolButton(textBtn, 'text', false);
@@ -4233,7 +5075,7 @@
                     triangleOptionButtons.forEach((option) => option.classList.toggle('active', option === button));
                 });
             });
-            
+
             // Text formatting button handlers
             if (textBoldBtn) {
                 textBoldBtn.addEventListener('click', () => {
@@ -4242,7 +5084,7 @@
                     updateTextInputStyle();
                 });
             }
-            
+
             if (textItalicBtn) {
                 textItalicBtn.addEventListener('click', () => {
                     textItalic = !textItalic;
@@ -4250,7 +5092,7 @@
                     updateTextInputStyle();
                 });
             }
-            
+
             if (textUnderlineBtn) {
                 textUnderlineBtn.addEventListener('click', () => {
                     textUnderline = !textUnderline;
@@ -4258,7 +5100,7 @@
                     updateTextInputStyle();
                 });
             }
-            
+
             // Update textarea style based on formatting
             function updateTextInputStyle() {
                 if (textInput) {
@@ -4269,17 +5111,17 @@
                     textInput.style.fontSize = textFontSize.value + 'px';
                 }
             }
-            
+
             // Font family change handler
             if (textFontFamily) {
                 textFontFamily.addEventListener('change', updateTextInputStyle);
             }
-            
+
             // Font size change handler
             if (textFontSize) {
                 textFontSize.addEventListener('change', updateTextInputStyle);
             }
-            
+
             // Function to add text to canvas
             function addTextToCanvas() {
                 if (textInput && textInput.value.trim()) {
@@ -4302,7 +5144,7 @@
                 }
                 closeTextInput();
             }
-            
+
             // Function to close text input
             function closeTextInput() {
                 textInputOverlay.classList.remove('active');
@@ -4317,17 +5159,17 @@
                 textUnderlineBtn.classList.remove('active');
                 textInputOverlay.setAttribute('aria-hidden', 'true');
             }
-            
+
             // Text submit button
             if (textSubmitBtn) {
                 textSubmitBtn.addEventListener('click', addTextToCanvas);
             }
-            
+
             // Text cancel button
             if (textCancelBtn) {
                 textCancelBtn.addEventListener('click', closeTextInput);
             }
-            
+
             // Text input handling with keyboard shortcuts
             if (textInput) {
                 textInput.addEventListener('keydown', (e) => {
@@ -4378,23 +5220,22 @@
                     selectTool(tool);
                 });
             });
+            setupToolButton(lineBtn, 'line', true);
 
             undoBtn.addEventListener('click', undo);
             redoBtn.addEventListener('click', redo);
 
             colorPicker.addEventListener('input', (e) => {
-                currentColor = e.target.value;
-                penBtn.querySelector('svg').style.stroke = currentColor;
-                penPreview.style.backgroundColor = currentColor;
+                setCurrentColor(e.target.value);
             });
-            
+
             function updatePenCursorSize() {
                 // Adjust cursor size logic slightly to account for visual zoom
                 const cursorSize = Math.max(4, (currentBrushSize * viewZoom));
                 customCursorCircle.style.width = `${cursorSize}px`;
                 customCursorCircle.style.height = `${cursorSize}px`;
             }
-            
+
             function setupThicknessControl(controlEl) {
                 const input = controlEl.querySelector('input[type="number"]');
                 const decBtn = controlEl.querySelector('[data-action="decrease"]');
@@ -4424,21 +5265,52 @@
             }
             setupThicknessControl(penThicknessControl);
             setupThicknessControl(eraserThicknessControl);
-            
-            objectEraserBtn.addEventListener('click', () => {
-                currentEraserMode = 'object';
-                objectEraserBtn.classList.add('bg-blue-100', 'text-blue-700');
-                objectEraserBtn.classList.remove('bg-white', 'text-gray-700', 'hover:bg-gray-50');
-                pixelEraserBtn.classList.add('bg-white', 'text-gray-700', 'hover:bg-gray-50');
-                pixelEraserBtn.classList.remove('bg-blue-100', 'text-blue-700');
+
+            if (presetColorsEl) {
+                PRESET_COLORS.forEach((color) => {
+                    const button = document.createElement('button');
+                    button.type = 'button';
+                    button.className = 'preset-color-btn';
+                    button.dataset.color = color;
+                    button.title = color;
+                    button.style.backgroundColor = color;
+                    button.addEventListener('click', () => setCurrentColor(color));
+                    presetColorsEl.appendChild(button);
+                });
+                syncPresetColorButtons();
+            }
+
+            penTypeButtons.forEach((button) => {
+                button.addEventListener('click', () => {
+                    currentPenType = button.dataset.penType || 'default';
+                    updatePenTypeButtons();
+                });
             });
-            pixelEraserBtn.addEventListener('click', () => {
-                currentEraserMode = 'pixel';
-                pixelEraserBtn.classList.add('bg-blue-100', 'text-blue-700');
-                pixelEraserBtn.classList.remove('bg-white', 'text-gray-700', 'hover:bg-gray-50');
-                objectEraserBtn.classList.add('bg-white', 'text-gray-700', 'hover:bg-gray-50');
-                objectEraserBtn.classList.remove('bg-blue-100', 'text-blue-700');
+            lineStyleButtons.forEach((button) => {
+                button.addEventListener('click', () => {
+                    currentLineStyle = button.dataset.lineStyle || 'solid';
+                    updateLineStyleButtons();
+                });
             });
+            pinPenConfigBtn?.addEventListener('click', () => {
+                pinnedPenConfigs.push(getCurrentPenConfig());
+                savePinnedPenConfigs();
+                renderPinnedPenConfigs();
+                setPenGroupCollapsed(false);
+            });
+            penConfigCollapseBtn?.addEventListener('click', (event) => {
+                event.stopPropagation();
+                setPenGroupCollapsed(!isPenGroupCollapsed);
+            });
+            try {
+                pinnedPenConfigs = JSON.parse(localStorage.getItem('whiteboardPinnedPens') || '[]');
+            } catch (error) {
+                pinnedPenConfigs = [];
+            }
+            renderPinnedPenConfigs();
+            setPenGroupCollapsed(currentTool !== 'pen' && isPenGroupCollapsed);
+            updatePenTypeButtons();
+            updateLineStyleButtons();
 
             bgColorPicker.addEventListener('input', (e) => {
                 backgroundColor = e.target.value;
@@ -4446,7 +5318,7 @@
                 render();
                 saveStrokesAndSettings();
             });
-            
+
             bgPatternSelector.addEventListener('change', (e) => {
                 backgroundPattern = e.target.value;
                 updateCanvasIconPreview();
@@ -4469,13 +5341,13 @@
                 movingStrokeIndex = -1;
                 moveInteractionMode = 'none';
                 viewOffset = { x: 0, y: 0 };
-                viewZoom = 1; 
+                viewZoom = 1;
                 render();
-                saveStrokesAndSettings(); 
+                saveStrokesAndSettings();
                 saveViewTransform();
                 confirmModal.classList.add('hidden');
             });
-            
+
             document.addEventListener('pointerdown', (e) => {
                 if (!e.target.closest('#toolbar-wrapper') && !e.target.closest('.popover') && !e.target.closest('#buttonDiv') && !e.target.closest('#authStatus') && !e.target.closest('#save-drawing-btn')) {
                     closeAllToolPopovers();
@@ -4483,7 +5355,7 @@
             });
 
             // --- Main Event Listeners ---
-            
+
             function handlePointerDown(e) {
                 startDrawing(e);
             }
@@ -4494,15 +5366,26 @@
             document.addEventListener('pointermove', draw);
             document.addEventListener('pointerup', handlePointerUp);
             document.addEventListener('pointercancel', handlePointerUp);
-            
+
             // Touch events for 2-finger pan AND zoom
             canvas.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 3) {
+                    e.preventDefault();
+                    isDrawing = false;
+                    isPanning = false;
+                    isTwoFingerPanning = false;
+                    const points = Array.from(e.touches).map((touch) => ({ x: touch.clientX, y: touch.clientY }));
+                    const avgX = points.reduce((sum, point) => sum + point.x, 0) / points.length;
+                    const avgY = points.reduce((sum, point) => sum + point.y, 0) / points.length;
+                    splitGesture = { startX: avgX, startY: avgY, lastX: avgX, lastY: avgY };
+                    return;
+                }
                 if (e.touches.length === 2) {
-                    e.preventDefault(); 
+                    e.preventDefault();
                     isTwoFingerPanning = true;
-                    isDrawing = false; 
-                    isPanning = false; 
-                    
+                    isDrawing = false;
+                    isPanning = false;
+
                     lastTouchMidpoint = {
                         x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
                         y: (e.touches[0].clientY + e.touches[1].clientY) / 2,
@@ -4515,9 +5398,16 @@
             }, { passive: false });
 
             canvas.addEventListener('touchmove', (e) => {
+                if (splitGesture && e.touches.length === 3) {
+                    e.preventDefault();
+                    const points = Array.from(e.touches).map((touch) => ({ x: touch.clientX, y: touch.clientY }));
+                    splitGesture.lastX = points.reduce((sum, point) => sum + point.x, 0) / points.length;
+                    splitGesture.lastY = points.reduce((sum, point) => sum + point.y, 0) / points.length;
+                    return;
+                }
                 if (isTwoFingerPanning && e.touches.length === 2) {
                     e.preventDefault();
-                    
+
                     // Pan
                     const newMidpoint = {
                         x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
@@ -4528,14 +5418,14 @@
                     viewOffset.x += deltaX;
                     viewOffset.y += deltaY;
                     lastTouchMidpoint = newMidpoint;
-                    
+
                     // Zoom
                     const newTouchDistance = Math.hypot(
                         e.touches[0].clientX - e.touches[1].clientX,
                         e.touches[0].clientY - e.touches[1].clientY
                     );
                     const deltaDistance = newTouchDistance - lastTouchDistance;
-                    
+
                     // Use a slower zoom factor for touch
                     const zoomFactor = 1 + (deltaDistance / 100) * (ZOOM_STEP * 5);
                     const newZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, viewZoom * zoomFactor));
@@ -4546,9 +5436,22 @@
             }, { passive: false });
 
             canvas.addEventListener('touchend', (e) => {
+                if (splitGesture && e.touches.length < 3) {
+                    const dx = splitGesture.lastX - splitGesture.startX;
+                    const dy = splitGesture.lastY - splitGesture.startY;
+                    const distance = Math.hypot(dx, dy);
+                    if (distance > 32) {
+                        const direction = Math.abs(dx) >= Math.abs(dy) ? 'horizontal' : 'vertical';
+                        const splitX = (splitGesture.startX + splitGesture.lastX) / 2;
+                        const splitY = (splitGesture.startY + splitGesture.lastY) / 2;
+                        createSplitBoard(direction, splitX, splitY);
+                    }
+                    splitGesture = null;
+                    return;
+                }
                 if (isTwoFingerPanning) {
                     isTwoFingerPanning = false;
-                    saveViewTransform(); 
+                    saveViewTransform();
                 }
             });
 
@@ -4570,7 +5473,7 @@
                     clearTimeout(wheelSaveTimer);
                 }
                 wheelSaveTimer = setTimeout(() => {
-                    saveViewTransform(); 
+                    saveViewTransform();
                     wheelSaveTimer = null;
                 }, 500);
             }, { passive: false });
@@ -4599,7 +5502,7 @@
                             customCursorCircle.style.display = 'block';
                             customCursorEraser.style.display = 'none';
                             canvas.style.cursor = 'none';
-                        } else { 
+                        } else {
                             customCursorCircle.style.display = 'none';
                             customCursorEraser.style.display = 'none';
                             canvas.style.cursor = isPanning ? 'grabbing' : 'grab';
@@ -4613,12 +5516,88 @@
                     customCursorEraser.style.display = 'none';
                 }
             });
-            
+
             document.addEventListener('mouseleave', () => {
                 customCursorCircle.style.display = 'none';
                 customCursorEraser.style.display = 'none';
             });
-            
+
+            const guideSteps = [
+                { target: '#toolbar-wrapper', title: 'Toolbar', body: 'Pick tools from the unified toolbar. Drag the handle to dock it to any edge.' },
+                { target: '#pen-tool-wrapper', title: 'Pens and Presets', body: 'Select the pen, then long-press or double-click it to open color, thickness, highlighter, spray, and pin controls.' },
+                { target: '#line-btn', title: 'Dotted Lines', body: 'Select line and open its settings to choose solid, dotted, or dashed strokes. Nearly horizontal or vertical shapes snap into place.' },
+                { target: '#eraser-tool-wrapper', title: 'Eraser', body: 'Object eraser removes whole strokes. Pixel eraser now cuts through ink while keeping the board background intact.' },
+                { target: '#whiteboard', title: 'Gestures', body: 'Two fingers pan and pinch zoom. Swipe with three fingers over a short distance to add a split guide through the average swipe coordinate.' },
+                { target: '#move-btn', title: 'Move and Resize', body: 'Use Move to select shapes. Drag corners or edges to resize freely, and drag the round handle above a selected shape to rotate.' },
+                { target: '#board-controls', title: 'Board Controls', body: 'Use zoom, dark mode, and this guide button from the board controls. Local board data is stored in IndexedDB for much larger drawings.' }
+            ];
+            let guideIndex = 0;
+
+            function positionGuide() {
+                if (!featureGuide?.classList.contains('active')) return;
+                const step = guideSteps[guideIndex];
+                const target = document.querySelector(step.target);
+                const rect = target ? target.getBoundingClientRect() : { left: 16, top: 16, width: 1, height: 1, right: 17, bottom: 17 };
+                const pad = 8;
+                guideSpotlight.style.left = `${Math.max(8, rect.left - pad)}px`;
+                guideSpotlight.style.top = `${Math.max(8, rect.top - pad)}px`;
+                guideSpotlight.style.width = `${Math.max(28, rect.width + pad * 2)}px`;
+                guideSpotlight.style.height = `${Math.max(28, rect.height + pad * 2)}px`;
+
+                guideTitle.textContent = step.title;
+                guideBody.textContent = step.body;
+                guideStepCount.textContent = `${guideIndex + 1} / ${guideSteps.length}`;
+                guidePrevBtn.disabled = guideIndex === 0;
+                guideNextBtn.textContent = guideIndex === guideSteps.length - 1 ? 'Done' : 'Next';
+
+                const cardWidth = Math.min(340, window.innerWidth - 24);
+                let left = rect.right + 18;
+                let top = rect.top;
+                if (left + cardWidth > window.innerWidth - 12) {
+                    left = Math.max(12, rect.left - cardWidth - 18);
+                }
+                if (left < 12) {
+                    left = 12;
+                    top = rect.bottom + 18;
+                }
+                top = Math.max(12, Math.min(top, window.innerHeight - 230));
+                guideCard.style.left = `${left}px`;
+                guideCard.style.top = `${top}px`;
+            }
+
+            function openGuide(force = false) {
+                if (!document.getElementById('whiteboard-view')?.classList.contains('active')) return;
+                if (!force && localStorage.getItem('whiteboardGuideSeen') === 'true') return;
+                guideIndex = 0;
+                featureGuide.classList.add('active');
+                featureGuide.setAttribute('aria-hidden', 'false');
+                positionGuide();
+            }
+
+            function closeGuide() {
+                featureGuide.classList.remove('active');
+                featureGuide.setAttribute('aria-hidden', 'true');
+                localStorage.setItem('whiteboardGuideSeen', 'true');
+            }
+
+            guideOpenBtn?.addEventListener('click', () => openGuide(true));
+            window.openWhiteboardGuide = openGuide;
+            guideCloseBtn?.addEventListener('click', closeGuide);
+            guidePrevBtn?.addEventListener('click', () => {
+                guideIndex = Math.max(0, guideIndex - 1);
+                positionGuide();
+            });
+            guideNextBtn?.addEventListener('click', () => {
+                if (guideIndex >= guideSteps.length - 1) {
+                    closeGuide();
+                    return;
+                }
+                guideIndex += 1;
+                positionGuide();
+            });
+            window.addEventListener('resize', positionGuide);
+            setTimeout(() => openGuide(false), 700);
+
             // --- Keyboard Shortcuts ---
             document.addEventListener('keydown', (e) => {
                 if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
@@ -4658,7 +5637,7 @@
                     }
                 }
             });
-            
+
             if (toolbarDragHandle) {
                 toolbarDragHandle.addEventListener('pointerdown', (event) => {
                     if (event.button !== undefined && event.button !== 0) return;
@@ -4701,15 +5680,15 @@
             }
 
             // --- Initialization ---
-            
+
             // Must call resize ONCE at startup to set correct pixel ratio
             resizeCanvas();
             loadFromStorage();
             updateToolbarDock(toolbarDockPosition, false);
             syncHeaderContainerHeights();
             applyThemeMode(isDarkMode ? 'dark' : 'light');
-            updateActiveToolButton(currentTool); 
-            updateUndoRedoButtons(); 
+            updateActiveToolButton(currentTool);
+            updateUndoRedoButtons();
             updatePenModeButtons();
             updateEraserModeButtons();
             syncZoomControls();
@@ -4744,7 +5723,7 @@
 
             window.addEventListener('resize', resizeCanvas);
             window.addEventListener('resize', syncHeaderContainerHeights);
-            
+
             // Expose function to get current drawing data for saving
             window.getDrawingData = function() {
                 return {
@@ -4755,43 +5734,43 @@
                     viewZoom: viewZoom
                 };
             };
-            
+
             // Expose function to load drawing data from saved file
             window.loadDrawingData = function(data) {
                 if (!data) return;
-                
+
                 // Clear current drawing
                 strokes = [];
                 undoStack = [];
                 redoStack = [];
-                
+
                 // Load strokes
                 if (data.strokes && Array.isArray(data.strokes)) {
                     strokes = data.strokes;
                 }
-                
+
                 // Load background settings
                 if (data.backgroundColor) {
                     backgroundColor = data.backgroundColor;
                     bgColorPicker.value = backgroundColor;
                     updateCanvasIconPreview();
                 }
-                
+
                 if (data.backgroundPattern) {
                     backgroundPattern = data.backgroundPattern;
                     bgPatternSelector.value = backgroundPattern;
                     updateCanvasIconPreview();
                 }
-                
+
                 // Load view settings
                 if (data.viewOffset) {
                     viewOffset = data.viewOffset;
                 }
-                
+
                 if (data.viewZoom) {
                     viewZoom = data.viewZoom;
                 }
-                
+
                 // Re-render the canvas
                 syncZoomControls();
                 render();
@@ -4807,7 +5786,7 @@
             }
         }
     });
-        
+
     </script>
 </body>
 </html>

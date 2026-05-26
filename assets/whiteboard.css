@@ -1,0 +1,98 @@
+.shape-handle {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border: 2px solid #2563eb;
+    border-radius: 9999px;
+    background: #ffffff;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.18);
+    transform: translate(-50%, -50%);
+    pointer-events: auto;
+    cursor: pointer;
+}
+
+.shape-handle.shape-handle-edge {
+    border-radius: 4px;
+}
+
+.shape-rotate-handle {
+    width: 14px;
+    height: 14px;
+    border-radius: 9999px;
+    background: #eff6ff;
+    border-color: #1d4ed8;
+}
+
+.shape-selection-label {
+    position: absolute;
+    left: 50%;
+    top: -30px;
+    transform: translateX(-50%);
+    background: rgba(37, 99, 235, 0.95);
+    color: #ffffff;
+    font-size: 12px;
+    line-height: 1;
+    padding: 6px 8px;
+    border-radius: 9999px;
+    white-space: nowrap;
+    pointer-events: none;
+    box-shadow: 0 8px 18px rgba(37, 99, 235, 0.25);
+}
+
+.quadrilateral-options {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    width: 100%;
+}
+
+.quadrilateral-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 14px;
+    background: #ffffff;
+    color: #111827;
+    font-size: 12px;
+    font-weight: 600;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.quadrilateral-option:hover {
+    transform: translateY(-1px);
+    border-color: #93c5fd;
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.1);
+}
+
+.quadrilateral-option.active {
+    border-color: #2563eb;
+    background: #eff6ff;
+    color: #1d4ed8;
+}
+
+.quadrilateral-option svg {
+    width: 28px;
+    height: 28px;
+}
+
+.shape-property-row {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.shape-property-row input[type="range"] {
+    flex: 1 1 auto;
+}
+
+.shape-property-value {
+    min-width: 48px;
+    text-align: right;
+    font-size: 12px;
+    font-weight: 600;
+    color: #4b5563;
+}
