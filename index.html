@@ -413,7 +413,7 @@
         /* Toolbar in whiteboard view becomes the center container */
         #whiteboard-view.active #toolbar-wrapper {
             position: fixed;
-            z-index: 100;
+            z-index: 300;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -454,10 +454,11 @@
             border: 1px solid rgba(148, 163, 184, 0.2);
             border-radius: 16px;
             box-shadow: 0 12px 30px -12px rgba(15, 23, 42, 0.35);
-            padding: 10px;
+            padding: 6px 10px;
             gap: 0.5rem;
             width: max-content;
             max-width: min(95vw, 1100px);
+            min-height: 58px;
         }
 
         #whiteboard-view.active .toolbar-dock-left #toolbar,
@@ -471,12 +472,24 @@
             overflow-x: hidden;
         }
 
+        #whiteboard-view.active .toolbar-dock-left .tool-config-group,
+        #whiteboard-view.active .toolbar-dock-right .tool-config-group,
+        #whiteboard-view.active .toolbar-dock-left .pinned-tool-configs,
+        #whiteboard-view.active .toolbar-dock-right .pinned-tool-configs {
+            flex-direction: column;
+        }
+
         #whiteboard-view.active .toolbar-dock-top #toolbar,
         #whiteboard-view.active .toolbar-dock-bottom #toolbar {
             flex-direction: row;
-            align-items: flex-start;
+            align-items: center;
             overflow-x: auto;
             overflow-y: hidden;
+        }
+
+        #whiteboard-view.active .toolbar-dock-top .tool-meta,
+        #whiteboard-view.active .toolbar-dock-bottom .tool-meta {
+            display: none;
         }
 
         #whiteboard-view.active .toolbar-dock-bottom #toolbar {
@@ -529,6 +542,10 @@
             align-items: center;
             gap: 0.25rem;
             min-width: 3.1rem;
+        }
+
+        .toolbar-reorder-ghost {
+            opacity: 0.45;
         }
 
         .tool-config-group {
@@ -585,14 +602,15 @@
             overflow: hidden;
         }
 
-        .pinned-config-btn::after {
-            content: '';
-            width: var(--dot-size, 12px);
-            height: var(--dot-size, 12px);
-            border-radius: 999px;
-            background: var(--dot-color, #000);
+        .pinned-config-btn svg {
+            width: 1.25rem;
+            height: 1.25rem;
+            fill: none;
+            stroke: var(--dot-color, #000);
+            stroke-width: var(--icon-stroke-width, 2);
+            stroke-linecap: round;
+            stroke-linejoin: round;
             opacity: var(--dot-opacity, 1);
-            box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.16);
         }
 
         .popover-row-title {
@@ -797,7 +815,7 @@
         }
 
         .tool-btn {
-            padding: 0.75rem; /* p-3 */
+            padding: 0.55rem;
             border-radius: 0.5rem; /* rounded-md */
         }
         .tool-btn svg {
@@ -822,7 +840,7 @@
             border-radius: 0.5rem;
             box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
             padding: 1rem;
-            z-index: 20;
+            z-index: 1200;
             width: 280px;
             overflow-y: auto;
             max-height: 70vh;
@@ -1061,18 +1079,20 @@
         }
 
         #save-indicator {
-            bottom: 88px;
-            right: 16px;
+            top: 142px;
+            left: 16px;
+            bottom: auto;
+            right: auto;
         }
 
         .board-controls {
             position: fixed;
-            right: 16px;
-            bottom: 16px;
-            z-index: 110;
+            left: 16px;
+            top: 84px;
+            z-index: 250;
             display: flex;
-            align-items: stretch;
-            gap: 10px;
+            align-items: center;
+            gap: 8px;
             pointer-events: auto;
         }
 
@@ -1091,48 +1111,6 @@
             cursor: pointer;
         }
 
-        .zoom-panel {
-            min-width: 280px;
-            padding: 10px 12px;
-            border-radius: 16px;
-            border: 1px solid rgba(148, 163, 184, 0.25);
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(14px);
-            box-shadow: 0 12px 30px -12px rgba(15, 23, 42, 0.35);
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .zoom-panel-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            font-size: 12px;
-            font-weight: 600;
-            color: #334155;
-        }
-
-        .zoom-slider-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .zoom-slider-row svg {
-            width: 14px;
-            height: 14px;
-            color: #64748b;
-            flex: none;
-        }
-
-        #zoom-slider {
-            flex: 1;
-            accent-color: #2563eb;
-            cursor: pointer;
-        }
-
         body.dark-mode {
             background-color: #020617;
             color: #e2e8f0;
@@ -1143,7 +1121,6 @@
         body.dark-mode .popover,
         body.dark-mode .text-input-overlay,
         body.dark-mode .custom-modal,
-        body.dark-mode .zoom-panel,
         body.dark-mode .board-theme-toggle {
             background: rgba(15, 23, 42, 0.92);
             color: #e2e8f0;
@@ -1154,7 +1131,6 @@
         body.dark-mode .header-logo-container span,
         body.dark-mode .tool-label,
         body.dark-mode .tool-shortcut,
-        body.dark-mode .zoom-panel-header,
         body.dark-mode .custom-modal h3,
         body.dark-mode .custom-modal p,
         body.dark-mode .text-input-toolbar,
@@ -1192,7 +1168,6 @@
             box-shadow: 0 0 0 1px rgba(96, 165, 250, 0.25);
         }
 
-        body.dark-mode .zoom-panel-header,
         body.dark-mode .text-input-toolbar,
         body.dark-mode .text-input-footer {
             background: rgba(15, 23, 42, 0.96);
@@ -1200,7 +1175,6 @@
         }
 
         body.dark-mode .board-theme-toggle svg,
-        body.dark-mode .zoom-slider-row svg,
         body.dark-mode #custom-cursor-circle {
             color: #e2e8f0;
         }
@@ -1628,8 +1602,9 @@
                 <div id="eraser-tool-wrapper" class="tool-group">
                     <button id="eraser-btn" class="tool-btn tool-action rounded-md hover:bg-gray-200" title="Eraser (3)">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 pointer-events-none">
-                            <path d="m20 13-7.5 7.5H8.8L3 13l7.5-7.5a2 2 0 0 1 2.8 0L20 10.2Z"></path>
-                            <path d="M7.5 14.5 10.5 17.5"></path>
+                            <path d="m7 21-4-4 10-10 4 4-10 10Z"></path>
+                            <path d="m14 6 3-3 4 4-3 3"></path>
+                            <path d="M3 21h8"></path>
                         </svg>
                     </button>
                     <div class="tool-meta"><span class="tool-label">Eraser</span><span class="tool-shortcut">3</span></div>
@@ -1647,9 +1622,8 @@
                 <div class="tool-group">
                     <button id="undo-btn" class="tool-btn tool-action rounded-md hover:bg-gray-200" title="Undo (Ctrl+Z)">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 pointer-events-none">
-                            <path d="M7 7H3v4"></path>
-                            <path d="M4 11a8 8 0 1 1 2.3 5.7"></path>
-                            <path d="m4 17 2.3-2.3"></path>
+                            <path d="M9 14 4 9l5-5"></path>
+                            <path d="M4 9h10a6 6 0 1 1-4.2 10.2"></path>
                         </svg>
                     </button>
                     <div class="tool-meta"><span class="tool-label">Undo</span><span class="tool-shortcut">Ctrl+Z</span></div>
@@ -1657,9 +1631,8 @@
                 <div class="tool-group">
                     <button id="redo-btn" class="tool-btn tool-action rounded-md hover:bg-gray-200" title="Redo (Ctrl+Y)">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 pointer-events-none">
-                            <path d="M17 7h4v4"></path>
-                            <path d="M20 11a8 8 0 1 0-2.3 5.7"></path>
-                            <path d="m20 17-2.3-2.3"></path>
+                            <path d="m15 14 5-5-5-5"></path>
+                            <path d="M20 9H10a6 6 0 1 0 4.2 10.2"></path>
                         </svg>
                     </button>
                     <div class="tool-meta"><span class="tool-label">Redo</span><span class="tool-shortcut">Ctrl+Y</span></div>
@@ -1731,22 +1704,18 @@
                     <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
                 </svg>
             </button>
-            <div class="zoom-panel">
-                <div class="zoom-panel-header">
-                    <span>Zoom</span>
-                    <span id="zoom-value-label">100%</span>
-                </div>
-                <div class="zoom-slider-row">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <path d="M5 12h14"></path>
-                    </svg>
-                    <input id="zoom-slider" type="range" min="10" max="1000" step="1" value="100" aria-label="Zoom slider">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <path d="M12 5v14"></path>
-                        <path d="M5 12h14"></path>
-                    </svg>
-                </div>
-            </div>
+            <button id="split-vertical-btn" class="board-theme-toggle" type="button" title="Split vertically (Alt+V)" aria-label="Split vertically">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <rect x="4" y="4" width="16" height="16" rx="2"></rect>
+                    <path d="M12 4v16"></path>
+                </svg>
+            </button>
+            <button id="split-horizontal-btn" class="board-theme-toggle" type="button" title="Split horizontally (Alt+H)" aria-label="Split horizontally">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <rect x="4" y="4" width="16" height="16" rx="2"></rect>
+                    <path d="M4 12h16"></path>
+                </svg>
+            </button>
         </div>
         <div id="feature-guide" class="feature-guide" aria-hidden="true">
             <div id="guide-spotlight" class="guide-spotlight"></div>
@@ -1831,7 +1800,6 @@
                 <label class="text-sm font-medium text-gray-700 mb-2">Pen Mode</label>
                 <div class="pen-mode-grid">
                     <button id="pen-draw-btn" class="active">Draw</button>
-                    <button id="pen-cut-btn">Cut</button>
                 </div>
             </div>
             <div class="flex flex-col items-center">
@@ -1892,7 +1860,6 @@
                 <div class="eraser-mode-grid">
                     <button id="object-eraser-btn" class="active">Object</button>
                     <button id="pixel-eraser-btn">Pixel</button>
-                    <button id="cut-eraser-btn">Cut</button>
                 </div>
             </div>
             <div class="flex flex-col items-center">
@@ -2238,7 +2205,7 @@
     }
 
     // --- View Management ---
-    window.goToHomepage = function() {
+    window.goToHomepage = function(options = {}) {
       document.getElementById('homepage-view').classList.add('active');
       document.getElementById('whiteboard-view').classList.remove('active');
       // Save current whiteboard if there's data
@@ -2249,9 +2216,12 @@
       if (localStorage.getItem('authToken')) {
         window.loadCloudBoards();
       }
+      if (!options.skipHistory && window.location.pathname !== '/') {
+        history.pushState({ view: 'home' }, '', '/');
+      }
     }
 
-    window.goToWhiteboard = function(boardId) {
+    window.goToWhiteboard = function(boardId, options = {}) {
       document.getElementById('homepage-view').classList.remove('active');
       document.getElementById('whiteboard-view').classList.add('active');
       if (boardId) {
@@ -2268,6 +2238,12 @@
       }
       if (window.openWhiteboardGuide) {
         setTimeout(() => window.openWhiteboardGuide(false), 400);
+      }
+      if (!options.skipHistory) {
+        const path = boardId ? `/board/${encodeURIComponent(boardId)}` : (currentCloudBoardId ? `/cloud-board/${encodeURIComponent(currentCloudBoardId)}` : '/board/new');
+        if (window.location.pathname !== path) {
+          history.pushState({ view: 'board', boardId: boardId || null, cloudBoardId: currentCloudBoardId || null }, '', path);
+        }
       }
     }
 
@@ -2791,6 +2767,8 @@
             const redoBtn = document.getElementById('redo-btn');
             const clearBtn = document.getElementById('clear-btn');
             const guideOpenBtn = document.getElementById('guide-open-btn');
+            const splitVerticalBtn = document.getElementById('split-vertical-btn');
+            const splitHorizontalBtn = document.getElementById('split-horizontal-btn');
             const featureGuide = document.getElementById('feature-guide');
             const guideSpotlight = document.getElementById('guide-spotlight');
             const guideCard = document.getElementById('guide-card');
@@ -2832,7 +2810,6 @@
             const canvasPopover = document.getElementById('canvas-popover');
             const linePopover = document.getElementById('line-popover');
             const penDrawBtn = document.getElementById('pen-draw-btn');
-            const penCutBtn = document.getElementById('pen-cut-btn');
 
             // (Pen Popover)
             const colorPicker = document.getElementById('color-picker');
@@ -2855,7 +2832,6 @@
             const eraserSizeLabel = document.getElementById('eraser-size-label');
             const objectEraserBtn = document.getElementById('object-eraser-btn');
             const pixelEraserBtn = document.getElementById('pixel-eraser-btn');
-            const cutEraserBtn = document.getElementById('cut-eraser-btn');
             const eraserPreview = document.getElementById('eraser-preview');
 
             // (Canvas Popover)
@@ -3076,12 +3052,13 @@
                     if (toolbarDockPosition === 'left' || toolbarDockPosition === 'right') {
                         logoContainer.style.minHeight = '';
                         accountContainer.style.minHeight = '';
+                        toolbar.style.minHeight = '';
                         return;
                     }
-                    const toolbarRect = toolbar.getBoundingClientRect();
-                    if (!toolbarRect.height) return;
-                    const matchedHeight = `${Math.round(toolbarRect.height)}px`;
-                    logoContainer.style.minHeight = matchedHeight;
+                    const logoRect = logoContainer.getBoundingClientRect();
+                    if (!logoRect.height) return;
+                    const matchedHeight = `${Math.round(logoRect.height)}px`;
+                    toolbar.style.minHeight = matchedHeight;
                     accountContainer.style.minHeight = matchedHeight;
                 });
             }
@@ -3169,9 +3146,6 @@
                 if (penDrawBtn) {
                     penDrawBtn.classList.toggle('active', currentPenMode === 'draw');
                 }
-                if (penCutBtn) {
-                    penCutBtn.classList.toggle('active', currentPenMode === 'cut');
-                }
             }
 
             function syncPresetColorButtons() {
@@ -3184,9 +3158,9 @@
             function setCurrentColor(color) {
                 currentColor = color;
                 colorPicker.value = color;
-                penBtn.querySelector('svg').style.stroke = color;
                 penPreview.style.backgroundColor = color;
                 syncPresetColorButtons();
+                updateMainPenIcon();
             }
 
             function updatePenTypeButtons() {
@@ -3195,6 +3169,31 @@
                 });
                 penPreview.style.opacity = currentPenType === 'highlighter' ? '0.45' : '1';
                 penPreview.style.borderRadius = currentPenType === 'spray' ? '999px' : '4px';
+                updateMainPenIcon();
+            }
+
+            function getPenIconSvg(config, compact = false) {
+                const type = config?.type || 'default';
+                const color = config?.color || '#000000';
+                const size = Math.max(1, Number(config?.size || 5));
+                const strokeWidth = Math.max(1.6, Math.min(4.2, 1.5 + size / 16));
+                const svgAttrs = `fill="none" stroke="${color}" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round"`;
+                if (type === 'spray') {
+                    return `<svg viewBox="0 0 24 24" aria-hidden="true" ${svgAttrs} style="--dot-color:${color};--icon-stroke-width:${strokeWidth}"><path d="M5 19h5l9-9-5-5-9 9v5Z"></path><circle cx="17.5" cy="16" r="1.1" fill="${color}" stroke="none"></circle><circle cx="20" cy="19" r="0.8" fill="${color}" stroke="none"></circle><circle cx="15" cy="20" r="0.7" fill="${color}" stroke="none"></circle></svg>`;
+                }
+                if (type === 'highlighter') {
+                    return `<svg viewBox="0 0 24 24" aria-hidden="true" ${svgAttrs} style="--dot-color:${color};--icon-stroke-width:${strokeWidth};opacity:.75"><path d="m4 20 4-1 10-10-3-3L5 16l-1 4Z"></path><path d="M13 6 18 11"></path><path d="M6 20h12" stroke="${color}" stroke-width="4" opacity=".35"></path></svg>`;
+                }
+                return `<svg viewBox="0 0 24 24" aria-hidden="true" ${svgAttrs} style="--dot-color:${color};--icon-stroke-width:${strokeWidth}"><path d="M14.5 3.5 20.5 9.5 9 21H3v-6Z"></path><path d="M14.5 3.5 10 8"></path>${compact ? '' : `<path d="M4 20c4-2 8-2 13 0" stroke="${color}" stroke-width="${Math.max(2, Math.min(5, size / 2))}" opacity=".65"></path>`}</svg>`;
+            }
+
+            function updateMainPenIcon() {
+                if (!penBtn) return;
+                penBtn.innerHTML = getPenIconSvg({ color: currentColor, size: currentBrushSize, type: currentPenType });
+                const svg = penBtn.querySelector('svg');
+                if (svg) {
+                    svg.classList.add('w-7', 'h-7', 'pointer-events-none');
+                }
             }
 
             function updateLineStyleButtons() {
@@ -3236,19 +3235,50 @@
                     const button = document.createElement('button');
                     button.className = 'pinned-config-btn';
                     button.type = 'button';
+                    button.draggable = true;
+                    button.dataset.pinIndex = String(index);
                     button.title = `${config.type || 'default'} pen, ${config.size || 5}px`;
                     button.style.setProperty('--dot-color', config.color || '#000');
-                    button.style.setProperty('--dot-size', `${Math.max(8, Math.min(18, config.size || 5))}px`);
                     button.style.setProperty('--dot-opacity', config.type === 'highlighter' ? '0.45' : '1');
+                    button.style.setProperty('--icon-stroke-width', `${Math.max(1.6, Math.min(4.2, 1.5 + (config.size || 5) / 16))}`);
+                    button.innerHTML = getPenIconSvg(config, true);
                     button.addEventListener('click', (event) => {
                         event.stopPropagation();
                         applyPenConfig(config);
+                    });
+                    button.addEventListener('dragstart', (event) => {
+                        event.dataTransfer.setData('text/plain', String(index));
+                        event.dataTransfer.effectAllowed = 'move';
+                    });
+                    button.addEventListener('dragover', (event) => {
+                        event.preventDefault();
+                        event.dataTransfer.dropEffect = 'move';
+                    });
+                    button.addEventListener('drop', (event) => {
+                        event.preventDefault();
+                        const fromIndex = Number(event.dataTransfer.getData('text/plain'));
+                        reorderPinnedPenConfig(fromIndex, index);
                     });
                     pinnedPenConfigsEl.appendChild(button);
 
                     const row = document.createElement('div');
                     row.className = 'pinned-pen-editor-row';
+                    row.draggable = true;
+                    row.dataset.pinIndex = String(index);
                     row.innerHTML = `<span>${config.type || 'default'} ${config.size || 5}px</span>`;
+                    row.addEventListener('dragstart', (event) => {
+                        event.dataTransfer.setData('text/plain', String(index));
+                        event.dataTransfer.effectAllowed = 'move';
+                    });
+                    row.addEventListener('dragover', (event) => {
+                        event.preventDefault();
+                        event.dataTransfer.dropEffect = 'move';
+                    });
+                    row.addEventListener('drop', (event) => {
+                        event.preventDefault();
+                        const fromIndex = Number(event.dataTransfer.getData('text/plain'));
+                        reorderPinnedPenConfig(fromIndex, index);
+                    });
                     const up = document.createElement('button');
                     up.type = 'button';
                     up.textContent = '^';
@@ -3283,6 +3313,15 @@
                 });
             }
 
+            function reorderPinnedPenConfig(fromIndex, toIndex) {
+                if (!Number.isInteger(fromIndex) || !Number.isInteger(toIndex) || fromIndex === toIndex) return;
+                if (fromIndex < 0 || fromIndex >= pinnedPenConfigs.length || toIndex < 0 || toIndex >= pinnedPenConfigs.length) return;
+                const [movedConfig] = pinnedPenConfigs.splice(fromIndex, 1);
+                pinnedPenConfigs.splice(toIndex, 0, movedConfig);
+                savePinnedPenConfigs();
+                renderPinnedPenConfigs();
+            }
+
             function setPenGroupCollapsed(collapsed) {
                 isPenGroupCollapsed = collapsed;
                 penConfigGroup.classList.toggle('collapsed', collapsed);
@@ -3292,14 +3331,6 @@
             if (penDrawBtn) {
                 penDrawBtn.addEventListener('click', () => {
                     currentPenMode = 'draw';
-                    updatePenModeButtons();
-                    selectTool('pen', { keepSettingsOpen: true });
-                });
-            }
-
-            if (penCutBtn) {
-                penCutBtn.addEventListener('click', () => {
-                    currentPenMode = 'cut';
                     updatePenModeButtons();
                     selectTool('pen', { keepSettingsOpen: true });
                 });
@@ -3765,10 +3796,6 @@
                              }
                              return;
                         }
-                        if (stroke.variableWidth) {
-                            drawVariablePen(stroke);
-                            return;
-                        }
                         drawSmoothPath(stroke.points);
                         break;
                     case 'cut':
@@ -4038,7 +4065,9 @@
                 ctx.fillStyle = '#ffffff';
                 ctx.lineWidth = 1.5 / viewZoom;
                 ctx.setLineDash([6 / viewZoom, 4 / viewZoom]);
-                ctx.strokeRect(bounds.minX - pad, bounds.minY - pad, (bounds.maxX - bounds.minX) + pad * 2, (bounds.maxY - bounds.minY) + pad * 2);
+                withStrokeRotation(stroke, () => {
+                    ctx.strokeRect(bounds.minX - pad, bounds.minY - pad, (bounds.maxX - bounds.minX) + pad * 2, (bounds.maxY - bounds.minY) + pad * 2);
+                });
                 ctx.setLineDash([]);
 
                 if (isShapeStroke(stroke)) {
@@ -4516,21 +4545,12 @@
             }
 
             function eraseStrokesByScribble(pathPoints, sourceSize = currentBrushSize) {
-                const before = strokes.length;
-                strokes = strokes.filter((stroke) => {
-                    if (!stroke) return true;
-                    if (stroke.tool === 'pen' || stroke.type === 'text') {
-                        return !scribbleErasesStroke(pathPoints, stroke, sourceSize);
-                    }
-                    return true;
-                });
-                if (selectedStrokeIndex >= strokes.length) {
-                    selectedStrokeIndex = -1;
-                }
-                return strokes.length !== before;
+                // Non-eraser gestures are intentionally non-destructive.
+                return false;
             }
 
             function cutStrokesByPath(pathPoints, sourceSize = currentEraserSize) {
+                if (currentTool !== 'eraser') return false;
                 if (!Array.isArray(pathPoints) || pathPoints.length === 0) return false;
                 const zoomSafe = Math.max(0.15, viewZoom || 1);
                 const baseToleranceInScreenPx = Math.max(14, sourceSize * 1.8);
@@ -4620,6 +4640,10 @@
                 render();
                 saveStrokesAndSettings();
                 showNotification('Board split guide added', 'success');
+            }
+
+            function splitAtViewportCenter(direction) {
+                createSplitBoard(direction, window.innerWidth / 2, window.innerHeight / 2);
             }
 
             function startDrawing(e) {
@@ -4724,10 +4748,6 @@
                     return;
                 }
                 isDrawing = true;
-                if (currentTool === 'pen' && currentPenMode === 'cut') {
-                    currentPath = { id: Date.now(), tool: 'cut', color: currentColor, size: currentBrushSize, points: [worldPoint] };
-                    return;
-                }
                 if (currentTool === 'eraser') {
                     if (currentEraserMode === 'object') {
                         eraserHistorySnapshot = null;
@@ -4739,9 +4759,6 @@
                             eraserHistorySnapshot = null;
                         }
                         return;
-                    } else if (currentEraserMode === 'cut') {
-                        currentPath = { id: Date.now(), tool: 'cut', color: backgroundColor, size: currentEraserSize, points: [worldPoint] };
-                        return;
                     } else { // Pixel eraser
                         currentPath = { id: Date.now(), tool: 'pixel-eraser', color: 'rgba(0,0,0,1)', size: currentEraserSize, points: [worldPoint] };
                         return;
@@ -4751,7 +4768,7 @@
                 const startPoint = makeStrokePoint(worldPoint, e.timeStamp || Date.now());
                 currentPath = { id: Date.now(), tool: strokeTool, color: currentColor, size: currentBrushSize, points: [startPoint] };
                 if (strokeTool === 'pen') {
-                    currentPath.variableWidth = true;
+                    currentPath.variableWidth = false;
                 }
                 if (strokeTool === 'spray') {
                     addSprayDots(currentPath, worldPoint);
@@ -4821,11 +4838,6 @@
                         }
                         return;
                     }
-                    if (currentPath && currentPath.tool === 'cut') {
-                        currentPath.points.push(worldPoint);
-                        render();
-                        return;
-                    }
                     if (currentTool === 'eraser') {
                         if (currentEraserMode === 'object') {
                             if (!eraserHistorySnapshot) {
@@ -4834,12 +4846,7 @@
                             if (findAndRemoveStroke(worldPoint)) {
                                 didDeleteInStroke = true;
                             }
-                        } else if (currentEraserMode === 'cut') {
-                            if (currentPath) {
-                                currentPath.points.push(worldPoint);
-                                render();
-                            }
-                            } else { // Pixel eraser
+                        } else { // Pixel eraser
                             if (currentPath) {
                                 currentPath.points.push(worldPoint);
                                 render();
@@ -4857,8 +4864,6 @@
                                     currentPath.points.push(worldPoint);
                                 } else {
                                     const point = makeStrokePoint(worldPoint, e.timeStamp || Date.now());
-                                    const previous = currentPath.points[currentPath.points.length - 1];
-                                    point.w = widthForSpeed(previous, point, e.timeStamp || Date.now());
                                     currentPath.points.push(point);
                                 }
                                 break;
@@ -4890,24 +4895,7 @@
                 if (isDrawing) {
                     isDrawing = false;
                     let didChange = false;
-                    if (currentPath && currentPath.tool === 'cut') {
-                        if (currentPath.points.length > 0) {
-                            if (currentPath.points.length === 1) {
-                                currentPath.points.push({ x: currentPath.points[0].x + 0.1, y: currentPath.points[0].y + 0.1 });
-                            }
-                            const previousState = JSON.stringify(strokes);
-                            if (cutStrokesByPath(currentPath.points, currentPath.size)) {
-                                redoStack = [];
-                                undoStack.push(previousState);
-                                if (undoStack.length > 50) {
-                                    undoStack.shift();
-                                }
-                                updateUndoRedoButtons();
-                                didChange = true;
-                            }
-                        }
-                        currentPath = null;
-                    } else if (currentTool === 'eraser') {
+                    if (currentTool === 'eraser') {
                         if (currentEraserMode === 'object') {
                             if (didDeleteInStroke) {
                                 if (eraserHistorySnapshot) {
@@ -4922,23 +4910,6 @@
                             }
                             didDeleteInStroke = false;
                             eraserHistorySnapshot = null;
-                        } else if (currentEraserMode === 'cut') {
-                            if (currentPath && currentPath.points.length > 0) {
-                                if (currentPath.points.length === 1) {
-                                    currentPath.points.push({ x: currentPath.points[0].x + 0.1, y: currentPath.points[0].y + 0.1 });
-                                }
-                                const previousState = JSON.stringify(strokes);
-                                if (cutStrokesByPath(currentPath.points, currentPath.size)) {
-                                    redoStack = [];
-                                    undoStack.push(previousState);
-                                    if (undoStack.length > 50) {
-                                        undoStack.shift();
-                                    }
-                                    updateUndoRedoButtons();
-                                    didChange = true;
-                                }
-                            }
-                            currentPath = null;
                         } else { // Pixel eraser
                             if (currentPath && currentPath.points.length > 0) {
                                  if(currentPath.points.length === 1) {
@@ -4962,19 +4933,6 @@
                     } else if (currentPath) {
                         if (currentPath.tool === 'pen' && currentPath.points.length === 1) {
                             currentPath.points.push({ x: currentPath.points[0].x + (0.1 / viewZoom), y: currentPath.points[0].y + (0.1 / viewZoom) });
-                        }
-                        if (currentPath.tool === 'pen' && currentPenMode === 'draw' && detectScribble(currentPath.points)) {
-                            const previousState = JSON.stringify(strokes);
-                            if (eraseStrokesByScribble(currentPath.points, currentPath.size || currentBrushSize)) {
-                                redoStack = [];
-                                undoStack.push(previousState);
-                                if (undoStack.length > 50) {
-                                    undoStack.shift();
-                                }
-                                updateUndoRedoButtons();
-                                didChange = true;
-                                currentPath = null;
-                            }
                         }
                         if (currentPath && currentPath.points.length > 1) {
                             if (currentPath.tool === 'triangle') {
@@ -5051,7 +5009,6 @@
             function updateEraserModeButtons() {
                 objectEraserBtn.classList.toggle('active', currentEraserMode === 'object');
                 pixelEraserBtn.classList.toggle('active', currentEraserMode === 'pixel');
-                cutEraserBtn.classList.toggle('active', currentEraserMode === 'cut');
             }
 
             objectEraserBtn.addEventListener('click', () => {
@@ -5061,11 +5018,6 @@
 
             pixelEraserBtn.addEventListener('click', () => {
                 currentEraserMode = 'pixel';
-                updateEraserModeButtons();
-            });
-
-            cutEraserBtn.addEventListener('click', () => {
-                currentEraserMode = 'cut';
                 updateEraserModeButtons();
             });
 
@@ -5249,6 +5201,7 @@
                         penSizeLabel.textContent = `${newSize}px`;
                         updatePenCursorSize();
                         penPreview.style.height = `${Math.min(currentBrushSize, 40)}px`;
+                        updateMainPenIcon();
                     } else { // eraser
                         currentEraserSize = newSize;
                         eraserSizeLabel.textContent = `${newSize}px`;
@@ -5327,6 +5280,10 @@
             });
 
             clearBtn.addEventListener('click', () => {
+                if (currentTool !== 'eraser') {
+                    showNotification('Select the eraser before clearing content', 'error');
+                    return;
+                }
                 confirmModal.classList.remove('hidden');
             });
             cancelClearBtn.addEventListener('click', () => {
@@ -5526,10 +5483,10 @@
                 { target: '#toolbar-wrapper', title: 'Toolbar', body: 'Pick tools from the unified toolbar. Drag the handle to dock it to any edge.' },
                 { target: '#pen-tool-wrapper', title: 'Pens and Presets', body: 'Select the pen, then long-press or double-click it to open color, thickness, highlighter, spray, and pin controls.' },
                 { target: '#line-btn', title: 'Dotted Lines', body: 'Select line and open its settings to choose solid, dotted, or dashed strokes. Nearly horizontal or vertical shapes snap into place.' },
-                { target: '#eraser-tool-wrapper', title: 'Eraser', body: 'Object eraser removes whole strokes. Pixel eraser now cuts through ink while keeping the board background intact.' },
-                { target: '#whiteboard', title: 'Gestures', body: 'Two fingers pan and pinch zoom. Swipe with three fingers over a short distance to add a split guide through the average swipe coordinate.' },
+                { target: '#eraser-tool-wrapper', title: 'Eraser', body: 'Only the eraser deletes content. Other tools can never remove strokes.' },
+                { target: '#whiteboard', title: 'Gestures', body: 'Two fingers pan and pinch zoom. Swipe with three fingers, or use Alt+V and Alt+H on desktop, to add split guides.' },
                 { target: '#move-btn', title: 'Move and Resize', body: 'Use Move to select shapes. Drag corners or edges to resize freely, and drag the round handle above a selected shape to rotate.' },
-                { target: '#board-controls', title: 'Board Controls', body: 'Use zoom, dark mode, and this guide button from the board controls. Local board data is stored in IndexedDB for much larger drawings.' }
+                { target: '#board-controls', title: 'Board Controls', body: 'Use the top-left controls for the guide, theme, and desktop split actions. Local board data is stored in IndexedDB for much larger drawings.' }
             ];
             let guideIndex = 0;
 
@@ -5610,6 +5567,12 @@
                         e.preventDefault();
                         redo();
                     }
+                } else if (e.altKey && e.key.toLowerCase() === 'v') {
+                    e.preventDefault();
+                    splitAtViewportCenter('horizontal');
+                } else if (e.altKey && e.key.toLowerCase() === 'h') {
+                    e.preventDefault();
+                    splitAtViewportCenter('vertical');
                 } else if (e.key === '1') {
                     e.preventDefault();
                     selectTool('move');
@@ -5624,17 +5587,7 @@
                     selectTool('text');
                 } else if (e.key === 'Delete') {
                     e.preventDefault();
-                    if (currentTool === 'move' && selectedStrokeIndex >= 0 && selectedStrokeIndex < strokes.length) {
-                        addHistoryAction();
-                        strokes.splice(selectedStrokeIndex, 1);
-                        selectedStrokeIndex = -1;
-                        movingStrokeIndex = -1;
-                        moveInteractionMode = 'none';
-                        render();
-                        saveStrokesAndSettings();
-                    } else {
-                        confirmModal.classList.remove('hidden');
-                    }
+                    showNotification('Use the eraser to remove content', 'error');
                 }
             });
 
@@ -5683,7 +5636,7 @@
 
             // Must call resize ONCE at startup to set correct pixel ratio
             resizeCanvas();
-            loadFromStorage();
+            const initialLoadPromise = loadFromStorage();
             updateToolbarDock(toolbarDockPosition, false);
             syncHeaderContainerHeights();
             applyThemeMode(isDarkMode ? 'dark' : 'light');
@@ -5700,7 +5653,7 @@
             penSizeLabel.textContent = `${currentBrushSize}px`;
             eraserThicknessInput.value = currentEraserSize;
             eraserSizeLabel.textContent = `${currentEraserSize}px`;
-            penBtn.querySelector('svg').style.stroke = currentColor;
+            updateMainPenIcon();
             penPreview.style.backgroundColor = currentColor;
             penPreview.style.height = `${Math.min(currentBrushSize, 40)}px`;
             const eraserPreviewSize = Math.min(currentEraserSize, 40);
@@ -5713,6 +5666,9 @@
                 });
             }
 
+            splitVerticalBtn?.addEventListener('click', () => splitAtViewportCenter('horizontal'));
+            splitHorizontalBtn?.addEventListener('click', () => splitAtViewportCenter('vertical'));
+
             if (zoomSlider) {
                 zoomSlider.addEventListener('input', () => {
                     const nextZoom = parseInt(zoomSlider.value, 10) / 100;
@@ -5720,6 +5676,67 @@
                 });
             }
 
+            function getToolbarItemId(item) {
+                return item?.querySelector?.('button[id]')?.id || item?.id || '';
+            }
+
+            function persistToolbarOrder() {
+                const order = Array.from(toolbar.children)
+                    .filter((item) => item.id !== 'toolbar-drag-handle')
+                    .map(getToolbarItemId)
+                    .filter(Boolean);
+                localStorage.setItem('whiteboardToolbarOrder', JSON.stringify(order));
+            }
+
+            function applyToolbarOrder() {
+                let order = [];
+                try {
+                    order = JSON.parse(localStorage.getItem('whiteboardToolbarOrder') || '[]');
+                } catch (error) {
+                    order = [];
+                }
+                if (!Array.isArray(order) || order.length === 0) return;
+                const movableItems = Array.from(toolbar.children).filter((item) => item.id !== 'toolbar-drag-handle');
+                const itemMap = new Map(movableItems.map((item) => [getToolbarItemId(item), item]));
+                order.forEach((id) => {
+                    const item = itemMap.get(id);
+                    if (item) toolbar.appendChild(item);
+                });
+                movableItems.forEach((item) => {
+                    if (!order.includes(getToolbarItemId(item))) {
+                        toolbar.appendChild(item);
+                    }
+                });
+            }
+
+            function setupToolbarReordering() {
+                applyToolbarOrder();
+                Array.from(toolbar.children).forEach((item) => {
+                    if (item.id === 'toolbar-drag-handle') return;
+                    item.draggable = true;
+                    item.addEventListener('dragstart', (event) => {
+                        if (event.target.closest('.pinned-config-btn')) return;
+                        event.dataTransfer.setData('text/plain', getToolbarItemId(item));
+                        event.dataTransfer.effectAllowed = 'move';
+                        item.classList.add('toolbar-reorder-ghost');
+                    });
+                    item.addEventListener('dragend', () => item.classList.remove('toolbar-reorder-ghost'));
+                    item.addEventListener('dragover', (event) => {
+                        event.preventDefault();
+                        event.dataTransfer.dropEffect = 'move';
+                    });
+                    item.addEventListener('drop', (event) => {
+                        event.preventDefault();
+                        const draggedId = event.dataTransfer.getData('text/plain');
+                        const draggedItem = Array.from(toolbar.children).find((candidate) => getToolbarItemId(candidate) === draggedId);
+                        if (!draggedItem || draggedItem === item || draggedItem.id === 'toolbar-drag-handle') return;
+                        toolbar.insertBefore(draggedItem, item);
+                        persistToolbarOrder();
+                    });
+                });
+            }
+
+            setupToolbarReordering();
 
             window.addEventListener('resize', resizeCanvas);
             window.addEventListener('resize', syncHeaderContainerHeights);
@@ -5776,6 +5793,34 @@
                 render();
                 updateUndoRedoButtons();
             };
+
+            window.handleBoardRoute = function(options = {}) {
+                const path = window.location.pathname;
+                const localMatch = path.match(/^\/board\/([^/]+)$/);
+                const cloudMatch = path.match(/^\/cloud-board\/([^/]+)$/);
+                if (localMatch && decodeURIComponent(localMatch[1]) !== 'new') {
+                    window.goToWhiteboard(decodeURIComponent(localMatch[1]), { skipHistory: true });
+                    return;
+                }
+                if (path === '/board/new') {
+                    window.goToWhiteboard(null, { skipHistory: true });
+                    return;
+                }
+                if (cloudMatch) {
+                    window.loadCloudBoard(decodeURIComponent(cloudMatch[1]));
+                    return;
+                }
+                window.goToHomepage({ skipHistory: true });
+            };
+
+            window.addEventListener('popstate', () => window.handleBoardRoute({ fromPopState: true }));
+            initialLoadPromise.finally(() => {
+                if (window.location.pathname !== '/') {
+                    window.handleBoardRoute();
+                } else {
+                    history.replaceState({ view: 'home' }, '', '/');
+                }
+            });
 
         } catch (criticalError) {
             console.error("Critical Initialization Error:", criticalError);
