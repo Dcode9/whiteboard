@@ -1130,7 +1130,7 @@
         .board-controls {
             position: fixed;
             right: 16px;
-            top: 84px;
+            top: 16px;
             z-index: 250;
             display: flex;
             align-items: center;
@@ -1658,7 +1658,7 @@
             }
 
             .board-controls {
-                top: 76px;
+                top: 16px;
                 right: 10px;
                 left: auto;
                 gap: 6px;
@@ -1745,17 +1745,7 @@
             <span>Webboard</span>
         </div>
 
-        <!-- Floating Account Container (shared, will be visible in whiteboard view) -->
-        <div class="floating-container header-account-container" style="display: none;">
-            <button id="save-drawing-btn-header" onclick="window.promptSaveDrawing()" class="btn-primary" style="display: none;">
-                Save
-            </button>
-            <div id="user-profile-area-whiteboard" style="display: none;">
-                <div class="user-profile">
-                    <img id="user-avatar-whiteboard" class="user-avatar" src="" alt="User">
-                </div>
-            </div>
-        </div>
+
 
         <!-- Toolbar wrapper (acts as center floating container in whiteboard view) -->
         <div id="toolbar-wrapper" class="pointer-events-none toolbar-dock-top">
@@ -2952,8 +2942,7 @@
             const customCursorEraser = document.getElementById('custom-cursor-eraser');
             const toolbarWrapper = document.getElementById('toolbar-wrapper');
             const logoContainer = document.querySelector('#whiteboard-view .header-logo-container');
-            const accountContainer = document.querySelector('#whiteboard-view .header-account-container');
-            const themeToggleBtn = document.getElementById('theme-toggle-btn');
+                        const themeToggleBtn = document.getElementById('theme-toggle-btn');
             const themeToggleIcon = document.getElementById('theme-toggle-icon');
             const zoomSlider = document.getElementById('zoom-slider');
             const zoomValueLabel = document.getElementById('zoom-value-label');
@@ -3103,6 +3092,16 @@
             let backgroundPattern = 'plain';
             let toolbarDockPosition = localStorage.getItem('whiteboardToolbarDock') || 'top';
             let isDarkMode = localStorage.getItem('whiteboardThemeMode') === 'dark';
+            function resolveThemeColor(hexColor) {
+                if (!hexColor) return hexColor;
+                const upper = hexColor.toUpperCase();
+                if (isDarkMode) {
+                    if (upper === '#000000' || upper === '#000') return '#FFFFFF';
+                    if (upper === '#FFFFFF' || upper === '#FFF') return '#121212';
+                }
+                return hexColor;
+            }
+
 
             let isTwoFingerPanning = false;
             let lastTouchMidpoint = { x: 0, y: 0 };
@@ -3309,6 +3308,10 @@
                         ? '<path d="M12 3a9 9 0 1 0 9 9 7 7 0 1 1-9-9Z"></path>'
                         : '<circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="M4.93 4.93 6.34 6.34"></path><path d="M17.66 17.66 19.07 19.07"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="M4.93 19.07 6.34 17.66"></path><path d="M17.66 6.34 19.07 4.93"></path>';
                 }
+                
+                updateMainPenIcon();
+                if (penPreview) penPreview.style.backgroundColor = resolveThemeColor(currentColor);
+                render();
                 try {
                     localStorage.setItem('whiteboardThemeMode', isDarkMode ? 'dark' : 'light');
                 } catch (e) {
@@ -3368,20 +3371,18 @@
             }
 
             function syncHeaderContainerHeights() {
-                if (!toolbar || !logoContainer || !accountContainer) return;
+                if (!toolbar || !logoContainer) return;
                 requestAnimationFrame(() => {
                     if (toolbarDockPosition === 'left' || toolbarDockPosition === 'right') {
                         logoContainer.style.minHeight = '';
-                        accountContainer.style.minHeight = '';
-                        toolbar.style.minHeight = '';
+                                                toolbar.style.minHeight = '';
                         return;
                     }
                     const logoRect = logoContainer.getBoundingClientRect();
                     if (!logoRect.height) return;
                     const matchedHeight = `${Math.round(logoRect.height)}px`;
                     toolbar.style.minHeight = matchedHeight;
-                    accountContainer.style.minHeight = matchedHeight;
-                });
+                                    });
             }
 
             function positionTextOverlay(screenX, screenY) {
@@ -3495,7 +3496,8 @@
 
             function getPenIconSvg(config, compact = false) {
                 const type = config?.type || 'default';
-                const color = config?.color || '#000000';
+                const baseColor = config?.color || '#000000';
+                  const color = resolveThemeColor(baseColor);
                 const size = Math.max(1, Number(config?.size || 5));
                 const strokeWidth = Math.max(1.6, Math.min(4.2, 1.5 + size / 16));
                 const svgAttrs = `fill="none" stroke="${color}" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round"`;
@@ -3730,7 +3732,7 @@
                 const logicalW = canvas.width / dpr;
                 const logicalH = canvas.height / dpr;
 
-                ctx.fillStyle = backgroundColor;
+                ctx.fillStyle = resolveThemeColor(backgroundColor);
                 ctx.fillRect(0, 0, logicalW, logicalH);
 
                 if (backgroundPattern === 'plain') return;
@@ -4028,7 +4030,7 @@
 
             function drawSprayStroke(stroke) {
                 ctx.save();
-                ctx.fillStyle = stroke.color;
+                ctx.fillStyle = resolveThemeColor(stroke.color);
                 const dots = stroke.dots || stroke.points || [];
                 dots.forEach((dot) => {
                     ctx.globalAlpha = dot.a || 0.28;
@@ -4042,7 +4044,7 @@
             function drawStroke(stroke) {
                 // Handle text rendering
                 if (stroke.type === 'text') {
-                    ctx.fillStyle = stroke.color;
+                    ctx.fillStyle = resolveThemeColor(stroke.color);
 
                     // Build font string with formatting
                     let fontStyle = '';
@@ -4065,7 +4067,7 @@
                         if (stroke.underline) {
                             const textWidth = ctx.measureText(line).width;
                             ctx.beginPath();
-                            ctx.strokeStyle = stroke.color;
+                            ctx.strokeStyle = resolveThemeColor(stroke.color);
                             ctx.lineWidth = Math.max(1, fontSize / 16);
                             ctx.moveTo(stroke.x, y + 2);
                             ctx.lineTo(stroke.x + textWidth, y + 2);
@@ -4075,7 +4077,7 @@
                     return;
                 }
 
-                ctx.strokeStyle = stroke.color;
+                ctx.strokeStyle = resolveThemeColor(stroke.color);
                 ctx.lineWidth = stroke.size;
                 ctx.lineCap = 'round';
                 ctx.lineJoin = 'round';
@@ -4091,7 +4093,7 @@
                     drawSmoothPath(stroke.points);
                     ctx.stroke();
                     ctx.globalCompositeOperation = 'destination-over';
-                    ctx.fillStyle = backgroundColor;
+                    ctx.fillStyle = resolveThemeColor(backgroundColor);
                     const topLeft = screenToWorld(0, 0);
                     const bottomRight = screenToWorld(canvas.width / dpr, canvas.height / dpr);
                     ctx.fillRect(topLeft.x - 20, topLeft.y - 20, (bottomRight.x - topLeft.x) + 40, (bottomRight.y - topLeft.y) + 40);
@@ -4119,7 +4121,7 @@
                         if (stroke.points.length < 2) {
                             // Draw a dot if it's a single point
                              if (stroke.points.length === 1) {
-                                ctx.fillStyle = stroke.color;
+                                ctx.fillStyle = resolveThemeColor(stroke.color);
                                 ctx.arc(stroke.points[0].x, stroke.points[0].y, stroke.size/2, 0, Math.PI*2);
                                 ctx.fill();
                              }
