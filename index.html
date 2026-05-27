@@ -410,6 +410,10 @@
             display: flex !important;
         }
 
+        #whiteboard-view.active #user-profile-area-whiteboard {
+            display: none !important;
+        }
+
         /* Toolbar in whiteboard view becomes the center container */
         #whiteboard-view.active #toolbar-wrapper {
             position: fixed;
@@ -467,7 +471,7 @@
             align-items: stretch;
             width: auto;
             max-width: min(20rem, calc(100vw - 32px));
-            max-height: min(86vh, calc(100vh - 32px));
+            max-height: min(94vh, calc(100vh - 24px));
             overflow-y: auto;
             overflow-x: hidden;
             scrollbar-width: none;
@@ -478,6 +482,21 @@
         #whiteboard-view.active .toolbar-dock-left .pinned-tool-configs,
         #whiteboard-view.active .toolbar-dock-right .pinned-tool-configs {
             flex-direction: column;
+        }
+
+        #whiteboard-view.active .toolbar-dock-left .tool-config-group,
+        #whiteboard-view.active .toolbar-dock-right .tool-config-group {
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+
+        #whiteboard-view.active .toolbar-dock-left .pinned-tool-configs,
+        #whiteboard-view.active .toolbar-dock-right .pinned-tool-configs {
+            width: 100%;
+            max-width: 100%;
+            overflow-y: auto;
+            overflow-x: hidden;
         }
 
         #whiteboard-view.active .toolbar-dock-top #toolbar,
@@ -1110,12 +1129,15 @@
 
         .board-controls {
             position: fixed;
-            left: 16px;
+            right: 16px;
             top: 84px;
             z-index: 250;
             display: flex;
             align-items: center;
             gap: 8px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+            max-width: calc(100vw - 32px);
             pointer-events: auto;
         }
 
@@ -1132,6 +1154,57 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
+        }
+
+        .split-divider-handle {
+            position: fixed;
+            z-index: 240;
+            display: none;
+            pointer-events: auto;
+            touch-action: none;
+        }
+
+        .split-divider-handle.active {
+            display: block;
+        }
+
+        .split-divider-handle::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            margin: auto;
+            border-radius: 999px;
+            background: rgba(37, 99, 235, 0.22);
+            box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.3);
+        }
+
+        .split-divider-handle[data-orientation='horizontal'] {
+            left: 0;
+            width: 100vw;
+            height: 24px;
+            cursor: row-resize;
+        }
+
+        .split-divider-handle[data-orientation='horizontal']::before {
+            width: 100%;
+            height: 4px;
+        }
+
+        .split-divider-handle[data-orientation='vertical'] {
+            top: 0;
+            width: 24px;
+            height: 100vh;
+            cursor: col-resize;
+        }
+
+        .split-divider-handle[data-orientation='vertical']::before {
+            width: 4px;
+            height: 100%;
+        }
+
+        .split-divider-handle:focus-visible {
+            outline: 2px solid #2563eb;
+            outline-offset: 4px;
         }
 
         body.dark-mode {
@@ -1586,7 +1659,8 @@
 
             .board-controls {
                 top: 76px;
-                left: 10px;
+                right: 10px;
+                left: auto;
                 gap: 6px;
             }
 
@@ -1813,6 +1887,7 @@
 
         <!-- Canvas -->
         <canvas id="whiteboard"></canvas>
+        <div id="split-divider-handle" class="split-divider-handle" role="separator" tabindex="0" aria-label="Adjust split view"></div>
         <div id="board-controls" class="board-controls">
             <button id="guide-open-btn" class="board-theme-toggle" type="button" title="Open guide" aria-label="Open guide">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -1836,6 +1911,12 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <rect x="4" y="4" width="16" height="16" rx="2"></rect>
                     <path d="M4 12h16"></path>
+                </svg>
+            </button>
+            <button id="split-exit-btn" class="board-theme-toggle" type="button" title="Exit split view" aria-label="Exit split view" style="display: none;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M6 6l12 12"></path>
+                    <path d="M18 6 6 18"></path>
                 </svg>
             </button>
         </div>
@@ -2209,7 +2290,7 @@
         console.log("User is signed in");
         if(btnDiv) btnDiv.style.display = 'none';
         if(userProfileArea) userProfileArea.style.display = 'block';
-        if(userProfileAreaWhiteboard) userProfileAreaWhiteboard.style.display = 'block';
+                if(userProfileAreaWhiteboard) userProfileAreaWhiteboard.style.display = 'none';
         // Save button visibility will be controlled by updateSaveButtonVisibility based on board type
         if(cloudBoardOption) cloudBoardOption.style.display = 'block';
         if(cloudBoardsSection) cloudBoardsSection.style.display = 'block';
@@ -2892,6 +2973,8 @@
             const guideOpenBtn = document.getElementById('guide-open-btn');
             const splitVerticalBtn = document.getElementById('split-vertical-btn');
             const splitHorizontalBtn = document.getElementById('split-horizontal-btn');
+            const splitExitBtn = document.getElementById('split-exit-btn');
+            const splitDividerHandle = document.getElementById('split-divider-handle');
             const featureGuide = document.getElementById('feature-guide');
             const guideSpotlight = document.getElementById('guide-spotlight');
             const guideCard = document.getElementById('guide-card');
@@ -3027,6 +3110,7 @@
             let isEraserGesture = false;
             let eraserHistorySnapshot = null;
             let splitGesture = null;
+            let splitDragState = null;
             let pinnedPenConfigs = [];
             let isPenGroupCollapsed = localStorage.getItem('whiteboardPenGroupCollapsed') === 'true';
 
@@ -3076,6 +3160,76 @@
                     screenX >= pane.x && screenX <= pane.x + pane.width &&
                     screenY >= pane.y && screenY <= pane.y + pane.height
                 )) || null;
+            }
+
+            function getSplitViewportSize(orientation) {
+                return orientation === 'horizontal' ? window.innerHeight : window.innerWidth;
+            }
+
+            function clampSplitCoordinate(value, orientation) {
+                const size = getSplitViewportSize(orientation);
+                const margin = Math.min(96, Math.max(24, size * 0.2));
+                return Math.max(margin, Math.min(size - margin, value));
+            }
+
+            function updateSplitDividerHandle() {
+                if (splitExitBtn) {
+                    splitExitBtn.style.display = splitView ? 'inline-flex' : 'none';
+                }
+                if (!splitDividerHandle) return;
+                if (!splitView) {
+                    splitDividerHandle.classList.remove('active');
+                    splitDividerHandle.removeAttribute('data-orientation');
+                    splitDividerHandle.setAttribute('aria-hidden', 'true');
+                    return;
+                }
+
+                splitView.coordinate = clampSplitCoordinate(splitView.coordinate, splitView.orientation);
+                const isHorizontalSplit = splitView.orientation === 'horizontal';
+                splitDividerHandle.classList.add('active');
+                splitDividerHandle.setAttribute('aria-hidden', 'false');
+                splitDividerHandle.setAttribute('aria-orientation', isHorizontalSplit ? 'horizontal' : 'vertical');
+                splitDividerHandle.dataset.orientation = isHorizontalSplit ? 'horizontal' : 'vertical';
+
+                if (isHorizontalSplit) {
+                    splitDividerHandle.style.left = '0px';
+                    splitDividerHandle.style.top = `${splitView.coordinate - 12}px`;
+                    splitDividerHandle.style.width = '100vw';
+                    splitDividerHandle.style.height = '24px';
+                } else {
+                    splitDividerHandle.style.left = `${splitView.coordinate - 12}px`;
+                    splitDividerHandle.style.top = '0px';
+                    splitDividerHandle.style.width = '24px';
+                    splitDividerHandle.style.height = '100vh';
+                }
+            }
+
+            function setSplitCoordinate(nextCoordinate, persist = true) {
+                if (!splitView) return;
+                splitView.coordinate = clampSplitCoordinate(nextCoordinate, splitView.orientation);
+                render();
+                if (persist) {
+                    saveViewTransform();
+                }
+            }
+
+            function exitSplitView() {
+                if (!splitView) return;
+                if (splitDividerHandle && splitDragState?.pointerId != null) {
+                    splitDividerHandle.releasePointerCapture?.(splitDragState.pointerId);
+                }
+                const panes = getSplitPanes();
+                const targetPane = activePaneId ? panes.find((pane) => pane.id === activePaneId) : panes[0];
+                const nextTransform = targetPane?.transform || { offset: viewOffset, zoom: viewZoom };
+                viewOffset = { ...nextTransform.offset };
+                viewZoom = nextTransform.zoom;
+                splitView = null;
+                activePaneId = null;
+                splitDragState = null;
+                updateSplitDividerHandle();
+                syncZoomControls();
+                render();
+                saveViewTransform();
             }
 
             function getActiveTransform(screenX = window.innerWidth / 2, screenY = window.innerHeight / 2, paneId = null) {
@@ -3630,9 +3784,7 @@
                 canvas.style.height = `${window.innerHeight}px`;
 
                 if (splitView) {
-                    const size = splitView.orientation === 'horizontal' ? window.innerHeight : window.innerWidth;
-                    const margin = Math.min(96, Math.max(24, size * 0.2));
-                    splitView.coordinate = Math.max(margin, Math.min(size - margin, splitView.coordinate));
+                    splitView.coordinate = clampSplitCoordinate(splitView.coordinate, splitView.orientation);
                 }
 
                 render();
@@ -4033,6 +4185,18 @@
 
             // --- Main Render Loop ---
             function renderPane(pane) {
+                const paneBounds = {
+                    minX: (pane.x - pane.transform.offset.x) / pane.transform.zoom,
+                    maxX: (pane.x + pane.width - pane.transform.offset.x) / pane.transform.zoom,
+                    minY: (pane.y - pane.transform.offset.y) / pane.transform.zoom,
+                    maxY: (pane.y + pane.height - pane.transform.offset.y) / pane.transform.zoom,
+                };
+                const strokePadding = Math.max(12 / pane.transform.zoom, 4);
+                const visibleStrokes = strokes.filter((stroke) => {
+                    const bounds = getStrokeBounds(stroke);
+                    return !bounds || boundsIntersect(bounds, paneBounds, strokePadding);
+                });
+
                 ctx.save();
                 ctx.beginPath();
                 ctx.rect(pane.x, pane.y, pane.width, pane.height);
@@ -4040,7 +4204,7 @@
                 drawBackground(pane.transform);
                 ctx.translate(pane.transform.offset.x, pane.transform.offset.y);
                 ctx.scale(pane.transform.zoom, pane.transform.zoom);
-                strokes.forEach(drawStroke);
+                visibleStrokes.forEach(drawStroke);
                 if (currentPath && (!currentPath.paneId || currentPath.paneId === pane.id)) {
                     drawStroke(currentPath);
                 }
@@ -4114,6 +4278,8 @@
                     drawSelectionOverlay();
                     ctx.restore();
                 }
+
+                updateSplitDividerHandle();
             }
 
             // --- Object Eraser Logic ---
@@ -4858,13 +5024,9 @@
 
             function createSplitBoard(direction, screenX, screenY) {
                 const orientation = direction === 'horizontal' ? 'vertical' : 'horizontal';
-                const clampSplitCoordinate = (value, size) => {
-                    const margin = Math.min(96, Math.max(24, size * 0.2));
-                    return Math.max(margin, Math.min(size - margin, value));
-                };
                 const coordinate = orientation === 'horizontal'
-                    ? clampSplitCoordinate(screenY, window.innerHeight)
-                    : clampSplitCoordinate(screenX, window.innerWidth);
+                    ? clampSplitCoordinate(screenY, orientation)
+                    : clampSplitCoordinate(screenX, orientation);
                 const topLeft = { offset: { ...viewOffset }, zoom: viewZoom };
                 const bottomRight = { offset: { ...viewOffset }, zoom: viewZoom };
                 if (orientation === 'horizontal') {
@@ -5771,7 +5933,7 @@
                 { target: '#eraser-tool-wrapper', title: 'Eraser Is The Only Delete', animation: 'eraser', body: 'Nothing else removes your work. Select the eraser when you want object erasing or pixel erasing.' },
                 { target: '#whiteboard', title: 'Split The View', animation: 'split', body: 'Swipe with three fingers for a split view. On desktop, use Alt+V for left/right and Alt+H for top/bottom, or use the split buttons.' },
                 { target: '#move-btn', title: 'Resize And Rotate', animation: 'move', body: 'Choose Move, select a shape, then drag corners, edges, or the round rotation handle.' },
-                { target: '#board-controls', title: 'Board Controls', animation: 'controls', body: 'The top-left controls reopen this guide, toggle dark mode, and create desktop split views.' }
+                { target: '#board-controls', title: 'Board Controls', animation: 'controls', body: 'The top-right controls reopen this guide, toggle dark mode, and manage split views.' }
             ];
             let guideIndex = 0;
 
@@ -5863,6 +6025,9 @@
                 } else if (e.altKey && e.key.toLowerCase() === 'h') {
                     e.preventDefault();
                     splitAtViewportCenter('vertical');
+                } else if (e.key === 'Escape' && splitView) {
+                    e.preventDefault();
+                    exitSplitView();
                 } else if (/^[1-9]$/.test(e.key)) {
                     const shortcutTool = getNumberShortcutTools()[Number(e.key) - 1];
                     if (shortcutTool) {
@@ -5952,6 +6117,32 @@
 
             splitVerticalBtn?.addEventListener('click', () => splitAtViewportCenter('horizontal'));
             splitHorizontalBtn?.addEventListener('click', () => splitAtViewportCenter('vertical'));
+            splitExitBtn?.addEventListener('click', exitSplitView);
+
+            if (splitDividerHandle) {
+                splitDividerHandle.addEventListener('pointerdown', (event) => {
+                    if (!splitView || (event.button !== undefined && event.button !== 0)) return;
+                    event.preventDefault();
+                    splitDragState = { pointerId: event.pointerId };
+                    splitDividerHandle.setPointerCapture?.(event.pointerId);
+                });
+
+                splitDividerHandle.addEventListener('pointermove', (event) => {
+                    if (!splitDragState || splitDragState.pointerId !== event.pointerId || !splitView) return;
+                    event.preventDefault();
+                    setSplitCoordinate(splitView.orientation === 'horizontal' ? event.clientY : event.clientX, false);
+                });
+
+                const finishSplitDrag = (event) => {
+                    if (!splitDragState || splitDragState.pointerId !== event.pointerId) return;
+                    splitDragState = null;
+                    splitDividerHandle.releasePointerCapture?.(event.pointerId);
+                    saveViewTransform();
+                };
+
+                splitDividerHandle.addEventListener('pointerup', finishSplitDrag);
+                splitDividerHandle.addEventListener('pointercancel', finishSplitDrag);
+            }
 
             if (zoomSlider) {
                 zoomSlider.addEventListener('input', () => {
