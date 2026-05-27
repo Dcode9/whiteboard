@@ -405,13 +405,8 @@
         }
 
         /* Whiteboard view - show floating containers */
-        #whiteboard-view.active .header-logo-container,
-        #whiteboard-view.active .header-account-container {
+        #whiteboard-view.active .header-logo-container {
             display: flex !important;
-        }
-
-        #whiteboard-view.active #user-profile-area-whiteboard {
-            display: none !important;
         }
 
         /* Toolbar in whiteboard view becomes the center container */
@@ -1340,6 +1335,79 @@
             box-shadow: 0 0 0 9999px rgba(2, 6, 23, 0.66);
         }
 
+        body.dark-mode #homepage-view {
+            background: radial-gradient(circle at top left, rgba(37, 99, 235, 0.18), transparent 38%), linear-gradient(180deg, #020617 0%, #0f172a 100%);
+        }
+
+        body.dark-mode .boards-container {
+            color: #e2e8f0;
+        }
+
+        body.dark-mode .boards-section h2 {
+            color: #f8fafc;
+        }
+
+        body.dark-mode .board-card {
+            background: rgba(15, 23, 42, 0.88);
+            color: #e2e8f0;
+            border-color: rgba(148, 163, 184, 0.18);
+            box-shadow: 0 14px 30px rgba(2, 6, 23, 0.32);
+        }
+
+        body.dark-mode .board-card h3 {
+            color: #f8fafc;
+        }
+
+        body.dark-mode .board-card p,
+        body.dark-mode .empty-state {
+            color: #94a3b8;
+        }
+
+        body.dark-mode .board-card-actions button,
+        body.dark-mode .header-search,
+        body.dark-mode .dropdown-menu,
+        body.dark-mode .dropdown-menu button,
+        body.dark-mode .user-menu,
+        body.dark-mode .user-menu button {
+            background: rgba(15, 23, 42, 0.9);
+            color: #e2e8f0;
+            border-color: rgba(148, 163, 184, 0.22);
+        }
+
+        body.dark-mode .board-card-actions button:hover,
+        body.dark-mode .dropdown-menu button:hover,
+        body.dark-mode .user-menu button:hover {
+            background: rgba(30, 41, 59, 0.96);
+        }
+
+        body.dark-mode .board-card-actions .delete-btn {
+            color: #fca5a5;
+            border-color: rgba(248, 113, 113, 0.45);
+        }
+
+        body.dark-mode .board-card-actions .rename-btn {
+            color: #93c5fd;
+            border-color: rgba(96, 165, 250, 0.45);
+        }
+
+        body.dark-mode .board-card-actions .upload-btn {
+            color: #6ee7b7;
+            border-color: rgba(74, 222, 128, 0.45);
+        }
+
+        body.dark-mode .header-search::placeholder {
+            color: #94a3b8;
+        }
+
+        body.dark-mode .btn-primary {
+            background: #2563eb;
+            color: #eff6ff;
+        }
+
+        body.dark-mode .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
         .triangle-options {
             display: grid;
             grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1879,6 +1947,9 @@
         <canvas id="whiteboard"></canvas>
         <div id="split-divider-handle" class="split-divider-handle" role="separator" tabindex="0" aria-label="Adjust split view"></div>
         <div id="board-controls" class="board-controls">
+            <button id="save-drawing-btn-header" onclick="window.promptSaveDrawing()" class="btn-primary" style="display: none;">
+                Save
+            </button>
             <button id="guide-open-btn" class="board-theme-toggle" type="button" title="Open guide" aria-label="Open guide">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <circle cx="12" cy="12" r="10"></circle>
@@ -3299,6 +3370,7 @@
             function applyThemeMode(mode) {
                 isDarkMode = mode === 'dark';
                 document.body.classList.toggle('dark-mode', isDarkMode);
+                document.documentElement.style.colorScheme = isDarkMode ? 'dark' : 'light';
                 if (themeToggleBtn) {
                     themeToggleBtn.setAttribute('aria-pressed', String(isDarkMode));
                     themeToggleBtn.setAttribute('title', isDarkMode ? 'Switch to light mode' : 'Switch to dark mode');
@@ -3310,6 +3382,8 @@
                 }
                 
                 updateMainPenIcon();
+                updateCanvasIconPreview();
+                renderPinnedPenConfigs();
                 if (penPreview) penPreview.style.backgroundColor = resolveThemeColor(currentColor);
                 render();
                 try {
@@ -3480,7 +3554,7 @@
             function setCurrentColor(color) {
                 currentColor = color;
                 colorPicker.value = color;
-                penPreview.style.backgroundColor = color;
+                penPreview.style.backgroundColor = resolveThemeColor(color);
                 syncPresetColorButtons();
                 updateMainPenIcon();
             }
@@ -3497,7 +3571,7 @@
             function getPenIconSvg(config, compact = false) {
                 const type = config?.type || 'default';
                 const baseColor = config?.color || '#000000';
-                  const color = resolveThemeColor(baseColor);
+                                const color = resolveThemeColor(baseColor);
                 const size = Math.max(1, Number(config?.size || 5));
                 const strokeWidth = Math.max(1.6, Math.min(4.2, 1.5 + size / 16));
                 const svgAttrs = `fill="none" stroke="${color}" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round"`;
@@ -3711,14 +3785,15 @@
 
             // --- Canvas Setup ---
             function updateCanvasIconPreview() {
-                canvasIconBg.setAttribute('fill', backgroundColor);
+                const themedBackground = resolveThemeColor(backgroundColor);
+                canvasIconBg.setAttribute('fill', themedBackground);
                 canvasIconRuled.style.display = backgroundPattern === 'ruled' ? 'block' : 'none';
                 canvasIconGrid.style.display = backgroundPattern === 'grid' ? 'block' : 'none';
 
                 // Contrast check for icon lines
-                const isDarkBg = (parseInt(backgroundColor.substr(1, 2), 16) * 0.299 +
-                                  parseInt(backgroundColor.substr(3, 2), 16) * 0.587 +
-                                  parseInt(backgroundColor.substr(5, 2), 16) * 0.114) < 186;
+                const isDarkBg = (parseInt(themedBackground.substr(1, 2), 16) * 0.299 +
+                                  parseInt(themedBackground.substr(3, 2), 16) * 0.587 +
+                                  parseInt(themedBackground.substr(5, 2), 16) * 0.114) < 186;
                 const patternColor = isDarkBg ? '#FFFFFF' : '#d1d5db';
                 canvasIconRuled.setAttribute('stroke', patternColor);
                 canvasIconGrid.setAttribute('stroke', patternColor);
@@ -3732,15 +3807,16 @@
                 const logicalW = canvas.width / dpr;
                 const logicalH = canvas.height / dpr;
 
-                ctx.fillStyle = resolveThemeColor(backgroundColor);
+                const themedBackground = resolveThemeColor(backgroundColor);
+                ctx.fillStyle = themedBackground;
                 ctx.fillRect(0, 0, logicalW, logicalH);
 
                 if (backgroundPattern === 'plain') return;
 
                 ctx.strokeStyle = '#E2E8F0';
-                const isDarkBg = (parseInt(backgroundColor.substr(1, 2), 16) * 0.299 +
-                                  parseInt(backgroundColor.substr(3, 2), 16) * 0.587 +
-                                  parseInt(backgroundColor.substr(5, 2), 16) * 0.114) < 186;
+                const isDarkBg = (parseInt(themedBackground.substr(1, 2), 16) * 0.299 +
+                                  parseInt(themedBackground.substr(3, 2), 16) * 0.587 +
+                                  parseInt(themedBackground.substr(5, 2), 16) * 0.114) < 186;
                 if(isDarkBg) ctx.strokeStyle = 'rgba(255,255,255,0.1)';
 
                 ctx.lineWidth = 1;
