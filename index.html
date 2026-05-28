@@ -502,6 +502,14 @@
             height: 100%;
         }
 
+        .empty-state-card {
+            cursor: default;
+        }
+
+        .empty-state-card:hover {
+            transform: none;
+        }
+
         .template-badges {
             display: flex;
             flex-wrap: wrap;
@@ -1582,6 +1590,10 @@
             border-color: rgba(96, 165, 250, 0.18);
         }
 
+        body.dark-mode .template-preview svg {
+            filter: brightness(0.84) contrast(1.06) saturate(0.92);
+        }
+
         body.dark-mode .template-badge {
             background: rgba(37, 99, 235, 0.18);
             border-color: rgba(96, 165, 250, 0.24);
@@ -1970,8 +1982,8 @@
             <div class="template-hero">
                 <div class="template-hero-copy">
                     <p class="template-kicker">Templates</p>
-                    <h2>Start with tables and colorful flowcharts</h2>
-                    <p>These starter boards are generated from a shared template harness, so the layout data stays programmatic and the model integration point stays clean.</p>
+                    <h2>Start with templates and workflow previews</h2>
+                    <p>These starter boards and feature cards are generated from a shared harness, so the layout data stays programmatic and the model integration point stays clean.</p>
                 </div>
                 <div class="template-hero-badge">AI-ready template harness</div>
             </div>
@@ -2537,6 +2549,7 @@
       const saveBtn = document.getElementById('save-drawing-btn-header');
       const cloudBoardOption = document.getElementById('cloud-board-option');
       const cloudBoardsSection = document.getElementById('cloud-boards-section');
+    const cloudBoardsTitle = document.getElementById('cloud-boards-title');
 
       console.log("updateAuthUI called - token:", token ? "exists" : "none", "email:", userEmail);
 
@@ -2562,7 +2575,6 @@
         else if (userAvatarWhiteboardEl) userAvatarWhiteboardEl.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23999"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>';
 
         // Update cloud boards title
-        const cloudBoardsTitle = document.getElementById('cloud-boards-title');
         if (cloudBoardsTitle) cloudBoardsTitle.textContent = `${userName || userEmail}'s Boards`;
 
         // Load cloud boards
@@ -2574,7 +2586,8 @@
         if(userProfileAreaWhiteboard) userProfileAreaWhiteboard.style.display = 'none';
         if(saveBtn) saveBtn.style.display = 'none';
         if(cloudBoardOption) cloudBoardOption.style.display = 'none';
-        if(cloudBoardsSection) cloudBoardsSection.style.display = 'none';
+                if(cloudBoardsSection) cloudBoardsSection.style.display = 'block';
+                if (cloudBoardsTitle) cloudBoardsTitle.textContent = 'Cloud Board';
       }
 
       // Refresh boards display
@@ -2766,6 +2779,7 @@
     window.whiteboardStorage = whiteboardStorage;
 
     // --- Local Board Management ---
+            const cloudBoardsTitle = document.getElementById('cloud-boards-title');
     let currentBoardId = null;
     let currentBoardType = null; // 'local' or 'cloud'
     let currentCloudBoardId = null; // Server-assigned ID for cloud boards
@@ -2786,7 +2800,6 @@
     window.updateSaveButtonVisibility = function() {
       const saveBtn = document.getElementById('save-drawing-btn-header');
       const token = localStorage.getItem('authToken');
-
       // Show save button only for cloud boards when user is signed in
       if (saveBtn) {
         if (token && currentBoardType === 'cloud') {
@@ -2797,44 +2810,44 @@
       }
     }
 
-    window.createNewBoard = async function(type) {
-      if (type === 'cloud' && !localStorage.getItem('authToken')) {
-        showNotification('Please sign in to create cloud boards', 'error');
-        return;
-      }
+        window.createNewBoard = async function(type) {
+            if (type === 'cloud' && !localStorage.getItem('authToken')) {
+                showNotification('Please sign in to create cloud boards', 'error');
+                return;
+            }
 
-      const boardTitle = await window.customPrompt('Create New Board', 'Enter board title', 'Untitled Board');
-      if (!boardTitle) return;
+            const boardTitle = await window.customPrompt('Create New Board', 'Enter board title', 'Untitled Board');
+            if (!boardTitle) return;
 
-      const boardId = 'board_' + Date.now();
+            const boardId = 'board_' + Date.now();
 
-      if (type === 'local') {
-        const board = {
-          id: boardId,
-          title: boardTitle,
-          type: 'local',
-          lastModified: Date.now(),
-          dataKey: `drawing:${boardId}`,
-          data: null
-        };
-        whiteboardStorage.set(board.dataKey, { strokes: [], backgroundColor: '#FFFFFF', backgroundPattern: 'plain', viewOffset: { x: 0, y: 0 }, viewZoom: 1 });
+            if (type === 'local') {
+                const board = {
+                    id: boardId,
+                    title: boardTitle,
+                    type: 'local',
+                    lastModified: Date.now(),
+                    dataKey: `drawing:${boardId}`,
+                    data: null
+                };
+                await whiteboardStorage.set(board.dataKey, { strokes: [], backgroundColor: '#FFFFFF', backgroundPattern: 'plain', viewOffset: { x: 0, y: 0 }, viewZoom: 1 });
 
-        const boards = JSON.parse(localStorage.getItem('localBoards') || '[]');
-        boards.push(board);
-        localStorage.setItem('localBoards', JSON.stringify(boards));
+                const boards = JSON.parse(localStorage.getItem('localBoards') || '[]');
+                boards.push(board);
+                localStorage.setItem('localBoards', JSON.stringify(boards));
 
-        currentBoardId = boardId;
-        currentBoardType = 'local';
-        window.goToWhiteboard(boardId);
-      } else {
-        // For cloud boards, store title and type, then open whiteboard
-        // User will manually save when ready
-        currentCloudBoardTitle = boardTitle;
-        currentCloudBoardId = null; // Will be set after first save
-        currentBoardType = 'cloud';
-        window.goToWhiteboard(); // No boardId = blank canvas
-      }
-    }
+                currentBoardId = boardId;
+                currentBoardType = 'local';
+                window.goToWhiteboard(boardId);
+            } else {
+                // For cloud boards, store title and type, then open whiteboard
+                // User will manually save when ready
+                currentCloudBoardTitle = boardTitle;
+                currentCloudBoardId = null; // Will be set after first save
+                currentBoardType = 'cloud';
+                window.goToWhiteboard(); // No boardId = blank canvas
+            }
+        }
 
         function makeTemplateLine(x1, y1, x2, y2, color, size = 3, extra = {}) {
             return {
@@ -3023,6 +3036,119 @@
                 strokes
             };
         }
+
+            function buildPinFeatureDrawing(boardTitle) {
+                const strokes = [
+                    makeTemplateText(boardTitle, 120, 108, '#0f172a', { fontSize: 28, bold: true }),
+                    makeTemplateText('Save and reorder favorite pen setups', 120, 138, '#475569', { fontSize: 15, bold: false }),
+                    makeTemplateRect(120, 176, 640, 404, '#2563eb', 4),
+                    makeTemplateText('Pinned setup', 152, 214, '#1d4ed8', { fontSize: 18, bold: true }),
+                    makeTemplateText('Tap a preset to switch instantly', 152, 244, '#64748b', { fontSize: 13, bold: false })
+                ];
+
+                const chips = [
+                    { label: 'Sketch', size: '5 px', color: '#2563eb' },
+                    { label: 'Marker', size: '10 px', color: '#06b6d4' },
+                    { label: 'Spray', size: '14 px', color: '#8b5cf6' },
+                    { label: 'Erase', size: '18 px', color: '#f59e0b' }
+                ];
+
+                chips.forEach((chip, index) => {
+                    const chipX = 152 + ((index % 2) * 248);
+                    const chipY = 270 + (Math.floor(index / 2) * 78);
+                    strokes.push(makeTemplateRect(chipX, chipY, chipX + 212, chipY + 56, chip.color, 3));
+                    strokes.push(makeTemplateCircle(chipX + 30, chipY + 28, 12, chip.color, 4));
+                    strokes.push(makeTemplateText(chip.label, chipX + 54, chipY + 24, '#0f172a', { fontSize: 18, bold: true }));
+                    strokes.push(makeTemplateText(chip.size, chipX + 54, chipY + 42, '#64748b', { fontSize: 13, bold: false }));
+                });
+
+                strokes.push(makeTemplateLine(152, 400, 600, 400, '#cbd5e1', 2));
+                strokes.push(makeTemplateText('Drag to reorder the pinned row and keep your favorite setup close.', 152, 432, '#475569', { fontSize: 14, bold: false }));
+
+                return {
+                    backgroundColor: '#FFFFFF',
+                    backgroundPattern: 'plain',
+                    viewOffset: { x: 0, y: 0 },
+                    viewZoom: 1,
+                    splitView: null,
+                    strokes
+                };
+            }
+
+            function buildArrangeFeatureDrawing(boardTitle) {
+                const strokes = [
+                    makeTemplateText(boardTitle, 120, 108, '#0f172a', { fontSize: 28, bold: true }),
+                    makeTemplateText('Compare two layouts with a movable divider', 120, 138, '#475569', { fontSize: 15, bold: false }),
+                    makeTemplateRect(120, 176, 1260, 664, '#0ea5e9', 4),
+                    makeTemplateLine(720, 176, 720, 664, '#93c5fd', 4),
+                    makeTemplateText('Workspace A', 164, 220, '#1d4ed8', { fontSize: 20, bold: true }),
+                    makeTemplateText('Workspace B', 804, 220, '#0891b2', { fontSize: 20, bold: true })
+                ];
+
+                const leftCards = [
+                    { x: 168, y: 256, title: 'Plan', color: '#2563eb', note: 'Ideas and goals' },
+                    { x: 168, y: 352, title: 'Draft', color: '#06b6d4', note: 'Rough structure' },
+                    { x: 168, y: 448, title: 'Review', color: '#8b5cf6', note: 'Feedback loop' }
+                ];
+
+                const rightCards = [
+                    { x: 808, y: 256, title: 'Focus', color: '#2563eb', note: 'One thing at a time' },
+                    { x: 808, y: 352, title: 'Refine', color: '#06b6d4', note: 'Polish the details' },
+                    { x: 808, y: 448, title: 'Ship', color: '#22c55e', note: 'Ready to publish' }
+                ];
+
+                [...leftCards, ...rightCards].forEach((card) => {
+                    strokes.push(makeTemplateRect(card.x, card.y, card.x + 360, card.y + 70, card.color, 3));
+                    strokes.push(makeTemplateText(card.title, card.x + 22, card.y + 28, '#0f172a', { fontSize: 18, bold: true }));
+                    strokes.push(makeTemplateText(card.note, card.x + 22, card.y + 50, '#64748b', { fontSize: 13, bold: false }));
+                });
+
+                strokes.push(makeTemplateText('Swipe or drag the divider to rearrange the workspace.', 120, 712, '#475569', { fontSize: 14, bold: false }));
+
+                return {
+                    backgroundColor: '#FFFFFF',
+                    backgroundPattern: 'grid',
+                    viewOffset: { x: 0, y: 0 },
+                    viewZoom: 1,
+                    splitView: {
+                        orientation: 'vertical',
+                        coordinate: 720,
+                        panes: {
+                            left: { offset: { x: 0, y: 0 }, zoom: 1 },
+                            right: { offset: { x: -560, y: 0 }, zoom: 1 }
+                        }
+                    },
+                    strokes
+                };
+            }
+
+            function buildFormatFeatureDrawing(boardTitle) {
+                const strokes = [
+                    makeTemplateText(boardTitle, 120, 108, '#0f172a', { fontSize: 28, bold: true }),
+                    makeTemplateText('Style headings, notes, and action items', 120, 138, '#475569', { fontSize: 15, bold: false }),
+                    makeTemplateRect(120, 176, 760, 616, '#8b5cf6', 4),
+                    makeTemplateText('Project update', 152, 222, '#1d4ed8', { fontSize: 24, bold: true }),
+                    makeTemplateText('Bold headers help important lines stand out.', 152, 270, '#0f172a', { fontSize: 20, bold: true }),
+                    makeTemplateText('Italic notes make supporting detail feel lighter.', 152, 322, '#475569', { fontSize: 18, bold: false, italic: true }),
+                    makeTemplateText('Underline the next action item.', 152, 374, '#0f172a', { fontSize: 18, bold: false, underline: true }),
+                    makeTemplateText('Aa', 560, 238, '#2563eb', { fontSize: 60, bold: true }),
+                    makeTemplateText('Font size', 542, 308, '#64748b', { fontSize: 13, bold: false }),
+                    makeTemplateRect(520, 336, 704, 418, '#e2e8f0', 2),
+                    makeTemplateText('B', 548, 384, '#0f172a', { fontSize: 30, bold: true }),
+                    makeTemplateText('I', 598, 384, '#0f172a', { fontSize: 30, bold: false, italic: true }),
+                    makeTemplateText('U', 650, 384, '#0f172a', { fontSize: 30, bold: false, underline: true }),
+                    makeTemplateText('Use the text toolbar to switch between these styles in one place.', 152, 466, '#475569', { fontSize: 14, bold: false })
+                ];
+
+                return {
+                    backgroundColor: '#FFFFFF',
+                    backgroundPattern: 'plain',
+                    viewOffset: { x: 0, y: 0 },
+                    viewZoom: 1,
+                    splitView: null,
+                    strokes
+                };
+            }
 
         const TEMPLATE_LIBRARY = [
             {
@@ -3376,8 +3502,82 @@
             }
         ];
 
+        const FEATURE_LIBRARY = [
+            {
+                id: 'feature-pin-setups',
+                cardType: 'feature',
+                category: 'Workflow',
+                kind: 'Pin',
+                title: 'Pin Favorite Setups',
+                description: 'Capture your best pen configs, then reorder and reuse them in one tap.',
+                previewSvg: `
+                    <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="18" y="18" width="284" height="144" rx="16" fill="#eff6ff" stroke="#bfdbfe"/>
+                        <rect x="34" y="34" width="252" height="24" rx="8" fill="#dbeafe"/>
+                        <circle cx="50" cy="80" r="10" fill="#2563eb"/>
+                        <circle cx="82" cy="80" r="10" fill="#06b6d4"/>
+                        <circle cx="114" cy="80" r="10" fill="#8b5cf6"/>
+                        <circle cx="146" cy="80" r="10" fill="#f59e0b"/>
+                        <rect x="170" y="66" width="70" height="28" rx="10" fill="#e2e8f0"/>
+                        <rect x="170" y="102" width="88" height="20" rx="10" fill="#cbd5e1"/>
+                        <text x="176" y="84" font-size="11" fill="#1d4ed8" font-family="Inter, sans-serif" font-weight="700">Pinned</text>
+                        <text x="176" y="116" font-size="11" fill="#475569" font-family="Inter, sans-serif">Sketch • Marker</text>
+                    </svg>`,
+                buildDrawingData(boardTitle) {
+                    return buildPinFeatureDrawing(boardTitle);
+                }
+            },
+            {
+                id: 'feature-arrange-split',
+                cardType: 'feature',
+                category: 'Workflow',
+                kind: 'Arrange',
+                title: 'Arrange Split Views',
+                description: 'Compare two spaces side by side with a clear divider you can drag around.',
+                previewSvg: `
+                    <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="18" y="18" width="284" height="144" rx="16" fill="#f8fafc" stroke="#bfdbfe"/>
+                        <rect x="34" y="34" width="110" height="112" rx="12" fill="#dbeafe" stroke="#2563eb"/>
+                        <rect x="176" y="34" width="110" height="112" rx="12" fill="#ccfbf1" stroke="#06b6d4"/>
+                        <line x1="160" y1="34" x2="160" y2="146" stroke="#0f172a" stroke-width="3" stroke-dasharray="8 8"/>
+                        <text x="50" y="72" font-size="12" fill="#1d4ed8" font-family="Inter, sans-serif" font-weight="700">Plan</text>
+                        <text x="50" y="94" font-size="11" fill="#475569" font-family="Inter, sans-serif">Pane A</text>
+                        <text x="192" y="72" font-size="12" fill="#0f766e" font-family="Inter, sans-serif" font-weight="700">Ship</text>
+                        <text x="192" y="94" font-size="11" fill="#475569" font-family="Inter, sans-serif">Pane B</text>
+                    </svg>`,
+                buildDrawingData(boardTitle) {
+                    return buildArrangeFeatureDrawing(boardTitle);
+                }
+            },
+            {
+                id: 'feature-format-text',
+                cardType: 'feature',
+                category: 'Workflow',
+                kind: 'Format',
+                title: 'Format Text',
+                description: 'Show bold, italic, and underline treatments alongside font size samples.',
+                previewSvg: `
+                    <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="18" y="18" width="284" height="144" rx="16" fill="#fdf2f8" stroke="#f9a8d4"/>
+                        <rect x="34" y="34" width="252" height="26" rx="8" fill="#fbcfe8"/>
+                        <text x="48" y="51" font-size="12" fill="#9d174d" font-family="Inter, sans-serif" font-weight="700">B</text>
+                        <text x="74" y="51" font-size="12" fill="#9d174d" font-family="Inter, sans-serif" font-style="italic">I</text>
+                        <text x="102" y="51" font-size="12" fill="#9d174d" font-family="Inter, sans-serif" text-decoration="underline">U</text>
+                        <rect x="34" y="72" width="160" height="14" rx="7" fill="#e2e8f0"/>
+                        <rect x="34" y="96" width="220" height="14" rx="7" fill="#c7d2fe"/>
+                        <rect x="34" y="120" width="190" height="14" rx="7" fill="#a7f3d0"/>
+                        <rect x="34" y="144" width="240" height="14" rx="7" fill="#fde68a"/>
+                    </svg>`,
+                buildDrawingData(boardTitle) {
+                    return buildFormatFeatureDrawing(boardTitle);
+                }
+            }
+        ];
+
+        const HOME_LIBRARY = [...TEMPLATE_LIBRARY, ...FEATURE_LIBRARY];
+
         function getTemplateDefinition(templateId) {
-            return TEMPLATE_LIBRARY.find((template) => template.id === templateId) || null;
+            return HOME_LIBRARY.find((template) => template.id === templateId) || null;
         }
 
         function createTemplateDrawingData(templateId, boardTitle) {
@@ -3387,15 +3587,21 @@
         }
 
         window.templateHarness = {
-            catalog: TEMPLATE_LIBRARY,
+            catalog: HOME_LIBRARY,
+            templateCatalog: TEMPLATE_LIBRARY,
+            featureCatalog: FEATURE_LIBRARY,
             getTemplateDefinition,
             createTemplateDrawingData,
+            getFeatureDefinition(featureId) {
+                return FEATURE_LIBRARY.find((feature) => feature.id === featureId) || null;
+            },
             getTemplateAgentPayload(templateId, boardTitle = '') {
                 const template = getTemplateDefinition(templateId);
                 if (!template) return null;
                 const resolvedTitle = boardTitle || template.title;
                 return {
                     templateId: template.id,
+                    cardType: template.cardType || 'template',
                     title: resolvedTitle,
                     category: template.category,
                     kind: template.kind,
@@ -3421,8 +3627,11 @@
                 ? ''
                 : 'title="Sign in to create cloud boards"';
 
-            grid.innerHTML = TEMPLATE_LIBRARY.map((template) => `
-                <div class="board-card template-card" data-template-id="${template.id}">
+            grid.innerHTML = HOME_LIBRARY.map((template) => {
+                const cardType = template.cardType || 'template';
+                const featureClass = cardType === 'feature' ? ' feature-card' : '';
+                return `
+                <div class="board-card template-card${featureClass}" data-template-id="${template.id}" data-card-type="${cardType}">
                     <div class="template-preview" aria-hidden="true">${template.previewSvg}</div>
                     <div class="template-badges">
                         <span class="template-badge">${template.category}</span>
@@ -3435,7 +3644,8 @@
                         <button type="button" class="upload-btn" ${cloudSignInHint} onclick="window.createBoardFromTemplate('${template.id}', 'cloud')">Cloud</button>
                     </div>
                 </div>
-            `).join('');
+            `;
+            }).join('');
         };
 
         window.createBoardFromTemplate = async function(templateId, boardType = 'local') {
@@ -3614,7 +3824,7 @@
       const boards = JSON.parse(localStorage.getItem('localBoards') || '[]');
 
       if (boards.length === 0) {
-        grid.innerHTML = '<div class="empty-state">No local boards yet. Create one to get started!</div>';
+                grid.innerHTML = '';
         return;
       }
 
@@ -3639,7 +3849,10 @@
 
       try {
         const token = localStorage.getItem('authToken');
-        if (!token) return;
+                if (!token) {
+                    grid.innerHTML = '';
+                    return;
+                }
 
         const response = await fetch('/api/list', {
           headers: { 'Authorization': `Bearer ${token}` }
@@ -3650,7 +3863,7 @@
         const drawings = await response.json();
 
         if (drawings.length === 0) {
-          grid.innerHTML = '<div class="empty-state">No cloud boards yet.</div>';
+                    grid.innerHTML = '';
           return;
         }
 
@@ -4028,6 +4241,14 @@
                 if (isDarkMode) {
                     if (upper === '#000000' || upper === '#000') return '#FFFFFF';
                     if (upper === '#FFFFFF' || upper === '#FFF') return '#121212';
+                    if (upper === '#0F172A') return '#F8FAFC';
+                    if (upper === '#111827') return '#F8FAFC';
+                    if (upper === '#1F2937') return '#F8FAFC';
+                    if (upper === '#334155') return '#E2E8F0';
+                    if (upper === '#475569') return '#CBD5E1';
+                    if (upper === '#64748B') return '#94A3B8';
+                    if (upper === '#6B7280') return '#94A3B8';
+                    if (upper === '#94A3B8') return '#CBD5E1';
                 }
                 return hexColor;
             }
@@ -5960,7 +6181,7 @@
             }
 
             function createSplitBoard(direction, screenX, screenY) {
-                const orientation = direction === 'horizontal' ? 'vertical' : 'horizontal';
+                const orientation = direction;
                 const coordinate = orientation === 'horizontal'
                     ? clampSplitCoordinate(screenY, orientation)
                     : clampSplitCoordinate(screenX, orientation);
@@ -6958,10 +7179,10 @@
                     }
                 } else if (e.altKey && e.key.toLowerCase() === 'v') {
                     e.preventDefault();
-                    splitAtViewportCenter('horizontal');
+                    splitAtViewportCenter('vertical');
                 } else if (e.altKey && e.key.toLowerCase() === 'h') {
                     e.preventDefault();
-                    splitAtViewportCenter('vertical');
+                    splitAtViewportCenter('horizontal');
                 } else if (e.key === 'Escape' && splitView) {
                     e.preventDefault();
                     exitSplitView();
@@ -7052,8 +7273,8 @@
                 });
             }
 
-            splitVerticalBtn?.addEventListener('click', () => splitAtViewportCenter('horizontal'));
-            splitHorizontalBtn?.addEventListener('click', () => splitAtViewportCenter('vertical'));
+            splitVerticalBtn?.addEventListener('click', () => splitAtViewportCenter('vertical'));
+            splitHorizontalBtn?.addEventListener('click', () => splitAtViewportCenter('horizontal'));
             splitExitBtn?.addEventListener('click', exitSplitView);
 
             if (splitDividerHandle) {
