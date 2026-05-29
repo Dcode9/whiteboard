@@ -73,6 +73,11 @@
             overflow: auto;
             border-bottom: 2px solid #7f1d1d;
         }
+
+        .collapsed .boards-grid { display: none !important; }
+        .collapsed .templates-grid { display: none !important; }
+        .templates-section.collapsed .templates-grid { display: none !important; }
+        .collapsed .templates-grid { display: none !important; }
     </style>
 
     <!-- Load Tailwind CSS -->
@@ -4079,9 +4084,7 @@
       if (!grid) return;
 
       const boards = JSON.parse(localStorage.getItem('localBoards') || '[]');
-      if (section) {
-          section.style.display = boards.length === 0 ? 'none' : 'block';
-      }
+      if (section) { section.style.display = 'block'; }
       const pins = window.getPinnedBoards();
       const canUploadToCloud = !!localStorage.getItem('authToken');
 
@@ -4089,6 +4092,10 @@
       const parentSection = grid.parentElement;
       let pinnedEl = document.getElementById('local-pinned-grid');
       if (!pinnedEl) { pinnedEl = document.createElement('div'); pinnedEl.id = 'local-pinned-grid'; pinnedEl.className = 'boards-grid pinned-row'; parentSection.insertBefore(pinnedEl, grid); }
+      if (boards.length === 0) {
+        if (section) section.style.display = 'none';
+        return;
+      }
 
       // Build pinned cards
       const pinnedBoards = pins.map(id => boards.find(b=>b.id===id)).filter(Boolean);
@@ -4417,16 +4424,39 @@
             // Auto-collapse templates if there's any board
             function checkAndCollapseTemplates() {
                 const localBoards = JSON.parse(localStorage.getItem('localBoards') || '[]');
-                // For cloud, we could check if currentCloudBoards exists but since it's async we'll do it inside renderCloudBoards too.
-                if (localBoards.length > 0) {
-                    const templateSection = document.getElementById('templates-section');
-                    if (templateSection) {
-                        templateSection.classList.add('collapsed');
-                        templateSection.classList.remove('expanded');
-                    }
+                const templateSection = document.getElementById('templates-section');
+                if (templateSection && localBoards.length > 0) {
+                    templateSection.classList.add('collapsed');
+                    templateSection.classList.remove('expanded');
                 }
             }
+
             checkAndCollapseTemplates();
+
+            // Handle visual viewport changes for mobile keyboard
+            if (window.visualViewport) {
+                const searchBar = document.querySelector('.header-search');
+                if (searchBar) {
+                    window.visualViewport.addEventListener('resize', () => {
+                        if (window.innerWidth <= 768) {
+                            const viewportHeight = window.visualViewport.height;
+                            const windowHeight = window.innerHeight;
+                            if (viewportHeight < windowHeight) {
+                                // Keyboard is likely open, move search bar above it
+                                searchBar.style.position = 'fixed';
+                                searchBar.style.bottom = (windowHeight - viewportHeight) + 'px';
+                                searchBar.style.top = 'auto';
+                            } else {
+                                // Keyboard is closed
+                                searchBar.style.position = '';
+                                searchBar.style.bottom = '';
+                                searchBar.style.top = '';
+                            }
+                        }
+                    });
+                }
+            }
+
 
 
             // Initialize section expand/see-more controls
