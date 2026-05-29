@@ -75,9 +75,43 @@
         }
 
         .collapsed .boards-grid { display: none !important; }
-        .collapsed .templates-grid { display: none !important; }
-        .templates-section.collapsed .templates-grid { display: none !important; }
-        .collapsed .templates-grid { display: none !important; }
+
+        .templates-section.collapsed .templates-grid {
+            max-height: 250px; /* ~2 templates height on mobile */
+            overflow: hidden;
+            position: relative;
+        }
+        .templates-section.collapsed .templates-grid::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: linear-gradient(to bottom, transparent, var(--bg-color, #ffffff));
+            pointer-events: none;
+        }
+    .board-card { cursor: pointer; }
+
+        /* Mobile Dynamic Header */
+        @media (max-width: 768px) {
+            .mobile-header-title {
+                position: absolute;
+                left: 50%;
+                transform: translateX(-50%) translateY(20px);
+                opacity: 0;
+                font-weight: 600;
+                font-size: 1.1rem;
+                color: var(--text-color, #1f2937);
+                pointer-events: none;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            .mobile-header-title.visible {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+            .home-header { position: relative; }
+        }
     </style>
 
     <!-- Load Tailwind CSS -->
@@ -372,7 +406,7 @@
 
         /* Collapsed sections show limited rows and overflow hidden */
         .boards-section.collapsed .boards-grid,
-        .boards-section.collapsed .templates-grid {
+        .boards-section.templates-section.collapsed .templates-grid {
             max-height: 260px; /* approx two rows */
             overflow: hidden;
         }
@@ -2083,6 +2117,7 @@
     <!-- Homepage View -->
     <div id="homepage-view" class="view active">
         <!-- Floating Logo Container -->
+        <div id="mobile-header-title" class="mobile-header-title"></div>
         <div class="floating-container header-logo-container" onclick="window.goToHomepage()">
             <img src="WebBoard.png" alt="Webboard Logo">
             <span>Webboard</span>
@@ -2817,6 +2852,12 @@
 
     // --- View Management ---
     window.goToHomepage = function(options = {}) {
+      const home = document.getElementById('homepage-view');
+      const white = document.getElementById('whiteboard-view');
+      home.classList.add('active');
+      home.style.display = 'block';
+      white.classList.remove('active');
+      white.style.display = 'none';
       document.getElementById('homepage-view').classList.add('active');
       document.getElementById('whiteboard-view').classList.remove('active');
       // Save current whiteboard if there's data
@@ -2833,6 +2874,12 @@
     }
 
     window.goToWhiteboard = function(boardId, options = {}) {
+      const home = document.getElementById('homepage-view');
+      const white = document.getElementById('whiteboard-view');
+      home.classList.remove('active');
+      home.style.display = 'none';
+      white.classList.add('active');
+      white.style.display = 'block';
       document.getElementById('homepage-view').classList.remove('active');
       document.getElementById('whiteboard-view').classList.add('active');
       if (boardId) {
@@ -4107,9 +4154,9 @@
                 <p>${new Date(board.lastModified).toLocaleString()}</p>
                 <div class="board-card-actions" onclick="event.stopPropagation()">
                     <button type="button" class="pin-btn" onclick="(function(e){e.stopPropagation(); window.togglePinBoard('${board.id}');})(event)">Unpin</button>
-                    <button onclick="window.renameLocalBoard('${board.id}')" class="rename-btn">Rename</button>
+                    <button onclick="(function(e){e.stopPropagation(); window.renameLocalBoard('${board.id}');})(event)" class="rename-btn">Rename</button>
                     <button onclick="${canUploadToCloud ? `window.uploadLocalBoardToCloud('${board.id}')` : `showNotification('Please sign in to upload local boards', 'error')`}" class="upload-btn">Upload</button>
-                    <button onclick="window.deleteLocalBoard('${board.id}')" class="delete-btn">Delete</button>
+                    <button onclick="(function(e){e.stopPropagation(); window.deleteLocalBoard('${board.id}');})(event)" class="delete-btn">Delete</button>
                 </div>
             </div>
       `).join('');
@@ -4125,9 +4172,9 @@
               <p>${new Date(board.lastModified).toLocaleString()}</p>
               <div class="board-card-actions" onclick="event.stopPropagation()">
                   <button type="button" class="pin-btn" onclick="(function(e){e.stopPropagation(); window.togglePinBoard('${board.id}');})(event)">Pin</button>
-                  <button onclick="window.renameLocalBoard('${board.id}')" class="rename-btn">Rename</button>
+                  <button onclick="(function(e){e.stopPropagation(); window.renameLocalBoard('${board.id}');})(event)" class="rename-btn">Rename</button>
                   <button onclick="${canUploadToCloud ? `window.uploadLocalBoardToCloud('${board.id}')` : `showNotification('Please sign in to upload local boards', 'error')`}" class="upload-btn">Upload</button>
-                  <button onclick="window.deleteLocalBoard('${board.id}')" class="delete-btn">Delete</button>
+                  <button onclick="(function(e){e.stopPropagation(); window.deleteLocalBoard('${board.id}');})(event)" class="delete-btn">Delete</button>
               </div>
           </div>
         `).join('');
@@ -4188,7 +4235,7 @@
                                 <h3>${d.title}</h3>
                                 <p>${new Date(d.createdAt).toLocaleString()}</p>
                                 <div class="board-card-actions" onclick="event.stopPropagation()">
-                                        <button onclick="window.deleteCloudBoard('${d.id}')" class="delete-btn">Delete</button>
+                                        <button onclick="(function(e){e.stopPropagation(); window.deleteCloudBoard('${d.id}');})(event)" class="delete-btn">Delete</button>
                                 </div>
                         </div>
                 `).join('');
@@ -4432,6 +4479,40 @@
             }
 
             checkAndCollapseTemplates();
+
+            // Mobile scroll title animation
+            const mobileTitle = document.getElementById('mobile-header-title');
+            if (mobileTitle) {
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (!entry.isIntersecting) {
+                            // Section scrolled out of view at top, set its title
+                            const h2 = entry.target.querySelector('h2');
+                            if (h2 && entry.boundingClientRect.top < 0) {
+                                mobileTitle.textContent = h2.textContent;
+                                mobileTitle.classList.add('visible');
+                            }
+                        } else {
+                            // Section is visible
+                            const h2 = entry.target.querySelector('h2');
+                            if (h2 && mobileTitle.textContent === h2.textContent) {
+                                mobileTitle.classList.remove('visible');
+                            }
+                        }
+                    });
+                }, { threshold: [0, 0.1, 0.9, 1], rootMargin: "-60px 0px 0px 0px" });
+
+                document.querySelectorAll('.boards-section').forEach(section => {
+                    observer.observe(section);
+                });
+
+                window.addEventListener('scroll', () => {
+                    if (window.scrollY < 50) {
+                        mobileTitle.classList.remove('visible');
+                    }
+                });
+            }
+
 
             // Handle visual viewport changes for mobile keyboard
             if (window.visualViewport) {
