@@ -340,12 +340,23 @@
         }
 
         .section-toggle {
-            padding: 6px 10px;
-            border-radius: 8px;
+            padding: 6px;
+            border-radius: 50%;
             border: 1px solid #d1d5db;
             background: white;
             cursor: pointer;
-            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s ease;
+        }
+
+        .templates-section.collapsed .section-toggle svg {
+            transform: rotate(-90deg);
+        }
+
+        .boards-section.collapsed .section-toggle svg {
+            transform: rotate(-90deg);
         }
 
         .see-more {
@@ -991,9 +1002,10 @@
             }
 
 
-            /* Stacked search and actions */
+            /* Search bar at bottom of screen on mobile */
             #homepage-view.active .header-center-container {
-                top: 76px;
+                top: auto;
+                bottom: 16px;
                 left: 16px;
                 right: 16px;
                 transform: none;
@@ -1002,6 +1014,7 @@
                 justify-content: center;
                 gap: 8px;
                 padding: 10px 12px;
+                z-index: 200;
             }
 
             .header-search {
@@ -1011,7 +1024,8 @@
             }
 
             .boards-container {
-                padding-top: 180px;
+                padding-top: 80px; /* Reduced since search is at bottom now */
+                padding-bottom: 80px; /* Make room for bottom search bar */
             }
 
             .header-logo-container span {
@@ -2072,13 +2086,7 @@
         <!-- Floating Search/New Board Container -->
         <div class="floating-container header-center-container">
             <input type="text" class="header-search" placeholder="Search boards..." id="board-search">
-            <div class="dropdown">
-                <button class="btn-primary" id="new-board-btn">+ New Board</button>
-                <div class="dropdown-menu" id="new-board-menu">
-                    <button onclick="window.createNewBoard('local')">Local Board</button>
-                    <button onclick="window.createNewBoard('cloud')" id="cloud-board-option">Cloud Board</button>
-                </div>
-            </div>
+
         </div>
 
         <!-- Floating Account Container -->
@@ -2093,26 +2101,6 @@
                     </div>
                 </div>
             </div>
-        </div>
-
-        <!-- Template Gallery -->
-        <div class="boards-container templates-section" id="templates-section">
-            <div class="template-hero">
-                <div class="template-hero-copy">
-                    <p class="template-kicker">Templates</p>
-                    <h2>Start with templates and workflow previews</h2>
-                    <p>These starter boards and feature cards are generated from a shared harness, so the layout data stays programmatic and the model integration point stays clean.</p>
-                </div>
-                <div class="template-hero-badge">AI-ready template harness</div>
-            </div>
-            <div class="section-header">
-                <h2>Create</h2>
-                <div class="section-controls">
-                    <button class="section-toggle" data-section="templates">Expand</button>
-                    <a href="#" class="see-more" data-section="templates">See more</a>
-                </div>
-            </div>
-            <div id="template-gallery-grid" class="templates-grid"></div>
         </div>
 
         <!-- Boards Container -->
@@ -2133,7 +2121,28 @@
                 </div>
             </div>
         </div>
-    </div>
+    <!-- Template Gallery -->
+        <div class="boards-container templates-section" id="templates-section">
+            <div class="template-hero">
+                <div class="template-hero-copy">
+                    <p class="template-kicker">Templates</p>
+                    <h2>Start with templates and workflow previews</h2>
+                    <p>These starter boards and feature cards are generated from a shared harness, so the layout data stays programmatic and the model integration point stays clean.</p>
+                </div>
+                <div class="template-hero-badge">AI-ready template harness</div>
+            </div>
+            <div class="section-header">
+                <h2>Create</h2>
+                <div class="section-controls">
+                    <button class="section-toggle arrow-toggle" data-section="templates" title="Toggle section" aria-label="Toggle section">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div id="template-gallery-grid" class="templates-grid"></div>
+        </div>
 
     <!-- Whiteboard View -->
     <div id="whiteboard-view" class="view">
@@ -3785,6 +3794,22 @@
         };
 
         window.createBoardFromTemplate = async function(templateId, boardType = 'local') {
+            if (templateId === '__blank__') {
+                if (boardType === 'cloud') {
+                    if (!localStorage.getItem('authToken')) {
+                        showNotification('Please sign in to create cloud boards', 'error');
+                        return;
+                    }
+                    currentCloudBoardTitle = 'Untitled Board';
+                    currentCloudBoardId = null;
+                    currentBoardType = 'cloud';
+                    window.goToWhiteboard();
+                } else {
+                    window.createNewBoard('local');
+                }
+                return;
+            }
+
             const template = getTemplateDefinition(templateId);
             if (!template) {
                 showNotification('Template not found', 'error');
@@ -4050,16 +4075,20 @@
 
     window.renderLocalBoards = function() {
       const grid = document.getElementById('local-boards-grid');
+      const section = grid ? grid.closest('.boards-section') : null;
       if (!grid) return;
 
       const boards = JSON.parse(localStorage.getItem('localBoards') || '[]');
+      if (section) {
+          section.style.display = boards.length === 0 ? 'none' : 'block';
+      }
       const pins = window.getPinnedBoards();
       const canUploadToCloud = !!localStorage.getItem('authToken');
 
       // Ensure pinned container exists (render above main grid)
-      const section = grid.parentElement;
+      const parentSection = grid.parentElement;
       let pinnedEl = document.getElementById('local-pinned-grid');
-      if (!pinnedEl) { pinnedEl = document.createElement('div'); pinnedEl.id = 'local-pinned-grid'; pinnedEl.className = 'boards-grid pinned-row'; section.insertBefore(pinnedEl, grid); }
+      if (!pinnedEl) { pinnedEl = document.createElement('div'); pinnedEl.id = 'local-pinned-grid'; pinnedEl.className = 'boards-grid pinned-row'; parentSection.insertBefore(pinnedEl, grid); }
 
       // Build pinned cards
       const pinnedBoards = pins.map(id => boards.find(b=>b.id===id)).filter(Boolean);
@@ -4131,7 +4160,19 @@
                 const response = await fetch('/api/list', { headers: { 'Authorization': `Bearer ${token}` } });
                 if (!response.ok) throw new Error('Failed to load cloud boards');
                 const drawings = await response.json();
+
+                const cloudSection = grid.closest('.boards-section');
+                if (cloudSection) {
+                    cloudSection.style.display = drawings.length === 0 ? 'none' : 'block';
+                }
+
                 if (drawings.length === 0) { grid.innerHTML = '<div class="empty-state">No cloud boards</div>'; return; }
+
+                const templateSection = document.getElementById('templates-section');
+                if (templateSection && drawings.length > 0) {
+                    templateSection.classList.add('collapsed');
+                    templateSection.classList.remove('expanded');
+                }
 
                 // Render cloud cards with preview canvases; fetch drawing data for each card
                 grid.innerHTML = drawings.map(d => `
@@ -4349,12 +4390,44 @@
 
             // Initialize boards on homepage
             window.renderLocalBoards();
+            // Setup section toggles
+            document.querySelectorAll('.section-toggle').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const btnEl = e.currentTarget;
+                    const sectionId = btnEl.getAttribute('data-section') + '-section';
+                    const section = document.getElementById(sectionId);
+                    if (section) {
+                        section.classList.toggle('expanded');
+                        if (section.classList.contains('expanded')) {
+                            section.classList.remove('collapsed');
+                        } else {
+                            section.classList.add('collapsed');
+                        }
+                    }
+                });
+            });
+
             if (window.renderTemplateGallery) {
                 window.renderTemplateGallery();
             }
             if (localStorage.getItem('authToken')) {
                 window.loadCloudBoards();
             }
+
+            // Auto-collapse templates if there's any board
+            function checkAndCollapseTemplates() {
+                const localBoards = JSON.parse(localStorage.getItem('localBoards') || '[]');
+                // For cloud, we could check if currentCloudBoards exists but since it's async we'll do it inside renderCloudBoards too.
+                if (localBoards.length > 0) {
+                    const templateSection = document.getElementById('templates-section');
+                    if (templateSection) {
+                        templateSection.classList.add('collapsed');
+                        templateSection.classList.remove('expanded');
+                    }
+                }
+            }
+            checkAndCollapseTemplates();
+
 
             // Initialize section expand/see-more controls
             if (window.initSectionControls) window.initSectionControls();
