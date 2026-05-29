@@ -945,16 +945,40 @@
 
         /* Mobile responsive */
         @media (max-width: 768px) {
-            .header-center-container {
-                display: none;
+            #homepage-view.active .header-center-container {
+                top: 70px;
+                left: 16px;
+                right: 16px;
+                transform: none;
+                width: auto;
+                flex-direction: column;
+                justify-content: center;
+                gap: 8px;
+                padding: 10px 12px;
+            }
+
+            .header-search {
+                min-width: 0;
+                width: 100%;
+                box-sizing: border-box;
+            }
+
+            .boards-container {
+                padding-top: 180px;
             }
 
             .header-logo-container span {
                 display: none;
             }
 
-            .boards-grid {
+            .boards-grid, .templates-grid {
                 grid-template-columns: 1fr;
+            }
+
+            .template-hero {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 16px;
             }
         }
         /* The canvas itself */
@@ -1948,8 +1972,11 @@
 
         @media (max-width: 720px) {
             #whiteboard-view.active #toolbar {
-                max-width: calc(100vw - 24px);
+                max-width: calc(100vw - 32px);
                 gap: 0.35rem;
+                overflow-x: auto;
+                scrollbar-width: none;
+                justify-content: flex-start;
             }
 
             .tool-config-group {
@@ -7338,7 +7365,8 @@
                     left = 12;
                     top = rect.bottom + 18;
                 }
-                top = Math.max(12, Math.min(top, window.innerHeight - 230));
+                const cardHeight = guideCard.offsetHeight || 260;
+                top = Math.max(12, Math.min(top, window.innerHeight - cardHeight - 12));
                 guideCard.style.left = `${left}px`;
                 guideCard.style.top = `${top}px`;
                 guideCard.style.setProperty('--guide-tip-left', `${Math.max(18, Math.min(cardWidth - 32, rect.left + rect.width / 2 - left))}px`);
