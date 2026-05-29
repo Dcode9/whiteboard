@@ -112,6 +112,66 @@
             }
             .home-header { position: relative; }
         }
+
+        /* Board Card Icon Overrides */
+        .board-card {
+            position: relative;
+        }
+        .board-card .top-right-actions {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 8px;
+            z-index: 10;
+        }
+        .board-card .top-right-actions button {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid #ddd;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #4b5563;
+        }
+        .board-card .top-right-actions button:hover {
+            background: #f3f4f6;
+        }
+        .board-card .title-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 4px;
+        }
+        .board-card .title-row h3 {
+            margin: 0;
+            flex-grow: 1;
+            cursor: text;
+        }
+        .board-card .title-row h3:hover {
+            text-decoration: underline;
+            text-decoration-style: dotted;
+        }
+        .board-card .title-row .delete-icon-btn {
+            background: none;
+            border: none;
+            color: #ef4444;
+            cursor: pointer;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .board-card .board-card-actions {
+            display: none !important; /* Hide old text buttons */
+        }
+
+        /* Stop "top message for the gradient should be more client side production ready" */
+        /* Let's find the gradient text or top message and remove or fix it */
     </style>
 
     <!-- Load Tailwind CSS -->
@@ -2169,7 +2229,7 @@
                     <h2>Start with templates and workflow previews</h2>
                     <p>These starter boards and feature cards are generated from a shared harness, so the layout data stays programmatic and the model integration point stays clean.</p>
                 </div>
-                <div class="template-hero-badge">AI-ready template harness</div>
+                <div class="template-hero-badge">Production ready</div>
             </div>
             <div class="section-header">
                 <h2>Create</h2>
@@ -2183,6 +2243,7 @@
             </div>
             <div id="template-gallery-grid" class="templates-grid"></div>
         </div>
+    </div> <!-- END homepage-view -->
 
     <!-- Whiteboard View -->
     <div id="whiteboard-view" class="view">
@@ -2855,9 +2916,7 @@
       const home = document.getElementById('homepage-view');
       const white = document.getElementById('whiteboard-view');
       home.classList.add('active');
-      home.style.display = 'block';
       white.classList.remove('active');
-      white.style.display = 'none';
       document.getElementById('homepage-view').classList.add('active');
       document.getElementById('whiteboard-view').classList.remove('active');
       // Save current whiteboard if there's data
@@ -2877,9 +2936,7 @@
       const home = document.getElementById('homepage-view');
       const white = document.getElementById('whiteboard-view');
       home.classList.remove('active');
-      home.style.display = 'none';
       white.classList.add('active');
-      white.style.display = 'block';
       document.getElementById('homepage-view').classList.remove('active');
       document.getElementById('whiteboard-view').classList.add('active');
       if (boardId) {
@@ -4150,7 +4207,20 @@
             <div class="board-card template-card" data-board-id="${board.id}" onclick="window.goToWhiteboard('${board.id}')">
                 <div class="board-preview"><canvas></canvas></div>
                 <div class="template-badges"><span class="template-badge">Pinned</span></div>
-                <h3>${board.title}</h3>
+                <div class="top-right-actions" onclick="event.stopPropagation()">
+                    <button title="Unpin" onclick="window.togglePinBoard('${board.id}')">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M16 3H8L7 11L4 14V16H11V21H13V16H20V14L17 11L16 3Z"/></svg>
+                    </button>
+                    ${canUploadToCloud ? `<button title="Upload to Cloud" onclick="window.uploadLocalBoardToCloud('${board.id}')">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+                    </button>` : ''}
+                </div>
+                <div class="title-row" onclick="event.stopPropagation()">
+                    <h3 onclick="window.renameLocalBoard('${board.id}')" title="Click to rename">${board.title}</h3>
+                    <button class="delete-icon-btn" title="Delete" onclick="window.deleteLocalBoard('${board.id}')">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                    </button>
+                </div>
                 <p>${new Date(board.lastModified).toLocaleString()}</p>
                 <div class="board-card-actions" onclick="event.stopPropagation()">
                     <button type="button" class="pin-btn" onclick="(function(e){e.stopPropagation(); window.togglePinBoard('${board.id}');})(event)">Unpin</button>
@@ -4168,7 +4238,20 @@
         grid.innerHTML = remaining.map(board => `
           <div class="board-card template-card" data-board-id="${board.id}" onclick="window.goToWhiteboard('${board.id}')">
               <div class="board-preview"><canvas></canvas></div>
-              <h3>${board.title}</h3>
+                <div class="top-right-actions" onclick="event.stopPropagation()">
+                    <button title="Pin" onclick="window.togglePinBoard('${board.id}')">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3H8L7 11L4 14V16H11V21H13V16H20V14L17 11L16 3Z"/></svg>
+                    </button>
+                    ${canUploadToCloud ? `<button title="Upload to Cloud" onclick="window.uploadLocalBoardToCloud('${board.id}')">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+                    </button>` : ''}
+                </div>
+                <div class="title-row" onclick="event.stopPropagation()">
+                    <h3 onclick="window.renameLocalBoard('${board.id}')" title="Click to rename">${board.title}</h3>
+                    <button class="delete-icon-btn" title="Delete" onclick="window.deleteLocalBoard('${board.id}')">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                    </button>
+                </div>
               <p>${new Date(board.lastModified).toLocaleString()}</p>
               <div class="board-card-actions" onclick="event.stopPropagation()">
                   <button type="button" class="pin-btn" onclick="(function(e){e.stopPropagation(); window.togglePinBoard('${board.id}');})(event)">Pin</button>
@@ -4232,7 +4315,12 @@
                 grid.innerHTML = drawings.map(d => `
                         <div class="board-card template-card" data-drawing-id="${d.id}" onclick="window.loadCloudBoard('${d.id}')">
                                 <div class="board-preview"><canvas></canvas></div>
-                                <h3>${d.title}</h3>
+                                <div class="title-row" onclick="event.stopPropagation()">
+                    <h3 onclick="window.renameCloudBoard('${d.id}', '${d.title}')" title="Click to rename">${d.title}</h3>
+                    <button class="delete-icon-btn" title="Delete" onclick="window.deleteCloudBoard('${d.id}')">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                    </button>
+                </div>
                                 <p>${new Date(d.createdAt).toLocaleString()}</p>
                                 <div class="board-card-actions" onclick="event.stopPropagation()">
                                         <button onclick="(function(e){e.stopPropagation(); window.deleteCloudBoard('${d.id}');})(event)" class="delete-btn">Delete</button>
