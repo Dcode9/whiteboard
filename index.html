@@ -320,17 +320,57 @@
 
         .boards-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 16px;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        /* Section header controls */
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .section-controls {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .section-toggle {
+            padding: 6px 10px;
+            border-radius: 8px;
+            border: 1px solid #d1d5db;
+            background: white;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .see-more {
+            color: #2563eb;
+            font-size: 13px;
+            text-decoration: none;
+        }
+
+        /* Collapsed sections show limited rows and overflow hidden */
+        .boards-section.collapsed .boards-grid,
+        .boards-section.collapsed .templates-grid {
+            max-height: 260px; /* approx two rows */
+            overflow: hidden;
         }
 
         .board-card {
             background: white;
             border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            padding: 16px;
+            border-radius: 12px;
+            padding: 12px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
         }
 
         .board-card:hover {
@@ -339,10 +379,10 @@
         }
 
         .board-card h3 {
-            font-size: 16px;
-            font-weight: 600;
-            margin: 0 0 8px 0;
-            color: #1f2937;
+            font-size: 15px;
+            font-weight: 700;
+            margin: 0;
+            color: #0f172a;
         }
 
         .board-card p {
@@ -352,9 +392,10 @@
         }
 
         .board-card-actions {
-            margin-top: 12px;
+            margin-top: 8px;
             display: flex;
             gap: 8px;
+            align-items: center;
         }
 
         .board-card-actions button {
@@ -461,16 +502,17 @@
 
         .templates-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 16px;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
         }
 
-        .template-card {
+        .template-card,
+        .board-card {
             position: relative;
             overflow: hidden;
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 0.92));
-            border-color: rgba(148, 163, 184, 0.16);
-            box-shadow: 0 18px 30px -20px rgba(15, 23, 42, 0.28);
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(250, 250, 250, 0.96));
+            border-color: rgba(148, 163, 184, 0.12);
+            box-shadow: 0 10px 18px -12px rgba(15, 23, 42, 0.14);
         }
 
         .template-card::before {
@@ -484,19 +526,21 @@
             pointer-events: none;
         }
 
-        .template-preview {
-            height: 152px;
-            margin-bottom: 14px;
-            border-radius: 14px;
-            background: linear-gradient(180deg, rgba(239, 246, 255, 0.9), rgba(248, 250, 252, 0.98));
-            border: 1px solid rgba(191, 219, 254, 0.8);
+        .template-preview,
+        .board-preview {
+            height: 110px;
+            margin-bottom: 8px;
+            border-radius: 10px;
+            background: linear-gradient(180deg, rgba(245, 247, 250, 0.98), rgba(250, 250, 250, 0.98));
+            border: 1px solid rgba(219, 234, 254, 0.6);
             overflow: hidden;
             display: flex;
             align-items: stretch;
             justify-content: stretch;
         }
 
-        .template-preview svg {
+        .template-preview svg,
+        .board-preview svg {
             display: block;
             width: 100%;
             height: 100%;
@@ -1986,6 +2030,13 @@
                     <p>These starter boards and feature cards are generated from a shared harness, so the layout data stays programmatic and the model integration point stays clean.</p>
                 </div>
                 <div class="template-hero-badge">AI-ready template harness</div>
+            </div>
+            <div class="section-header">
+                <h2>Create</h2>
+                <div class="section-controls">
+                    <button class="section-toggle" data-section="templates">Expand</button>
+                    <a href="#" class="see-more" data-section="templates">See more</a>
+                </div>
             </div>
             <div id="template-gallery-grid" class="templates-grid"></div>
         </div>
@@ -3623,29 +3674,40 @@
             const grid = document.getElementById('template-gallery-grid');
             if (!grid) return;
 
-            const cloudSignInHint = localStorage.getItem('authToken')
-                ? ''
-                : 'title="Sign in to create cloud boards"';
+                    const cloudSignInHint = localStorage.getItem('authToken') ? '' : 'title="Sign in to create cloud boards"';
 
-            grid.innerHTML = HOME_LIBRARY.map((template) => {
-                const cardType = template.cardType || 'template';
-                const featureClass = cardType === 'feature' ? ' feature-card' : '';
-                return `
-                <div class="board-card template-card${featureClass}" data-template-id="${template.id}" data-card-type="${cardType}">
-                    <div class="template-preview" aria-hidden="true">${template.previewSvg}</div>
-                    <div class="template-badges">
-                        <span class="template-badge">${template.category}</span>
-                        <span class="template-badge">${template.kind}</span>
-                    </div>
-                    <h3>${template.title}</h3>
-                    <p>${template.description}</p>
-                    <div class="board-card-actions">
-                        <button type="button" class="rename-btn" onclick="window.createBoardFromTemplate('${template.id}', 'local')">Local</button>
-                        <button type="button" class="upload-btn" ${cloudSignInHint} onclick="window.createBoardFromTemplate('${template.id}', 'cloud')">Cloud</button>
-                    </div>
-                </div>
-            `;
-            }).join('');
+                    // Blank starter card first
+                    const blankCardHtml = `
+                        <div class="board-card template-card feature-card empty-state-card" data-template-id="__blank__">
+                            <div class="template-preview" aria-hidden="true"><svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="320" height="180" fill="#ffffff"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#9ca3af" font-size="16">Blank board</text></svg></div>
+                            <h3>Blank Board</h3>
+                            <p>Create a blank board to start from scratch.</p>
+                            <div class="board-card-actions">
+                                <button type="button" class="rename-btn" onclick="window.createBoardFromTemplate('__blank__', 'local')">Local</button>
+                                <button type="button" class="upload-btn" ${cloudSignInHint} onclick="window.createBoardFromTemplate('__blank__', 'cloud')">Cloud</button>
+                            </div>
+                        </div>
+                    `;
+
+                    grid.innerHTML = [blankCardHtml].concat(HOME_LIBRARY.map((template) => {
+                        const cardType = template.cardType || 'template';
+                        const featureClass = cardType === 'feature' ? ' feature-card' : '';
+                        return `
+                        <div class="board-card template-card${featureClass}" data-template-id="${template.id}" data-card-type="${cardType}">
+                            <div class="template-preview" aria-hidden="true">${template.previewSvg}</div>
+                            <div class="template-badges">
+                                <span class="template-badge">${template.category}</span>
+                                <span class="template-badge">${template.kind}</span>
+                            </div>
+                            <h3>${template.title}</h3>
+                            <p>${template.description}</p>
+                            <div class="board-card-actions">
+                                <button type="button" class="rename-btn" onclick="window.createBoardFromTemplate('${template.id}', 'local')">Local</button>
+                                <button type="button" class="upload-btn" ${cloudSignInHint} onclick="window.createBoardFromTemplate('${template.id}', 'cloud')">Cloud</button>
+                            </div>
+                        </div>
+                    `;
+                    })).join('');
         };
 
         window.createBoardFromTemplate = async function(templateId, boardType = 'local') {
@@ -3817,70 +3879,218 @@
       showNotification('Board deleted', 'success');
     }
 
+    // Helpers for pinned boards and previews
+    window.getPinnedBoards = function() {
+        try { return JSON.parse(localStorage.getItem('pinnedBoards') || '[]'); } catch (e) { return []; }
+    };
+
+    window.savePinnedBoards = function(pins) {
+        localStorage.setItem('pinnedBoards', JSON.stringify(pins || []));
+    };
+
+    window.togglePinBoard = function(boardId) {
+        const pins = window.getPinnedBoards();
+        const idx = pins.indexOf(boardId);
+        if (idx === -1) pins.unshift(boardId); else pins.splice(idx,1);
+        window.savePinnedBoards(pins);
+        window.renderLocalBoards();
+    };
+
+    // Draw a compact preview into a canvas element from drawingData (best-effort)
+    window.drawDrawingToCanvas = function(drawingData, canvas) {
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const w = canvas.width; const h = canvas.height;
+        ctx.clearRect(0,0,w,h);
+        if (!drawingData) {
+            ctx.fillStyle = '#ffffff'; ctx.fillRect(0,0,w,h); return;
+        }
+        const bg = drawingData.backgroundColor || '#ffffff';
+        ctx.fillStyle = bg; ctx.fillRect(0,0,w,h);
+        const strokes = drawingData.strokes || [];
+        ctx.save();
+        // simple scale to fit content area
+        const scale = Math.min(w/800, h/500); ctx.scale(scale, scale);
+        ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+        for (let i=0;i<Math.min(strokes.length, 60); i++) {
+            const s = strokes[i];
+            if (!s) continue;
+            ctx.strokeStyle = s.color || '#000'; ctx.lineWidth = (s.size || 2) * 0.6;
+            if (s.type === 'text') {
+                ctx.fillStyle = s.color || '#000'; ctx.font = `${Math.max(10, (s.fontSize||14)-4)}px sans-serif`;
+                const lines = (s.text||'').split('\n');
+                for (let li=0; li<lines.length; li++) ctx.fillText(lines[li].slice(0,30), s.x || 10, (s.y||20) + (li * ((s.fontSize||14)-2)));
+                continue;
+            }
+            if (s.tool === 'pen' || s.tool === 'spray') {
+                const pts = s.points || s.dots || [];
+                if (pts.length === 0) continue;
+                ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y);
+                for (let p=1;p<pts.length;p++) ctx.lineTo(pts[p].x, pts[p].y);
+                ctx.stroke();
+                continue;
+            }
+            if (s.tool === 'line') {
+                if (!s.points || s.points.length<2) continue;
+                ctx.beginPath(); ctx.moveTo(s.points[0].x, s.points[0].y); ctx.lineTo(s.points[1].x, s.points[1].y); ctx.stroke(); continue;
+            }
+            if (s.tool === 'rect') {
+                if (!s.points || s.points.length<2) continue; const p1=s.points[0], p2=s.points[1]; ctx.strokeRect(p1.x, p1.y, p2.x-p1.x, p2.y-p1.y); continue;
+            }
+            if (s.tool === 'circle') {
+                if (!s.points || s.points.length<2) continue; const c=s.points[0], e=s.points[1]; const r = Math.hypot(e.x-c.x,e.y-c.y); ctx.beginPath(); ctx.arc(c.x,c.y,r,0,Math.PI*2); ctx.stroke(); continue;
+            }
+        }
+        ctx.restore();
+    };
+
+    window.populatePreviewCanvas = async function(containerEl, board) {
+        try {
+            const canvas = containerEl.querySelector('canvas');
+            if (!canvas) return;
+            // default low-res size
+            canvas.width = 320; canvas.height = 180;
+            // get data from storage
+            let drawingData = null;
+            if (board.data) drawingData = board.data;
+            else if (board.dataKey && window.whiteboardStorage && window.whiteboardStorage.get) {
+                drawingData = await window.whiteboardStorage.get(board.dataKey);
+            }
+            window.drawDrawingToCanvas(drawingData, canvas);
+        } catch (e) { console.warn('preview error', e); }
+    };
+
+    window.setupPinnedDragDrop = function(pinnedEl) {
+        if (!pinnedEl) return;
+        pinnedEl.querySelectorAll('.board-card').forEach((card, idx) => {
+            card.draggable = true;
+            card.addEventListener('dragstart', (ev) => { ev.dataTransfer.setData('text/plain', card.dataset.boardId || ''); ev.dataTransfer.effectAllowed = 'move'; });
+        });
+        pinnedEl.addEventListener('dragover', (ev) => { ev.preventDefault(); ev.dataTransfer.dropEffect = 'move'; });
+        pinnedEl.addEventListener('drop', (ev) => {
+            ev.preventDefault(); const fromId = ev.dataTransfer.getData('text/plain'); const toCard = ev.target.closest('.board-card'); if (!toCard || !fromId) return;
+            const toId = toCard.dataset.boardId; if (!toId) return;
+            const pins = window.getPinnedBoards(); const fromIdx = pins.indexOf(fromId); const toIdx = pins.indexOf(toId); if (fromIdx === -1 || toIdx === -1) return; pins.splice(fromIdx, 1); pins.splice(toIdx, 0, fromId); window.savePinnedBoards(pins); window.renderLocalBoards();
+        });
+    };
+
     window.renderLocalBoards = function() {
       const grid = document.getElementById('local-boards-grid');
       if (!grid) return;
 
       const boards = JSON.parse(localStorage.getItem('localBoards') || '[]');
+      const pins = window.getPinnedBoards();
+      const canUploadToCloud = !!localStorage.getItem('authToken');
 
-      if (boards.length === 0) {
-                grid.innerHTML = '';
-        return;
-      }
+      // Ensure pinned container exists (render above main grid)
+      const section = grid.parentElement;
+      let pinnedEl = document.getElementById('local-pinned-grid');
+      if (!pinnedEl) { pinnedEl = document.createElement('div'); pinnedEl.id = 'local-pinned-grid'; pinnedEl.className = 'boards-grid pinned-row'; section.insertBefore(pinnedEl, grid); }
 
-            const canUploadToCloud = !!localStorage.getItem('authToken');
-
-      grid.innerHTML = boards.map(board => `
-        <div class="board-card" onclick="window.goToWhiteboard('${board.id}')">
-          <h3>${board.title}</h3>
-          <p>${new Date(board.lastModified).toLocaleString()}</p>
-          <div class="board-card-actions" onclick="event.stopPropagation()">
-                        <button onclick="window.renameLocalBoard('${board.id}')" class="rename-btn">Rename</button>
-                        <button onclick="${canUploadToCloud ? `window.uploadLocalBoardToCloud('${board.id}')` : `showNotification('Please sign in to upload local boards', 'error')`}" class="upload-btn">Upload</button>
-            <button onclick="window.deleteLocalBoard('${board.id}')" class="delete-btn">Delete</button>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    window.loadCloudBoards = async function() {
-      const grid = document.getElementById('cloud-boards-grid');
-      if (!grid) return;
-
-      try {
-        const token = localStorage.getItem('authToken');
-                if (!token) {
-                    grid.innerHTML = '';
-                    return;
-                }
-
-        const response = await fetch('/api/list', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-
-        if (!response.ok) throw new Error('Failed to load cloud boards');
-
-        const drawings = await response.json();
-
-        if (drawings.length === 0) {
-                    grid.innerHTML = '';
-          return;
-        }
-
-        grid.innerHTML = drawings.map(drawing => `
-          <div class="board-card" onclick="window.loadCloudBoard('${drawing.id}')">
-            <h3>${drawing.title}</h3>
-            <p>${new Date(drawing.createdAt).toLocaleString()}</p>
-            <div class="board-card-actions" onclick="event.stopPropagation()">
-              <button onclick="window.deleteCloudBoard('${drawing.id}')" class="delete-btn">Delete</button>
+      // Build pinned cards
+      const pinnedBoards = pins.map(id => boards.find(b=>b.id===id)).filter(Boolean);
+      pinnedEl.innerHTML = pinnedBoards.map(board => `
+            <div class="board-card template-card" data-board-id="${board.id}" onclick="window.goToWhiteboard('${board.id}')">
+                <div class="board-preview"><canvas></canvas></div>
+                <div class="template-badges"><span class="template-badge">Pinned</span></div>
+                <h3>${board.title}</h3>
+                <p>${new Date(board.lastModified).toLocaleString()}</p>
+                <div class="board-card-actions" onclick="event.stopPropagation()">
+                    <button type="button" class="pin-btn" onclick="(function(e){e.stopPropagation(); window.togglePinBoard('${board.id}');})(event)">Unpin</button>
+                    <button onclick="window.renameLocalBoard('${board.id}')" class="rename-btn">Rename</button>
+                    <button onclick="${canUploadToCloud ? `window.uploadLocalBoardToCloud('${board.id}')` : `showNotification('Please sign in to upload local boards', 'error')`}" class="upload-btn">Upload</button>
+                    <button onclick="window.deleteLocalBoard('${board.id}')" class="delete-btn">Delete</button>
+                </div>
             </div>
+      `).join('');
+
+      // Build non-pinned cards
+      const remaining = boards.filter(b => !pins.includes(b.id));
+      if (remaining.length === 0) { grid.innerHTML = '<div class="empty-state">No local boards</div>'; }
+      else {
+        grid.innerHTML = remaining.map(board => `
+          <div class="board-card template-card" data-board-id="${board.id}" onclick="window.goToWhiteboard('${board.id}')">
+              <div class="board-preview"><canvas></canvas></div>
+              <h3>${board.title}</h3>
+              <p>${new Date(board.lastModified).toLocaleString()}</p>
+              <div class="board-card-actions" onclick="event.stopPropagation()">
+                  <button type="button" class="pin-btn" onclick="(function(e){e.stopPropagation(); window.togglePinBoard('${board.id}');})(event)">Pin</button>
+                  <button onclick="window.renameLocalBoard('${board.id}')" class="rename-btn">Rename</button>
+                  <button onclick="${canUploadToCloud ? `window.uploadLocalBoardToCloud('${board.id}')` : `showNotification('Please sign in to upload local boards', 'error')`}" class="upload-btn">Upload</button>
+                  <button onclick="window.deleteLocalBoard('${board.id}')" class="delete-btn">Delete</button>
+              </div>
           </div>
         `).join('');
-      } catch (error) {
-        console.error('Load cloud boards error:', error);
-        grid.innerHTML = '<div class="empty-state">Failed to load cloud boards</div>';
       }
+
+      // Populate previews asynchronously
+      setTimeout(() => {
+          // pinned previews
+          pinnedEl.querySelectorAll('.board-card').forEach(card => {
+              const id = card.dataset.boardId;
+              const board = pinnedBoards.find(b=>b.id===id);
+              if (!board) return;
+              window.populatePreviewCanvas(card, board);
+          });
+          // main grid previews
+          grid.querySelectorAll('.board-card').forEach(card => {
+              const id = card.dataset.boardId;
+              const board = remaining.find(b=>b.id===id);
+              if (!board) return;
+              window.populatePreviewCanvas(card, board);
+          });
+          window.setupPinnedDragDrop(pinnedEl);
+      }, 80);
     }
+
+        window.loadCloudBoards = async function() {
+            const grid = document.getElementById('cloud-boards-grid');
+            if (!grid) return;
+
+            try {
+                const token = localStorage.getItem('authToken');
+                                if (!token) {
+                                        grid.innerHTML = '';
+                                        return;
+                                }
+
+                const response = await fetch('/api/list', { headers: { 'Authorization': `Bearer ${token}` } });
+                if (!response.ok) throw new Error('Failed to load cloud boards');
+                const drawings = await response.json();
+                if (drawings.length === 0) { grid.innerHTML = '<div class="empty-state">No cloud boards</div>'; return; }
+
+                // Render cloud cards with preview canvases; fetch drawing data for each card
+                grid.innerHTML = drawings.map(d => `
+                        <div class="board-card template-card" data-drawing-id="${d.id}" onclick="window.loadCloudBoard('${d.id}')">
+                                <div class="board-preview"><canvas></canvas></div>
+                                <h3>${d.title}</h3>
+                                <p>${new Date(d.createdAt).toLocaleString()}</p>
+                                <div class="board-card-actions" onclick="event.stopPropagation()">
+                                        <button onclick="window.deleteCloudBoard('${d.id}')" class="delete-btn">Delete</button>
+                                </div>
+                        </div>
+                `).join('');
+
+                // Fill previews by loading each drawing's data
+                setTimeout(() => {
+                        grid.querySelectorAll('.board-card').forEach(async (card) => {
+                                const id = card.dataset.drawingId;
+                                const canvas = card.querySelector('canvas');
+                                if (!id || !canvas) return;
+                                try {
+                                        const res = await fetch(`/api/load/${id}`, { headers: { 'Authorization': `Bearer ${token}` } });
+                                        if (!res.ok) return;
+                                        const json = await res.json();
+                                        await window.drawDrawingToCanvas(json.drawingData, canvas);
+                                } catch (e) { console.warn('cloud preview err', e); }
+                        });
+                }, 60);
+
+            } catch (error) {
+                console.error('Load cloud boards error:', error);
+                grid.innerHTML = '<div class="empty-state">Failed to load cloud boards</div>';
+            }
+        }
 
     window.loadCloudBoard = async function(drawingId) {
       try {
@@ -4071,6 +4281,9 @@
             if (localStorage.getItem('authToken')) {
                 window.loadCloudBoards();
             }
+
+            // Initialize section expand/see-more controls
+            if (window.initSectionControls) window.initSectionControls();
 
             // --- All app variables ---
             const canvas = document.getElementById('whiteboard');
@@ -7455,6 +7668,45 @@
 
             window.handleBoardRoute = function(options = {}) {
                 const path = window.location.pathname;
+                const localMatch = path.match(/^\/board\/([^/]+)$/);
+                const cloudMatch = path.match(/^\/cloud-board\/([^/]+)$/);
+                if (localMatch && decodeURIComponent(localMatch[1]) !== 'new') {
+                    window.goToWhiteboard(decodeURIComponent(localMatch[1]), { skipHistory: true });
+                    return;
+                }
+                if (path === '/board/new') {
+                    window.goToWhiteboard(null, { skipHistory: true });
+                    return;
+                }
+                if (cloudMatch) {
+                    window.loadCloudBoard(decodeURIComponent(cloudMatch[1]));
+                    return;
+                }
+                window.goToHomepage({ skipHistory: true });
+            };
+
+            window.addEventListener('popstate', () => window.handleBoardRoute({ fromPopState: true }));
+            initialLoadPromise.finally(() => {
+                if (window.location.pathname !== '/') {
+                    window.handleBoardRoute();
+                } else {
+                    history.replaceState({ view: 'home' }, '', '/');
+                }
+            });
+
+        } catch (criticalError) {
+            console.error("Critical Initialization Error:", criticalError);
+            const errorBox = document.getElementById('global-error-box');
+            if(errorBox) {
+                errorBox.style.display = 'block';
+                errorBox.innerHTML += `CRITICAL: ${criticalError.message}`;
+            }
+        }
+    });
+
+    </script>
+</body>
+</html>
                 const localMatch = path.match(/^\/board\/([^/]+)$/);
                 const cloudMatch = path.match(/^\/cloud-board\/([^/]+)$/);
                 if (localMatch && decodeURIComponent(localMatch[1]) !== 'new') {
