@@ -166,13 +166,12 @@
             align-items: center;
             justify-content: center;
         }
-        .board-card .board-card-actions {
-            display: none !important; /* Hide old text buttons */
-        }
 
-        /* Stop "top message for the gradient should be more client side production ready" */
-        /* Let's find the gradient text or top message and remove or fix it */
-    </style>
+
+
+
+
+        </style>
 
     <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -2227,7 +2226,7 @@
                 <div class="template-hero-copy">
                     <p class="template-kicker">Templates</p>
                     <h2>Start with templates and workflow previews</h2>
-                    <p>These starter boards and feature cards are generated from a shared harness, so the layout data stays programmatic and the model integration point stays clean.</p>
+                    <p>Beautiful layouts to kickstart your next big idea. A clear space for your new ideas.</p>
                 </div>
                 <div class="template-hero-badge">Production ready</div>
             </div>
@@ -2937,8 +2936,7 @@
       const white = document.getElementById('whiteboard-view');
       home.classList.remove('active');
       white.classList.add('active');
-      document.getElementById('homepage-view').classList.remove('active');
-      document.getElementById('whiteboard-view').classList.add('active');
+
       if (boardId) {
         window.loadBoard(boardId);
       } else {
@@ -3873,7 +3871,7 @@
                         <div class="board-card template-card feature-card empty-state-card" data-template-id="__blank__">
                             <div class="template-preview" aria-hidden="true"><svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="320" height="180" fill="#ffffff"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#9ca3af" font-size="16">Blank board</text></svg></div>
                             <h3>Blank Board</h3>
-                            <p>Create a blank board to start from scratch.</p>
+                            <p>A clear space for your new ideas.</p>
                             <div class="board-card-actions">
                                 <button type="button" class="rename-btn" onclick="window.createBoardFromTemplate('__blank__', 'local')">Local</button>
                                 <button type="button" class="upload-btn" ${cloudSignInHint} onclick="window.createBoardFromTemplate('__blank__', 'cloud')">Cloud</button>
@@ -4222,12 +4220,7 @@
                     </button>
                 </div>
                 <p>${new Date(board.lastModified).toLocaleString()}</p>
-                <div class="board-card-actions" onclick="event.stopPropagation()">
-                    <button type="button" class="pin-btn" onclick="(function(e){e.stopPropagation(); window.togglePinBoard('${board.id}');})(event)">Unpin</button>
-                    <button onclick="(function(e){e.stopPropagation(); window.renameLocalBoard('${board.id}');})(event)" class="rename-btn">Rename</button>
-                    <button onclick="${canUploadToCloud ? `window.uploadLocalBoardToCloud('${board.id}')` : `showNotification('Please sign in to upload local boards', 'error')`}" class="upload-btn">Upload</button>
-                    <button onclick="(function(e){e.stopPropagation(); window.deleteLocalBoard('${board.id}');})(event)" class="delete-btn">Delete</button>
-                </div>
+
             </div>
       `).join('');
 
@@ -4253,12 +4246,7 @@
                     </button>
                 </div>
               <p>${new Date(board.lastModified).toLocaleString()}</p>
-              <div class="board-card-actions" onclick="event.stopPropagation()">
-                  <button type="button" class="pin-btn" onclick="(function(e){e.stopPropagation(); window.togglePinBoard('${board.id}');})(event)">Pin</button>
-                  <button onclick="(function(e){e.stopPropagation(); window.renameLocalBoard('${board.id}');})(event)" class="rename-btn">Rename</button>
-                  <button onclick="${canUploadToCloud ? `window.uploadLocalBoardToCloud('${board.id}')` : `showNotification('Please sign in to upload local boards', 'error')`}" class="upload-btn">Upload</button>
-                  <button onclick="(function(e){e.stopPropagation(); window.deleteLocalBoard('${board.id}');})(event)" class="delete-btn">Delete</button>
-              </div>
+
           </div>
         `).join('');
       }
@@ -4322,9 +4310,7 @@
                     </button>
                 </div>
                                 <p>${new Date(d.createdAt).toLocaleString()}</p>
-                                <div class="board-card-actions" onclick="event.stopPropagation()">
-                                        <button onclick="(function(e){e.stopPropagation(); window.deleteCloudBoard('${d.id}');})(event)" class="delete-btn">Delete</button>
-                                </div>
+
                         </div>
                 `).join('');
 
