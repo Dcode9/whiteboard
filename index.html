@@ -2204,19 +2204,11 @@
 
         <!-- Boards Container -->
         <div class="boards-container">
-            <!-- Local Boards Section -->
-            <div class="boards-section">
-                <h2>On your Computer</h2>
-                <div id="local-boards-grid" class="boards-grid">
-                    <!-- Local boards will be rendered here -->
-                </div>
-            </div>
-
-            <!-- Cloud Boards Section -->
-            <div class="boards-section" id="cloud-boards-section" style="display: none;">
-                <h2><span id="cloud-boards-title">My Boards</span></h2>
-                <div id="cloud-boards-grid" class="boards-grid">
-                    <!-- Cloud boards will be rendered here -->
+            <!-- All Boards Section -->
+            <div class="boards-section" id="all-boards-section">
+                <h2>Boards</h2>
+                <div id="all-boards-grid" class="boards-grid">
+                    <!-- Combined boards will be rendered here -->
                 </div>
             </div>
         </div>
@@ -2812,7 +2804,7 @@
         if (cloudBoardsTitle) cloudBoardsTitle.textContent = `${userName || userEmail}'s Boards`;
 
         // Load cloud boards
-        if (window.loadCloudBoards) window.loadCloudBoards();
+        if (window.loadCloudBoards) window.renderAllBoards();
       } else {
         console.log("User is NOT signed in");
         if(btnDiv) btnDiv.style.display = 'flex';
@@ -2825,7 +2817,7 @@
       }
 
       // Refresh boards display
-      if (window.renderLocalBoards) window.renderLocalBoards();
+      if (window.renderLocalBoards) window.renderAllBoards();
             if (window.renderTemplateGallery) window.renderTemplateGallery();
     }
 
@@ -2922,9 +2914,9 @@
       if (window.getCurrentBoardId && window.getCurrentBoardId()) {
         window.saveCurrentLocalBoard();
       }
-      window.renderLocalBoards();
+      window.renderAllBoards();
       if (localStorage.getItem('authToken')) {
-        window.loadCloudBoards();
+        window.renderAllBoards();
       }
       if (!options.skipHistory && window.location.pathname !== '/') {
         history.pushState({ view: 'home' }, '', '/');
@@ -3971,7 +3963,7 @@
                 window.updateSaveButtonVisibility();
             }
             if (window.renderLocalBoards) {
-                window.renderLocalBoards();
+                window.renderAllBoards();
             }
             showNotification(`Started ${template.title}`, 'success');
         };
@@ -4023,7 +4015,7 @@
             boards[boardIndex].title = nextTitle;
             boards[boardIndex].lastModified = Date.now();
             localStorage.setItem('localBoards', JSON.stringify(boards));
-            window.renderLocalBoards();
+            window.renderAllBoards();
             showNotification('File name updated', 'success');
         }
 
@@ -4067,7 +4059,7 @@
                 localStorage.setItem('localBoards', JSON.stringify(boards));
                 showNotification(`Uploaded "${uploadTitle}" to cloud`, 'success');
                 if (window.loadCloudBoards) {
-                    window.loadCloudBoards();
+                    window.renderAllBoards();
                 }
             } catch (error) {
                 console.error('Upload local board error:', error);
@@ -4081,7 +4073,7 @@
       const boards = JSON.parse(localStorage.getItem('localBoards') || '[]');
       const filtered = boards.filter(b => b.id !== boardId);
       localStorage.setItem('localBoards', JSON.stringify(filtered));
-      window.renderLocalBoards();
+      window.renderAllBoards();
       showNotification('Board deleted', 'success');
     }
 
@@ -4099,7 +4091,7 @@
         const idx = pins.indexOf(boardId);
         if (idx === -1) pins.unshift(boardId); else pins.splice(idx,1);
         window.savePinnedBoards(pins);
-        window.renderLocalBoards();
+        window.renderAllBoards();
     };
 
     // Draw a compact preview into a canvas element from drawingData (best-effort)
@@ -4176,165 +4168,170 @@
         pinnedEl.addEventListener('drop', (ev) => {
             ev.preventDefault(); const fromId = ev.dataTransfer.getData('text/plain'); const toCard = ev.target.closest('.board-card'); if (!toCard || !fromId) return;
             const toId = toCard.dataset.boardId; if (!toId) return;
-            const pins = window.getPinnedBoards(); const fromIdx = pins.indexOf(fromId); const toIdx = pins.indexOf(toId); if (fromIdx === -1 || toIdx === -1) return; pins.splice(fromIdx, 1); pins.splice(toIdx, 0, fromId); window.savePinnedBoards(pins); window.renderLocalBoards();
+            const pins = window.getPinnedBoards(); const fromIdx = pins.indexOf(fromId); const toIdx = pins.indexOf(toId); if (fromIdx === -1 || toIdx === -1) return; pins.splice(fromIdx, 1); pins.splice(toIdx, 0, fromId); window.savePinnedBoards(pins); window.renderAllBoards();
         });
     };
 
-    window.renderLocalBoards = function() {
-      const grid = document.getElementById('local-boards-grid');
+
+    window.renderAllBoards = async function() {
+      const grid = document.getElementById('all-boards-grid');
       const section = grid ? grid.closest('.boards-section') : null;
       if (!grid) return;
 
-      const boards = JSON.parse(localStorage.getItem('localBoards') || '[]');
-      if (section) { section.style.display = 'block'; }
+      // 1. Fetch Local Boards
+      const localBoards = JSON.parse(localStorage.getItem('localBoards') || '[]');
+      let allBoards = localBoards.map(b => ({ ...b, source: 'local', timestamp: new Date(b.lastModified).getTime() }));
+
+      // 2. Fetch Cloud Boards
+      const token = localStorage.getItem('authToken');
+      const canUploadToCloud = !!token;
+      if (token) {
+          try {
+              const response = await fetch('/api/list', {
+                  headers: { 'Authorization': `Bearer ${token}` }
+              });
+              if (response.ok) {
+                  const cloudBoards = await response.json();
+                  allBoards = allBoards.concat(cloudBoards.map(d => ({ ...d, source: 'cloud', id: d.id, title: d.title, timestamp: new Date(d.createdAt).getTime() })));
+              }
+          } catch (e) {
+              console.error('Failed to load cloud boards for combined view:', e);
+          }
+      }
+
+      // Sort combined boards by timestamp
+      allBoards.sort((a, b) => b.timestamp - a.timestamp);
+
+      if (section) {
+          section.style.display = allBoards.length === 0 ? 'none' : 'block';
+      }
+
+      if (allBoards.length === 0) {
+          grid.innerHTML = '';
+          return;
+      }
+
       const pins = window.getPinnedBoards();
-      const canUploadToCloud = !!localStorage.getItem('authToken');
 
       // Ensure pinned container exists (render above main grid)
       const parentSection = grid.parentElement;
-      let pinnedEl = document.getElementById('local-pinned-grid');
-      if (!pinnedEl) { pinnedEl = document.createElement('div'); pinnedEl.id = 'local-pinned-grid'; pinnedEl.className = 'boards-grid pinned-row'; parentSection.insertBefore(pinnedEl, grid); }
-      if (boards.length === 0) {
-        if (section) section.style.display = 'none';
-        return;
+      let pinnedEl = document.getElementById('all-pinned-grid');
+      if (!pinnedEl) {
+          pinnedEl = document.createElement('div');
+          pinnedEl.id = 'all-pinned-grid';
+          pinnedEl.className = 'boards-grid pinned-row';
+          parentSection.insertBefore(pinnedEl, grid);
       }
 
-      // Build pinned cards
-      const pinnedBoards = pins.map(id => boards.find(b=>b.id===id)).filter(Boolean);
-      pinnedEl.innerHTML = pinnedBoards.map(board => `
-            <div class="board-card template-card" data-board-id="${board.id}" onclick="window.goToWhiteboard('${board.id}')">
-                <div class="board-preview"><canvas></canvas></div>
-                <div class="template-badges"><span class="template-badge">Pinned</span></div>
-                <div class="top-right-actions" onclick="event.stopPropagation()">
-                    <button title="Unpin" onclick="window.togglePinBoard('${board.id}')">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M16 3H8L7 11L4 14V16H11V21H13V16H20V14L17 11L16 3Z"/></svg>
-                    </button>
-                    ${canUploadToCloud ? `<button title="Upload to Cloud" onclick="window.uploadLocalBoardToCloud('${board.id}')">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
-                    </button>` : ''}
-                </div>
-                <div class="title-row" onclick="event.stopPropagation()">
-                    <h3 onclick="window.renameLocalBoard('${board.id}')" title="Click to rename">${board.title}</h3>
-                    <button class="delete-icon-btn" title="Delete" onclick="window.deleteLocalBoard('${board.id}')">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
-                    </button>
-                </div>
-                <p>${new Date(board.lastModified).toLocaleString()}</p>
+      const pinnedBoards = pins.map(id => allBoards.find(b => b.id === id)).filter(Boolean);
+      const remaining = allBoards.filter(b => !pins.includes(b.id));
 
-            </div>
-      `).join('');
+      const generateCardHtml = (board, isPinned) => {
+          const isLocal = board.source === 'local';
+          const onClick = isLocal ? `window.goToWhiteboard('${board.id}')` : `window.loadCloudBoard('${board.id}')`;
+          const onRename = isLocal ? `(function(e){e.stopPropagation(); window.renameLocalBoard('${board.id}');})(event)` : `(function(e){e.stopPropagation(); window.renameCloudBoard('${board.id}', '${board.title}');})(event)`;
+          const onDelete = isLocal ? `(function(e){e.stopPropagation(); window.deleteLocalBoard('${board.id}');})(event)` : `(function(e){e.stopPropagation(); window.deleteCloudBoard('${board.id}');})(event)`;
 
-      // Build non-pinned cards
-      const remaining = boards.filter(b => !pins.includes(b.id));
-      if (remaining.length === 0) { grid.innerHTML = '<div class="empty-state">No local boards</div>'; }
-      else {
-        grid.innerHTML = remaining.map(board => `
-          <div class="board-card template-card" data-board-id="${board.id}" onclick="window.goToWhiteboard('${board.id}')">
+          return `
+          <div class="board-card template-card" data-board-id="${board.id}" data-source="${board.source}" onclick="${onClick}">
               <div class="board-preview"><canvas></canvas></div>
-                <div class="top-right-actions" onclick="event.stopPropagation()">
-                    <button title="Pin" onclick="window.togglePinBoard('${board.id}')">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3H8L7 11L4 14V16H11V21H13V16H20V14L17 11L16 3Z"/></svg>
-                    </button>
-                    ${canUploadToCloud ? `<button title="Upload to Cloud" onclick="window.uploadLocalBoardToCloud('${board.id}')">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
-                    </button>` : ''}
-                </div>
-                <div class="title-row" onclick="event.stopPropagation()">
-                    <h3 onclick="window.renameLocalBoard('${board.id}')" title="Click to rename">${board.title}</h3>
-                    <button class="delete-icon-btn" title="Delete" onclick="window.deleteLocalBoard('${board.id}')">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
-                    </button>
-                </div>
-              <p>${new Date(board.lastModified).toLocaleString()}</p>
+              <div class="template-badges">
+                  ${isPinned ? '<span class="template-badge">Pinned</span>' : ''}
+                  <span class="template-badge">${isLocal ? 'Saved' : 'Online'}</span>
+              </div>
+              <div class="top-right-actions" onclick="event.stopPropagation()">
+                  <button title="${isPinned ? 'Unpin' : 'Pin'}" onclick="window.togglePinBoard('${board.id}')">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="${isPinned ? 'currentColor' : 'none'}" stroke="${isPinned ? 'none' : 'currentColor'}" stroke-width="2"><path d="M16 3H8L7 11L4 14V16H11V21H13V16H20V14L17 11L16 3Z"/></svg>
+                  </button>
+                  ${isLocal && canUploadToCloud ? `<button title="Upload to Cloud" onclick="window.uploadLocalBoardToCloud('${board.id}')">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+                  </button>` : ''}
+              </div>
+              <div class="title-row">
+                  <h3 onclick="${onRename}" title="Click to rename">${board.title}</h3>
+                  <button class="delete-icon-btn" title="Delete" onclick="${onDelete}">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                  </button>
+              </div>
+              <p>${new Date(board.timestamp).toLocaleString()}</p>
+          </div>`;
+      };
 
-          </div>
-        `).join('');
-      }
+      pinnedEl.innerHTML = pinnedBoards.map(b => generateCardHtml(b, true)).join('');
+      grid.innerHTML = remaining.map(b => generateCardHtml(b, false)).join('');
 
       // Populate previews asynchronously
       setTimeout(() => {
-          // pinned previews
-          pinnedEl.querySelectorAll('.board-card').forEach(card => {
+          document.querySelectorAll('#all-boards-section .board-card').forEach(async (card) => {
               const id = card.dataset.boardId;
-              const board = pinnedBoards.find(b=>b.id===id);
-              if (!board) return;
-              window.populatePreviewCanvas(card, board);
+              const source = card.dataset.source;
+              const canvas = card.querySelector('canvas');
+              if (!canvas) return;
+
+
+              let drawingData = null;
+              if (source === 'local') {
+                  const b = localBoards.find(x => x.id === id);
+                  if (b) drawingData = b.dataKey ? await whiteboardStorage.get(b.dataKey) : b.data;
+              } else {
+                  // Fetch from server for cloud board previews
+                  try {
+                      const res = await fetch(`/api/load/${id}`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` } });
+                      if (res.ok) {
+                          const cloudDoc = await res.json();
+                          drawingData = cloudDoc.drawingData;
+                      }
+                  } catch(e) { console.error('Preview error', e); }
+              }
+              if (drawingData) window.drawDrawingToCanvas(drawingData, canvas);
           });
-          // main grid previews
-          grid.querySelectorAll('.board-card').forEach(card => {
-              const id = card.dataset.boardId;
-              const board = remaining.find(b=>b.id===id);
-              if (!board) return;
-              window.populatePreviewCanvas(card, board);
-          });
-          window.setupPinnedDragDrop(pinnedEl);
-      }, 80);
-    }
+          window.attachLocalPinListeners();
+      }, 60);
 
-        window.loadCloudBoards = async function() {
-            const grid = document.getElementById('cloud-boards-grid');
-            if (!grid) return;
+      // Template auto-collapse logic
+      const templateSection = document.getElementById('templates-section');
+      if (templateSection && allBoards.length > 0) {
+          templateSection.classList.add('collapsed');
+          templateSection.classList.remove('expanded');
+      }
+    };
 
-            try {
-                const token = localStorage.getItem('authToken');
-                                if (!token) {
-                                        grid.innerHTML = '';
-                                        return;
-                                }
 
-                const response = await fetch('/api/list', { headers: { 'Authorization': `Bearer ${token}` } });
-                if (!response.ok) throw new Error('Failed to load cloud boards');
-                const drawings = await response.json();
+    window.attachLocalPinListeners = function() {
+        const grid = document.getElementById('all-boards-grid');
+        const pinnedEl = document.getElementById('all-pinned-grid');
+        const items = [];
+        if(grid) items.push(...Array.from(grid.querySelectorAll('.board-card')));
+        if(pinnedEl) items.push(...Array.from(pinnedEl.querySelectorAll('.board-card')));
 
-                const cloudSection = grid.closest('.boards-section');
-                if (cloudSection) {
-                    cloudSection.style.display = drawings.length === 0 ? 'none' : 'block';
-                }
-
-                if (drawings.length === 0) { grid.innerHTML = '<div class="empty-state">No cloud boards</div>'; return; }
-
-                const templateSection = document.getElementById('templates-section');
-                if (templateSection && drawings.length > 0) {
-                    templateSection.classList.add('collapsed');
-                    templateSection.classList.remove('expanded');
-                }
-
-                // Render cloud cards with preview canvases; fetch drawing data for each card
-                grid.innerHTML = drawings.map(d => `
-                        <div class="board-card template-card" data-drawing-id="${d.id}" onclick="window.loadCloudBoard('${d.id}')">
-                                <div class="board-preview"><canvas></canvas></div>
-                                <div class="title-row" onclick="event.stopPropagation()">
-                    <h3 onclick="window.renameCloudBoard('${d.id}', '${d.title}')" title="Click to rename">${d.title}</h3>
-                    <button class="delete-icon-btn" title="Delete" onclick="window.deleteCloudBoard('${d.id}')">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
-                    </button>
-                </div>
-                                <p>${new Date(d.createdAt).toLocaleString()}</p>
-
-                        </div>
-                `).join('');
-
-                // Fill previews by loading each drawing's data
-                setTimeout(() => {
-                        grid.querySelectorAll('.board-card').forEach(async (card) => {
-                                const id = card.dataset.drawingId;
-                                const canvas = card.querySelector('canvas');
-                                if (!id || !canvas) return;
-                                try {
-                                        const res = await fetch(`/api/load/${id}`, { headers: { 'Authorization': `Bearer ${token}` } });
-                                        if (!res.ok) return;
-                                        const json = await res.json();
-                                        await window.drawDrawingToCanvas(json.drawingData, canvas);
-                                } catch (e) { console.warn('cloud preview err', e); }
-                        });
-                }, 60);
-
-            } catch (error) {
-                console.error('Load cloud boards error:', error);
-                grid.innerHTML = '<div class="empty-state">Failed to load cloud boards</div>';
-            }
-        }
-
+        items.forEach(item => {
+            item.draggable = true;
+            item.addEventListener('dragstart', (event) => {
+                if(event.target.closest('button')) return;
+                event.dataTransfer.setData('text/plain', item.dataset.boardId);
+                event.dataTransfer.effectAllowed = 'move';
+                item.style.opacity = '0.5';
+            });
+            item.addEventListener('dragend', () => item.style.opacity = '1');
+            item.addEventListener('dragover', (event) => { event.preventDefault(); event.dataTransfer.dropEffect = 'move'; });
+            item.addEventListener('drop', (event) => {
+                event.preventDefault();
+                const fromId = event.dataTransfer.getData('text/plain');
+                const toId = item.dataset.boardId;
+                if (!fromId || !toId || fromId === toId) return;
+                const pins = window.getPinnedBoards();
+                const fromIdx = pins.indexOf(fromId);
+                const toIdx = pins.indexOf(toId);
+                if (fromIdx === -1 || toIdx === -1) return;
+                pins.splice(fromIdx, 1);
+                pins.splice(toIdx, 0, fromId);
+                window.savePinnedBoards(pins);
+                window.renderAllBoards();
+            });
+        });
+    };
+    window.renderLocalBoards = window.renderAllBoards; // alias for backwards compatibility
+    window.loadCloudBoards = window.renderAllBoards; // alias
     window.loadCloudBoard = async function(drawingId) {
       try {
         const token = localStorage.getItem('authToken');
@@ -4359,6 +4356,28 @@
       }
     }
 
+
+    window.renameCloudBoard = async function(id, oldTitle) {
+        const newTitle = await window.customPrompt('Rename Cloud Board', 'Enter new name:', oldTitle);
+        if (!newTitle || newTitle === oldTitle) return;
+
+        try {
+            const token = localStorage.getItem('authToken');
+            const res = await fetch(`/api/save`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ id, title: newTitle })
+            });
+            if (res.ok) {
+                window.renderAllBoards();
+                showNotification('Renamed successfully', 'success');
+            }
+        } catch(e) {
+            console.error(e);
+            showNotification('Failed to rename cloud board', 'error');
+        }
+    };
+
     window.deleteCloudBoard = async function(drawingId) {
       if (!confirm('Delete this cloud board?')) return;
 
@@ -4371,7 +4390,7 @@
 
         if (!response.ok) throw new Error('Failed to delete');
 
-        window.loadCloudBoards();
+        window.renderAllBoards();
         showNotification('Board deleted', 'success');
       } catch (error) {
         console.error('Delete error:', error);
@@ -4517,7 +4536,7 @@
             }
 
             // Initialize boards on homepage
-            window.renderLocalBoards();
+            window.renderAllBoards();
             // Setup section toggles
             document.querySelectorAll('.section-toggle').forEach(btn => {
                 btn.addEventListener('click', (e) => {
@@ -4539,7 +4558,7 @@
                 window.renderTemplateGallery();
             }
             if (localStorage.getItem('authToken')) {
-                window.loadCloudBoards();
+                window.renderAllBoards();
             }
 
             // Auto-collapse templates if there's any board
