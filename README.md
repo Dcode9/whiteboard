@@ -1,146 +1,80 @@
-# Whiteboard Application
+# WebBoard - Collaborative Whiteboard
 
-A collaborative whiteboard application with Google Sign-in and Supabase storage.
+A modern, responsive whiteboard application with drawing tools, shape support, text editing, and cloud storage integration via Google Sign-in and Supabase.
 
-## Features
+## ✨ Features
 
-- Google Authentication
-- Drawing tools (pen, eraser, shapes)
-- Save drawings to Supabase
-- Load and list drawings per user account
+- **Drawing Tools** - Pen with custom colors and brush sizes
+- **Shapes** - Lines, rectangles, circles, and triangles  
+- **Text Editor** - Add formatted text (bold, italic, underline)
+- **Eraser** - Object, pixel, or cut mode (eraser-only deletion)
+- **Move & Resize** - Select shapes and resize with 8-directional handles
+- **Stylus Support** - Automatic pen tool on stylus input
+- **Undo/Redo** - Full editing history
+- **Canvas Customization** - Colors, patterns, zoom
+- **Dark Mode** - Toggle theme
+- **Google Sign-in** - Secure authentication
+- **Cloud Storage** - Supabase with per-account isolation
+- **Local Boards** - Browser storage fallback
+- **Responsive** - Desktop and tablet friendly
 
-## Setup Instructions
+## 🚀 Quick Start
 
-### ⚠️ IMPORTANT: Getting "Access blocked" error?
-**You MUST replace the hardcoded Google Client ID in `index.html` line 597 with your own.**
+### Setup
+1. `npm install`
+2. Follow **[ENV_SETUP_GUIDE.md](ENV_SETUP_GUIDE.md)** for Google OAuth & Supabase config
+3. `npm start` or `vercel dev`
+4. Open `http://localhost:3000`
 
-📖 **See [ENV_SETUP_GUIDE.md](ENV_SETUP_GUIDE.md) for complete step-by-step instructions on:**
-- How to create your own Google OAuth credentials
-- Where to find all environment variables
-- How to set them up in Vercel
-- Troubleshooting common issues
+### Important
+⚠️ Don't use the demo Google Client ID in production—create your own credentials in Google Cloud Console.
 
-### Quick Start
-
-### 1. Install Dependencies
-
-```bash
-npm install
-```
-
-### 2. Set up Supabase
-
-1. Create a [Supabase](https://supabase.com) account
-2. Create a new project
-3. In the SQL Editor, run the SQL script from `supabase-setup.sql` or copy and paste the following:
-
-```sql
--- Create drawings table
-CREATE TABLE IF NOT EXISTS drawings (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id TEXT NOT NULL,
-  user_email TEXT NOT NULL,
-  title TEXT NOT NULL,
-  drawing_data JSONB NOT NULL,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
--- Create indexes for faster queries
-CREATE INDEX IF NOT EXISTS idx_drawings_user_id ON drawings(user_id);
-CREATE INDEX IF NOT EXISTS idx_drawings_created_at ON drawings(created_at DESC);
-
--- Enable Row Level Security
-ALTER TABLE drawings ENABLE ROW LEVEL SECURITY;
-
--- Create permissive policy for authenticated API requests
-CREATE POLICY "Enable all operations for authenticated users"
-  ON drawings FOR ALL
-  USING (true)
-  WITH CHECK (true);
-```
-
-### 3. Configure Environment Variables
-
-Create a `.env` file in the root directory with the following variables:
-
-```env
-# Google OAuth Configuration
-GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
-
-# Supabase Configuration
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_KEY=your-supabase-anon-key
-
-# JWT Secret (optional, for app-specific tokens)
-JWT_SECRET=your-jwt-secret-key
-```
-
-### 4. Configure Google OAuth
-
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a new project or select an existing one
-3. Enable the Google+ API
-4. Create OAuth 2.0 credentials
-5. Add authorized JavaScript origins:
-   - `http://localhost:3000` (for local development)
-   - Your production domain
-6. Copy the Client ID to your `.env` file and update `index.html` (line 595)
-
-### 5. Deploy to Vercel
-
-1. Install Vercel CLI: `npm install -g vercel`
-2. Run `vercel` in the project directory
-3. Add environment variables in Vercel dashboard
-4. Deploy: `vercel --prod`
-
-## Project Structure
+## 📁 Structure
 
 ```
-.
-├── api/
-│   ├── auth.js        # Google authentication endpoint
-│   ├── drawings.js    # Drawing CRUD operations
-│   └── index.js       # Express app setup
-├── index.html         # Frontend application
-├── package.json       # Dependencies
-├── vercel.json        # Vercel configuration
-└── .env.example       # Environment variables template
+index.html           # Main app (HTML, CSS, JS)
+assets/
+  whiteboard.css    # UI styles
+  js/app.js         # Auth & board management
+api/                 # Vercel serverless endpoints
+ENV_SETUP_GUIDE.md  # Detailed configuration
 ```
 
-## API Endpoints
+## 🎯 Key Interactions
 
-### Authentication
-- `POST /api/auth/google` - Authenticate with Google
-- `GET /api/auth/verify` - Verify JWT token
+| Action | Behavior |
+|--------|----------|
+| **Stylus input** | Auto-activates pen tool |
+| **Right-click** | Ignored (no menu) |
+| **Shape click** → **Move tool** | Select and grab handles to resize |
+| **Eraser tool** | Only this tool can delete |
+| **2-finger touch** | Pan and zoom |
+| **Ctrl+Z** | Undo |
+| **Ctrl+Y** | Redo |
 
-### Drawings
-- `POST /api/drawings/save` - Save a drawing
-- `GET /api/drawings/load/:drawingId` - Load a drawing
-- `GET /api/drawings/list` - List all user drawings
-- `DELETE /api/drawings/delete/:drawingId` - Delete a drawing
+## 🔒 Security
 
-## Development
+✅ Google JWT verification  
+✅ Supabase Row Level Security  
+✅ User-specific data filtering  
+✅ No credentials in frontend code
 
-```bash
-# Install dependencies
-npm install
+**Production**: Enable rate limiting, CORS, and monitoring (see [ENV_SETUP_GUIDE.md](ENV_SETUP_GUIDE.md#security-considerations)).
 
-# Start development server
-npm start
+## 📚 API Endpoints
 
-# Or use Vercel dev for local testing
-vercel dev
-```
+- `POST /api/google` — Verify Google JWT  
+- `POST /api/save` — Save/update drawing  
+- `GET /api/load/:id` — Load drawing  
+- `GET /api/list` — List user's drawings  
+- `DELETE /api/delete/:id` — Delete drawing
 
-## Security Considerations
+## 🐛 Troubleshooting
 
-For production deployment, consider adding:
-- Rate limiting on authentication and API endpoints to prevent brute force attacks
-- Additional input validation and sanitization
-- CORS configuration to restrict allowed origins
-- Environment-specific configuration for different deployment environments
+**Google Sign-in blocked?** → Use your own OAuth credentials (see ENV_SETUP_GUIDE.md)  
+**Drawings not saving?** → Check Supabase credentials and network errors  
+**Stylus not recognized?** → Check browser support and console errors
 
-## License
+## 📝 License
 
 MIT
