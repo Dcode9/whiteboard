@@ -2405,7 +2405,7 @@
             cancelBtn.click();
           }
         };
-      });
+      }); I'm
     }
 
     // --- View Management ---
@@ -2440,14 +2440,9 @@
       if (window.updateSaveButtonVisibility) {
         window.updateSaveButtonVisibility();
       }
-      if (window.openWhiteboardGuide) {
-        setTimeout(() => window.openWhiteboardGuide(false), 400);
-      }
-      if (!options.skipHistory) {
-        const path = boardId ? `/board/${encodeURIComponent(boardId)}` : (currentCloudBoardId ? `/cloud-board/${encodeURIComponent(currentCloudBoardId)}` : '/board/new');
-        if (window.location.pathname !== path) {
-          history.pushState({ view: 'board', boardId: boardId || null, cloudBoardId: currentCloudBoardId || null }, '', path);
-        }
+
+      if (window.showGuideIfNeeded) {
+        window.showGuideIfNeeded();
       }
     }
 
