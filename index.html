@@ -884,6 +884,85 @@
             box-shadow: none;
         }
 
+        .homepage-theme-toggle {
+            width: 2.5rem;
+            height: 2.5rem;
+            box-shadow: none;
+        }
+
+        .tool-action {
+            overflow: visible;
+        }
+
+        .tool-input-indicators {
+            position: absolute;
+            right: 0.18rem;
+            bottom: 0.18rem;
+            display: inline-flex;
+            gap: 0.12rem;
+            pointer-events: none;
+        }
+
+        .tool-input-indicator {
+            width: 0.42rem;
+            height: 0.42rem;
+            border-radius: 999px;
+            border: 1px solid white;
+            box-shadow: 0 1px 2px rgba(15,23,42,0.25);
+        }
+
+        .tool-input-indicator.pen { background: #ef4444; }
+        .tool-input-indicator.touch { background: #2563eb; }
+
+        .selection-context-menu {
+            position: fixed;
+            z-index: 1400;
+            display: none;
+            gap: 0.35rem;
+            padding: 0.35rem;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.96);
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            box-shadow: 0 16px 32px rgba(15, 23, 42, 0.22);
+        }
+
+        .selection-context-menu.active { display: flex; }
+
+        .selection-context-menu button {
+            border: 0;
+            border-radius: 999px;
+            padding: 0.45rem 0.7rem;
+            background: #eef2ff;
+            color: #1e3a8a;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .shape-option-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 6px;
+            width: 100%;
+        }
+
+        .shape-option,
+        .line-style-option {
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            background: #fff;
+            padding: 0.5rem;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .shape-option.active,
+        .line-style-option.active {
+            background: #dbeafe;
+            border-color: #2563eb;
+            color: #1d4ed8;
+        }
+
         /* NEW: Popover styles */
         .popover {
             display: none;
@@ -1210,6 +1289,52 @@
         body.dark-mode {
             background-color: #020617;
             color: #e2e8f0;
+        }
+
+        body.dark-mode #homepage-view {
+            background-color: #020617;
+        }
+
+        body.dark-mode .board-card,
+        body.dark-mode .dropdown-menu,
+        body.dark-mode .user-menu,
+        body.dark-mode .selection-context-menu {
+            background: rgba(15, 23, 42, 0.96);
+            color: #e2e8f0;
+            border-color: rgba(148, 163, 184, 0.28);
+            box-shadow: 0 20px 35px rgba(2, 6, 23, 0.45);
+        }
+
+        body.dark-mode .board-card h3,
+        body.dark-mode .boards-section h2,
+        body.dark-mode .dropdown-menu button,
+        body.dark-mode .user-menu button,
+        body.dark-mode .popover label {
+            color: #e2e8f0;
+        }
+
+        body.dark-mode .board-card p,
+        body.dark-mode .empty-state {
+            color: #cbd5e1;
+        }
+
+        body.dark-mode .board-card-actions button,
+        body.dark-mode .shape-option,
+        body.dark-mode .line-style-option {
+            background: rgba(15, 23, 42, 0.82);
+            color: #e2e8f0;
+            border-color: rgba(148, 163, 184, 0.28);
+        }
+
+        body.dark-mode .dropdown-menu button:hover,
+        body.dark-mode .user-menu button:hover,
+        body.dark-mode .board-card-actions button:hover {
+            background: rgba(30, 41, 59, 0.96);
+        }
+
+        body.dark-mode .tool-mini-btn svg,
+        body.dark-mode .pin-config-btn svg {
+            stroke: #e2e8f0;
         }
 
         body.dark-mode .floating-container,
@@ -1705,6 +1830,11 @@
 
         <!-- Floating Account Container -->
         <div class="floating-container header-account-container">
+            <button id="theme-toggle-btn" class="board-theme-toggle homepage-theme-toggle" type="button" title="Toggle dark mode" aria-label="Toggle dark mode" aria-pressed="false">
+                <svg class="theme-toggle-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+                </svg>
+            </button>
             <div id="buttonDiv" style="display: flex; align-items: center;"></div>
             <div id="user-profile-area" style="display: none;">
                 <div class="user-profile" id="user-profile-btn">
@@ -1769,16 +1899,14 @@
                     </svg>
                 </button>
 
-                <div id="move-tool-wrapper" class="tool-group">
-                    <button id="move-btn" class="tool-btn tool-action rounded-md hover:bg-gray-200" title="Move (1)" aria-label="Move tool">
+                <div id="select-tool-wrapper" class="tool-group">
+                    <button id="select-btn" class="tool-btn tool-action rounded-md hover:bg-gray-200" title="Select (1)" aria-label="Select tool">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 pointer-events-none">
-                            <path d="M12 3v18"></path>
-                            <path d="m8 7 4-4 4 4"></path>
-                            <path d="m8 17 4 4 4-4"></path>
-                            <path d="M3 12h18"></path>
+                            <path d="M3 3l7.07 17 2.51-7.39L20 10.07Z"></path>
+                            <path d="m13 13 6 6"></path>
                         </svg>
                     </button>
-                    <div class="tool-meta"><span class="tool-label">Move</span><span class="tool-shortcut">1</span></div>
+                    <div class="tool-meta"><span class="tool-label">Select</span><span class="tool-shortcut">1</span></div>
                 </div>
                 <div id="pen-tool-wrapper" class="tool-group">
                     <div id="pen-config-group" class="tool-config-group">
@@ -1896,8 +2024,8 @@
                     <path d="M12 17h.01"></path>
                 </svg>
             </button>
-            <button id="theme-toggle-btn" class="board-theme-toggle" type="button" title="Toggle dark mode" aria-label="Toggle dark mode" aria-pressed="false">
-                <svg id="theme-toggle-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <button id="theme-toggle-btn-board" class="board-theme-toggle theme-toggle-secondary" type="button" title="Toggle dark mode" aria-label="Toggle dark mode" aria-pressed="false">
+                <svg class="theme-toggle-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
                 </svg>
             </button>
@@ -1935,6 +2063,11 @@
                     <button id="guide-next-btn" type="button">Next</button>
                 </div>
             </section>
+        </div>
+        <div id="selection-context-menu" class="selection-context-menu" aria-hidden="true">
+            <button type="button" data-selection-action="copy">Copy</button>
+            <button type="button" data-selection-action="paste">Paste</button>
+            <button type="button" data-selection-action="delete">Delete</button>
         </div>
         <div id="custom-cursor-circle"></div>
         <div id="custom-cursor-eraser">
@@ -2077,6 +2210,42 @@
             </div>
         </div>
     </div>
+
+    <div id="rect-popover" class="popover">
+        <div class="flex flex-col gap-4">
+            <div class="flex flex-col items-center">
+                <label class="text-sm font-medium text-gray-700 mb-2">Quadrilateral</label>
+                <div class="shape-option-grid">
+                    <button class="shape-option active" data-quad-type="rect">Rectangle</button>
+                    <button class="shape-option" data-quad-type="rhombus">Rhombus</button>
+                    <button class="shape-option" data-quad-type="parallelogram">Parallelogram</button>
+                    <button class="shape-option" data-quad-type="kite">Kite</button>
+                </div>
+            </div>
+            <div class="flex flex-col items-center">
+                <label class="text-sm font-medium text-gray-700 mb-2">Thickness</label>
+                <div class="thickness-control" data-type="shape">
+                    <button data-action="decrease" title="Decrease size">-</button>
+                    <input type="number" class="th-input" min="1" max="500" value="5">
+                    <button data-action="increase" title="Increase size">+</button>
+                </div>
+                <span id="shape-size-label" class="text-xs text-gray-500 mt-1">5px</span>
+            </div>
+        </div>
+    </div>
+    <div id="circle-popover" class="popover">
+        <div class="flex flex-col gap-4">
+            <div class="flex flex-col items-center">
+                <label class="text-sm font-medium text-gray-700 mb-2">Thickness</label>
+                <div class="thickness-control" data-type="shape-circle">
+                    <button data-action="decrease" title="Decrease size">-</button>
+                    <input type="number" class="th-input" min="1" max="500" value="5">
+                    <button data-action="increase" title="Increase size">+</button>
+                </div>
+                <span class="shape-size-label text-xs text-gray-500 mt-1">5px</span>
+            </div>
+        </div>
+    </div>
     <div id="triangle-popover" class="popover">
         <div class="flex flex-col gap-4">
             <div class="flex flex-col items-center">
@@ -2095,6 +2264,15 @@
                         <span>Equilateral</span>
                     </button>
                 </div>
+            </div>
+            <div class="flex flex-col items-center">
+                <label class="text-sm font-medium text-gray-700 mb-2">Thickness</label>
+                <div class="thickness-control" data-type="shape-triangle">
+                    <button data-action="decrease" title="Decrease size">-</button>
+                    <input type="number" class="th-input" min="1" max="500" value="5">
+                    <button data-action="increase" title="Increase size">+</button>
+                </div>
+                <span class="shape-size-label text-xs text-gray-500 mt-1">5px</span>
             </div>
         </div>
     </div>
@@ -2159,6 +2337,16 @@
 
     // --- Authentication ---
 
+    function renderGoogleSignInButton() {
+        const btnDiv = document.getElementById('buttonDiv');
+        if (!btnDiv || typeof google === 'undefined' || !google.accounts?.id) return;
+        btnDiv.innerHTML = '';
+        google.accounts.id.renderButton(
+            btnDiv,
+            { theme: document.body.classList.contains('dark-mode') ? 'filled_black' : 'outline', size: 'large', locale: 'en' }
+        );
+    }
+
     window.initGoogleAuth = function() {
         console.log("initGoogleAuth called");
         if (typeof google === 'undefined' || !google.accounts) {
@@ -2185,13 +2373,7 @@
             console.log("buttonDiv display style:", btnDiv ? btnDiv.style.display : 'element not found');
 
             if (btnDiv) {
-                // Clear any previous error messages
-                btnDiv.innerHTML = '';
-
-                google.accounts.id.renderButton(
-                    btnDiv,
-                    { theme: 'outline', size: 'large', locale: 'en' }
-                );
+                renderGoogleSignInButton();
                 console.log("Google Sign-In button rendered successfully");
 
             } else {
@@ -2405,7 +2587,7 @@
             cancelBtn.click();
           }
         };
-      }); I'm
+      });
     }
 
     // --- View Management ---
@@ -2948,13 +3130,14 @@
             const toolbarWrapper = document.getElementById('toolbar-wrapper');
             const logoContainer = document.querySelector('#whiteboard-view .header-logo-container');
             const accountContainer = document.querySelector('#whiteboard-view .header-account-container');
+            const themeToggleButtons = Array.from(document.querySelectorAll('#theme-toggle-btn, #theme-toggle-btn-board'));
             const themeToggleBtn = document.getElementById('theme-toggle-btn');
-            const themeToggleIcon = document.getElementById('theme-toggle-icon');
+            const themeToggleIcons = Array.from(document.querySelectorAll('.theme-toggle-icon'));
             const zoomSlider = document.getElementById('zoom-slider');
             const zoomValueLabel = document.getElementById('zoom-value-label');
 
             // (Tool Buttons)
-            const moveBtn = document.getElementById('move-btn');
+            const selectBtn = document.getElementById('select-btn');
             const penBtn = document.getElementById('pen-btn');
             const eraserBtn = document.getElementById('eraser-btn');
             const textBtn = document.getElementById('text-btn');
@@ -2981,7 +3164,11 @@
             const guideNextBtn = document.getElementById('guide-next-btn');
             const guideCloseBtn = document.getElementById('guide-close-btn');
             const trianglePopover = document.getElementById('triangle-popover');
+            const rectPopover = document.getElementById('rect-popover');
+            const circlePopover = document.getElementById('circle-popover');
             const triangleOptionButtons = trianglePopover ? Array.from(trianglePopover.querySelectorAll('.triangle-option')) : [];
+            const quadrilateralOptionButtons = rectPopover ? Array.from(rectPopover.querySelectorAll('.shape-option[data-quad-type]')) : [];
+            const selectionContextMenu = document.getElementById('selection-context-menu');
 
             // Text tool elements
             const textInputOverlay = document.getElementById('text-input-overlay');
@@ -3035,13 +3222,15 @@
             const objectEraserBtn = document.getElementById('object-eraser-btn');
             const pixelEraserBtn = document.getElementById('pixel-eraser-btn');
             const eraserPreview = document.getElementById('eraser-preview');
+            const shapeThicknessControls = Array.from(document.querySelectorAll('.thickness-control[data-type^="shape"]'));
+            const shapeSizeLabels = Array.from(document.querySelectorAll('#shape-size-label, .shape-size-label'));
 
             // (Canvas Popover)
             const bgColorPicker = document.getElementById('bg-color-picker');
             const bgPatternSelector = document.getElementById('bg-pattern');
 
             const toolButtons = [
-                { el: moveBtn, tool: 'move' },
+                { el: selectBtn, tool: 'select' },
                 { el: penBtn, tool: 'pen' },
                 { el: eraserBtn, tool: 'eraser' },
                 { el: textBtn, tool: 'text' },
@@ -3077,6 +3266,10 @@
             let currentBrushSize = 5;
             let currentTool = 'pen';
             let originalTool = 'pen';
+            let activePenTool = 'pen';
+            let activeTouchTool = 'pen';
+            let activePointerId = null;
+            let drawingTool = null;
             let currentPenType = 'default';
             let currentLineStyle = 'solid';
             let currentResizeHandle = null;
@@ -3084,15 +3277,21 @@
             let rotateStartValue = 0;
             let activeStrokeCenter = null;
             let selectedStrokeIndex = -1;
+            let selectedStrokeIndices = new Set();
+            let selectionBounds = null;
+            let lassoPath = null;
+            let clipboardStrokes = [];
             let movingStrokeIndex = -1;
             let lastMovePoint = null;
             let hasMovedShape = false;
-            let moveInteractionMode = 'none'; // 'none' | 'move' | 'resize'
+            let moveInteractionMode = 'none'; // 'none' | 'select' | 'resize'
 
             let currentEraserMode = 'object';
             let currentEraserSize = 20;
             let currentPenMode = 'draw';
             let currentTriangleType = 'isosceles';
+            let currentQuadrilateralType = 'rect';
+            let currentShapeSize = 5;
 
             let backgroundColor = '#FFFFFF';
             let backgroundPattern = 'plain';
@@ -3295,15 +3494,16 @@
             function applyThemeMode(mode) {
                 isDarkMode = mode === 'dark';
                 document.body.classList.toggle('dark-mode', isDarkMode);
-                if (themeToggleBtn) {
-                    themeToggleBtn.setAttribute('aria-pressed', String(isDarkMode));
-                    themeToggleBtn.setAttribute('title', isDarkMode ? 'Switch to light mode' : 'Switch to dark mode');
-                }
-                if (themeToggleIcon) {
-                    themeToggleIcon.innerHTML = isDarkMode
+                themeToggleButtons.forEach((button) => {
+                    button.setAttribute('aria-pressed', String(isDarkMode));
+                    button.setAttribute('title', isDarkMode ? 'Switch to light mode' : 'Switch to dark mode');
+                });
+                themeToggleIcons.forEach((icon) => {
+                    icon.innerHTML = isDarkMode
                         ? '<path d="M12 3a9 9 0 1 0 9 9 7 7 0 1 1-9-9Z"></path>'
                         : '<circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="M4.93 4.93 6.34 6.34"></path><path d="M17.66 17.66 19.07 19.07"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="M4.93 19.07 6.34 17.66"></path><path d="M17.66 6.34 19.07 4.93"></path>';
-                }
+                });
+                renderGoogleSignInButton();
                 try {
                     localStorage.setItem('whiteboardThemeMode', isDarkMode ? 'dark' : 'light');
                 } catch (e) {
@@ -3312,11 +3512,80 @@
             }
 
             function closeAllToolPopovers() {
-                penPopover.classList.remove('active');
-                eraserPopover.classList.remove('active');
-                canvasPopover.classList.remove('active');
-                trianglePopover.classList.remove('active');
-                linePopover.classList.remove('active');
+                [penPopover, eraserPopover, canvasPopover, trianglePopover, linePopover, rectPopover, circlePopover].forEach((popover) => {
+                    if (popover) popover.classList.remove('active');
+                });
+            }
+
+            function isSelectTool(tool = currentTool) {
+                return tool === 'select' || tool === 'move';
+            }
+
+            function getAssignmentPointerType(pointerType = 'mouse') {
+                return pointerType === 'pen' ? 'pen' : 'touch';
+            }
+
+            function getToolForPointer(pointerType = 'mouse') {
+                return getAssignmentPointerType(pointerType) === 'pen' ? activePenTool : activeTouchTool;
+            }
+
+            function assignToolForPointer(tool, pointerType = 'mouse') {
+                if (getAssignmentPointerType(pointerType) === 'pen') {
+                    activePenTool = tool;
+                } else {
+                    activeTouchTool = tool;
+                }
+                currentTool = tool;
+                originalTool = tool;
+                updateActiveToolButton(tool);
+            }
+
+            function updateToolInputIndicators() {
+                toolButtons.forEach(({ el, tool }) => {
+                    if (!el) return;
+                    let holder = el.querySelector('.tool-input-indicators');
+                    if (!holder) {
+                        holder = document.createElement('span');
+                        holder.className = 'tool-input-indicators';
+                        el.appendChild(holder);
+                    }
+                    holder.innerHTML = '';
+                    if (activePenTool === tool) {
+                        const dot = document.createElement('span');
+                        dot.className = 'tool-input-indicator pen';
+                        dot.title = 'Pen tool assignment';
+                        holder.appendChild(dot);
+                    }
+                    if (activeTouchTool === tool) {
+                        const dot = document.createElement('span');
+                        dot.className = 'tool-input-indicator touch';
+                        dot.title = 'Touch/mouse tool assignment';
+                        holder.appendChild(dot);
+                    }
+                });
+            }
+
+            function clearSelection({ hideMenu = true } = {}) {
+                selectedStrokeIndex = -1;
+                selectedStrokeIndices.clear();
+                selectionBounds = null;
+                lassoPath = null;
+                if (hideMenu) hideSelectionContextMenu();
+            }
+
+            function hideSelectionContextMenu() {
+                if (!selectionContextMenu) return;
+                selectionContextMenu.classList.remove('active');
+                selectionContextMenu.setAttribute('aria-hidden', 'true');
+            }
+
+            function showSelectionContextMenu() {
+                if (!selectionContextMenu || !selectionBounds || selectedStrokeIndices.size === 0) return;
+                const screen = worldToScreen((selectionBounds.minX + selectionBounds.maxX) / 2, selectionBounds.minY);
+                selectionContextMenu.style.left = `${Math.max(8, Math.min(window.innerWidth - 180, screen.x - 80))}px`;
+                selectionContextMenu.style.top = `${Math.max(8, screen.y - 48)}px`;
+                selectionContextMenu.classList.add('active');
+                selectionContextMenu.setAttribute('aria-hidden', 'false');
             }
 
             function updateToolbarDock(position, persist = true) {
@@ -3421,6 +3690,11 @@
                     canvas: canvasPopover,
                     triangle: trianglePopover,
                     line: linePopover,
+                    rect: rectPopover,
+                    circle: circlePopover,
+                    rhombus: rectPopover,
+                    parallelogram: rectPopover,
+                    kite: rectPopover,
                 };
                 const popover = popoverMap[tool];
                 if (!popover || !buttonEl) return;
@@ -3430,9 +3704,7 @@
                 popover.style.display = '';
             }
 
-            function selectTool(tool, { keepSettingsOpen = false } = {}) {
-                currentTool = tool;
-                originalTool = tool;
+            function selectTool(tool, { keepSettingsOpen = false, pointerType = 'mouse' } = {}) {
                 if (!keepSettingsOpen) {
                     if (tool === 'pen') {
                         currentPenMode = 'draw';
@@ -3442,7 +3714,7 @@
                         updateEraserModeButtons();
                     }
                 }
-                updateActiveToolButton(tool);
+                assignToolForPointer(tool, pointerType);
                 if (!keepSettingsOpen) {
                     closeAllToolPopovers();
                 }
@@ -3453,8 +3725,8 @@
                 }
             }
 
-            function showToolSettings(tool, buttonEl) {
-                selectTool(tool, { keepSettingsOpen: true });
+            function showToolSettings(tool, buttonEl, pointerType = 'mouse') {
+                selectTool(tool, { keepSettingsOpen: true, pointerType });
                 openToolPopover(tool, buttonEl);
             }
 
@@ -3510,6 +3782,7 @@
                 if (svg) {
                     svg.classList.add('w-7', 'h-7', 'pointer-events-none');
                 }
+                updateToolInputIndicators();
             }
 
             function updateLineStyleButtons() {
@@ -3564,11 +3837,11 @@
                     });
                     button.addEventListener('dragstart', (event) => {
                         event.dataTransfer.setData('text/plain', String(index));
-                        event.dataTransfer.effectAllowed = 'move';
+                        event.dataTransfer.effectAllowed = 'select';
                     });
                     button.addEventListener('dragover', (event) => {
                         event.preventDefault();
-                        event.dataTransfer.dropEffect = 'move';
+                        event.dataTransfer.dropEffect = 'select';
                     });
                     button.addEventListener('drop', (event) => {
                         event.preventDefault();
@@ -3584,11 +3857,11 @@
                     row.innerHTML = `<span>${config.type || 'default'} ${config.size || 5}px</span>`;
                     row.addEventListener('dragstart', (event) => {
                         event.dataTransfer.setData('text/plain', String(index));
-                        event.dataTransfer.effectAllowed = 'move';
+                        event.dataTransfer.effectAllowed = 'select';
                     });
                     row.addEventListener('dragover', (event) => {
                         event.preventDefault();
-                        event.dataTransfer.dropEffect = 'move';
+                        event.dataTransfer.dropEffect = 'select';
                     });
                     row.addEventListener('drop', (event) => {
                         event.preventDefault();
@@ -3652,7 +3925,7 @@
                 });
             }
 
-            function handleToolPress(tool, buttonEl) {
+            function handleToolPress(tool, buttonEl, pointerType = 'mouse') {
                 if (suppressNextToolClick) {
                     suppressNextToolClick = false;
                     return;
@@ -3662,9 +3935,9 @@
                 lastToolTapButton = buttonEl;
                 lastToolTapAt = now;
                 activeToolSettingsButton = buttonEl;
-                selectTool(tool);
+                selectTool(tool, { pointerType });
                 if (isRepeatTap) {
-                    showToolSettings(tool, buttonEl);
+                    showToolSettings(tool, buttonEl, pointerType);
                     return;
                 }
             }
@@ -3673,18 +3946,20 @@
                 if (!buttonEl) return;
                 buttonEl.addEventListener('click', (event) => {
                     event.stopPropagation();
-                    handleToolPress(tool, buttonEl);
+                    const pointerType = buttonEl.dataset.lastPointerType || 'mouse';
+                    handleToolPress(tool, buttonEl, pointerType);
                 });
                 if (hasSettings) {
                     buttonEl.addEventListener('pointerdown', (event) => {
                         if (event.pointerType === 'mouse' && event.button !== 0) return;
                         clearTimeout(activeToolSettingsTimer);
                         activeToolSettingsButton = buttonEl;
+                        buttonEl.dataset.lastPointerType = event.pointerType || 'mouse';
                         toolbarDragState = toolbarDragState || {};
                         toolbarDragState.lastTapAt = toolbarDragState.lastTapAt || 0;
                         activeToolSettingsTimer = setTimeout(() => {
                             suppressNextToolClick = true;
-                            showToolSettings(tool, buttonEl);
+                            showToolSettings(tool, buttonEl, event.pointerType || 'mouse');
                         }, TOOL_LONG_PRESS_DURATION);
                     });
                     const cancelPress = () => {
@@ -3697,7 +3972,7 @@
                     buttonEl.addEventListener('dblclick', (event) => {
                         event.preventDefault();
                         suppressNextToolClick = true;
-                        showToolSettings(tool, buttonEl);
+                        showToolSettings(tool, buttonEl, buttonEl.dataset.lastPointerType || 'mouse');
                     });
                 }
             }
@@ -4148,11 +4423,21 @@
                         ctx.setLineDash([]);
                         return;
                     case 'rect':
+                    case 'rhombus':
+                    case 'parallelogram':
+                    case 'kite': {
                         if (stroke.points.length < 2) return;
-                        const p1 = stroke.points[0];
-                        const p2 = stroke.points[1];
-                        withStrokeRotation(stroke, () => ctx.strokeRect(p1.x, p1.y, p2.x - p1.x, p2.y - p1.y));
+                        const quadPoints = getQuadrilateralPoints(stroke);
+                        if (!quadPoints) return;
+                        withStrokeRotation(stroke, () => {
+                            ctx.beginPath();
+                            ctx.moveTo(quadPoints[0].x, quadPoints[0].y);
+                            for (let i = 1; i < quadPoints.length; i++) ctx.lineTo(quadPoints[i].x, quadPoints[i].y);
+                            ctx.closePath();
+                            ctx.stroke();
+                        });
                         return;
+                    }
                     case 'circle':
                         if (stroke.points.length < 2) return;
                         const center = stroke.points[0];
@@ -4281,6 +4566,14 @@
             function getDistance(p1, p2) {
                 return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
             }
+            function pointToSegmentDistance(point, a, b) {
+                const dx = b.x - a.x;
+                const dy = b.y - a.y;
+                const lengthSq = dx * dx + dy * dy;
+                if (lengthSq === 0) return getDistance(point, a);
+                const t = Math.max(0, Math.min(1, ((point.x - a.x) * dx + (point.y - a.y) * dy) / lengthSq));
+                return getDistance(point, { x: a.x + t * dx, y: a.y + t * dy });
+            }
             function isPointNearStroke(worldPoint, stroke) {
                 // Handle text
                 if (stroke.type === 'text') {
@@ -4300,7 +4593,8 @@
 
                 const testPoint = pointToStrokeLocal(worldPoint, stroke);
                 const screenPixelTolerance = 5 / viewZoom;
-                const tolerance = (currentEraserMode === 'object' ? currentEraserSize : stroke.size) + screenPixelTolerance;
+                const baseTolerance = (currentEraserMode === 'object' && currentTool === 'eraser' ? currentEraserSize : (stroke.size || currentShapeSize || 1)) + screenPixelTolerance;
+                const tolerance = isSelectTool(currentTool) ? baseTolerance * 1.5 : baseTolerance;
                 switch (stroke.tool) {
                     case 'pen':
                     case 'highlighter':
@@ -4311,23 +4605,25 @@
                         return dots.some(p => getDistance(testPoint, p) < tolerance);
                     }
                     case 'line':
-                    case 'split':
-                    case 'rect':
-                    case 'circle':
+                    case 'split': {
                         const p1 = stroke.points[0];
                         const p2 = stroke.points[1];
-                        const minX = Math.min(p1.x, p2.x) - tolerance;
-                        const maxX = Math.max(p1.x, p2.x) + tolerance;
-                        const minY = Math.min(p1.y, p2.y) - tolerance;
-                        const maxY = Math.max(p1.y, p2.y) + tolerance;
-                        if (stroke.tool === 'circle') {
-                            const center = stroke.points[0];
-                            const radius = getDistance(stroke.points[0], stroke.points[1]);
-                            const distToCenter = getDistance(testPoint, center);
-                            return Math.abs(distToCenter - radius) < tolerance;
-                        }
-                        return (testPoint.x >= minX && testPoint.x <= maxX &&
-                                testPoint.y >= minY && testPoint.y <= maxY);
+                        return pointToSegmentDistance(testPoint, p1, p2) <= tolerance;
+                    }
+                    case 'rect':
+                    case 'rhombus':
+                    case 'parallelogram':
+                    case 'kite': {
+                        const quadPoints = getQuadrilateralPoints(stroke);
+                        if (!quadPoints) return false;
+                        return pointInPolygon(testPoint, quadPoints) || quadPoints.some((point, idx) => pointToSegmentDistance(testPoint, point, quadPoints[(idx + 1) % quadPoints.length]) <= tolerance);
+                    }
+                    case 'circle': {
+                        const center = stroke.points[0];
+                        const radius = getDistance(stroke.points[0], stroke.points[1]);
+                        const distToCenter = getDistance(testPoint, center);
+                        return distToCenter <= radius + tolerance;
+                    }
                     case 'triangle': {
                         const trianglePoints = getTrianglePoints(stroke);
                         if (!trianglePoints) return false;
@@ -4343,7 +4639,7 @@
                         const area1 = Math.abs((testPoint.x * (b.y - c.y) + b.x * (c.y - testPoint.y) + c.x * (testPoint.y - b.y)) / 2);
                         const area2 = Math.abs((a.x * (testPoint.y - c.y) + testPoint.x * (c.y - a.y) + c.x * (a.y - testPoint.y)) / 2);
                         const area3 = Math.abs((a.x * (b.y - testPoint.y) + b.x * (testPoint.y - a.y) + testPoint.x * (a.y - b.y)) / 2);
-                        return Math.abs(area - (area1 + area2 + area3)) <= Math.max(1.5, tolerance * 0.2);
+                        return pointInPolygon(testPoint, trianglePoints) || Math.abs(area - (area1 + area2 + area3)) <= Math.max(1.5, tolerance * 0.2);
                     }
                 }
                 return false;
@@ -4362,6 +4658,10 @@
                         } else if (selectedStrokeIndex > i) {
                             selectedStrokeIndex--;
                         }
+                        selectedStrokeIndices = new Set(Array.from(selectedStrokeIndices)
+                            .filter((index) => index !== i)
+                            .map((index) => index > i ? index - 1 : index));
+                        computeSelectionBounds();
                         didDelete = true;
                         break;
                     }
@@ -4373,7 +4673,7 @@
             }
 
             function isShapeStroke(stroke) {
-                return stroke && ['line', 'rect', 'circle', 'triangle'].includes(stroke.tool);
+                return stroke && ['line', 'rect', 'circle', 'triangle', 'rhombus', 'parallelogram', 'kite'].includes(stroke.tool);
             }
 
             function getStrokeBounds(stroke) {
@@ -4428,6 +4728,18 @@
                         maxY: p1.y + radius
                     };
                 }
+                if (['rect', 'rhombus', 'parallelogram', 'kite'].includes(stroke.tool)) {
+                    const quadPoints = getQuadrilateralPoints(stroke);
+                    if (!quadPoints) return null;
+                    const xs = quadPoints.map(p => p.x);
+                    const ys = quadPoints.map(p => p.y);
+                    return {
+                        minX: Math.min(...xs),
+                        maxX: Math.max(...xs),
+                        minY: Math.min(...ys),
+                        maxY: Math.max(...ys)
+                    };
+                }
                 if (stroke.tool === 'triangle') {
                     const trianglePoints = getTrianglePoints(stroke);
                     if (!trianglePoints) return null;
@@ -4448,10 +4760,121 @@
                 };
             }
 
-            function drawSelectionOverlay() {
-                if (currentTool !== 'move' || selectedStrokeIndex < 0 || selectedStrokeIndex >= strokes.length) return;
-                const stroke = strokes[selectedStrokeIndex];
+            function getQuadrilateralPoints(stroke) {
+                if (!stroke?.points || stroke.points.length < 2) return null;
+                const p1 = stroke.points[0];
+                const p2 = stroke.points[1];
+                const minX = Math.min(p1.x, p2.x);
+                const maxX = Math.max(p1.x, p2.x);
+                const minY = Math.min(p1.y, p2.y);
+                const maxY = Math.max(p1.y, p2.y);
+                const w = maxX - minX;
+                const h = maxY - minY;
+                const cx = (minX + maxX) / 2;
+                const cy = (minY + maxY) / 2;
+                switch (stroke.tool) {
+                    case 'rhombus':
+                        return [{ x: cx, y: minY }, { x: maxX, y: cy }, { x: cx, y: maxY }, { x: minX, y: cy }];
+                    case 'parallelogram': {
+                        const skew = Math.max(8, Math.abs(w) * 0.22);
+                        return [{ x: minX + skew, y: minY }, { x: maxX, y: minY }, { x: maxX - skew, y: maxY }, { x: minX, y: maxY }];
+                    }
+                    case 'kite':
+                        return [{ x: cx, y: minY }, { x: maxX, y: cy }, { x: cx, y: maxY }, { x: minX + w * 0.18, y: cy }];
+                    case 'rect':
+                        return [{ x: minX, y: minY }, { x: maxX, y: minY }, { x: maxX, y: maxY }, { x: minX, y: maxY }];
+                    default:
+                        return null;
+                }
+            }
+
+            function pointInPolygon(point, polygon) {
+                if (!Array.isArray(polygon) || polygon.length < 3) return false;
+                let inside = false;
+                for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+                    const xi = polygon[i].x, yi = polygon[i].y;
+                    const xj = polygon[j].x, yj = polygon[j].y;
+                    const intersects = ((yi > point.y) !== (yj > point.y)) &&
+                        (point.x < ((xj - xi) * (point.y - yi)) / ((yj - yi) || 1e-9) + xi);
+                    if (intersects) inside = !inside;
+                }
+                return inside;
+            }
+
+            function getStrokeSamplePoints(stroke) {
                 const bounds = getStrokeBounds(stroke);
+                const samples = [];
+                if (stroke.type === 'text' || !stroke.points) {
+                    if (bounds) samples.push({ x: (bounds.minX + bounds.maxX) / 2, y: (bounds.minY + bounds.maxY) / 2 });
+                    return samples;
+                }
+                if (['rect', 'rhombus', 'parallelogram', 'kite'].includes(stroke.tool)) {
+                    const pts = getQuadrilateralPoints(stroke);
+                    if (pts) samples.push(...pts);
+                } else if (stroke.tool === 'triangle') {
+                    const pts = getTrianglePoints(stroke);
+                    if (pts) samples.push(...pts);
+                } else if (stroke.tool === 'circle' && bounds) {
+                    samples.push({ x: (bounds.minX + bounds.maxX) / 2, y: (bounds.minY + bounds.maxY) / 2 });
+                }
+                samples.push(...(stroke.points || []), ...(stroke.dots || []));
+                if (bounds) samples.push({ x: (bounds.minX + bounds.maxX) / 2, y: (bounds.minY + bounds.maxY) / 2 });
+                return samples;
+            }
+
+            function computeSelectionBounds() {
+                const selectedBounds = Array.from(selectedStrokeIndices)
+                    .map((index) => getStrokeBounds(strokes[index]))
+                    .filter(Boolean);
+                if (selectedBounds.length === 0) {
+                    selectionBounds = null;
+                    return null;
+                }
+                selectionBounds = {
+                    minX: Math.min(...selectedBounds.map((b) => b.minX)),
+                    maxX: Math.max(...selectedBounds.map((b) => b.maxX)),
+                    minY: Math.min(...selectedBounds.map((b) => b.minY)),
+                    maxY: Math.max(...selectedBounds.map((b) => b.maxY))
+                };
+                return selectionBounds;
+            }
+
+            function selectStrokesInsideLasso() {
+                selectedStrokeIndices.clear();
+                if (!lassoPath || lassoPath.length < 3) {
+                    computeSelectionBounds();
+                    return;
+                }
+                strokes.forEach((stroke, index) => {
+                    const samples = getStrokeSamplePoints(stroke);
+                    if (samples.length && samples.some((point) => pointInPolygon(point, lassoPath))) {
+                        selectedStrokeIndices.add(index);
+                    }
+                });
+                selectedStrokeIndex = selectedStrokeIndices.size === 1 ? Array.from(selectedStrokeIndices)[0] : -1;
+                computeSelectionBounds();
+                showSelectionContextMenu();
+            }
+
+            function isPointInBounds(point, bounds, padding = 0) {
+                return !!bounds && point.x >= bounds.minX - padding && point.x <= bounds.maxX + padding && point.y >= bounds.minY - padding && point.y <= bounds.maxY + padding;
+            }
+
+            function drawSelectionOverlay() {
+                if (lassoPath && lassoPath.length > 1) {
+                    ctx.save();
+                    ctx.strokeStyle = '#2563eb';
+                    ctx.fillStyle = 'rgba(37, 99, 235, 0.08)';
+                    ctx.lineWidth = 1.5 / viewZoom;
+                    ctx.setLineDash([6 / viewZoom, 4 / viewZoom]);
+                    ctx.beginPath();
+                    ctx.moveTo(lassoPath[0].x, lassoPath[0].y);
+                    for (let i = 1; i < lassoPath.length; i++) ctx.lineTo(lassoPath[i].x, lassoPath[i].y);
+                    ctx.stroke();
+                    ctx.restore();
+                }
+                if (!isSelectTool(currentTool) || selectedStrokeIndices.size === 0) return;
+                const bounds = computeSelectionBounds();
                 if (!bounds) return;
                 const pad = 8 / viewZoom;
                 ctx.save();
@@ -4459,12 +4882,11 @@
                 ctx.fillStyle = '#ffffff';
                 ctx.lineWidth = 1.5 / viewZoom;
                 ctx.setLineDash([6 / viewZoom, 4 / viewZoom]);
-                withStrokeRotation(stroke, () => {
-                    ctx.strokeRect(bounds.minX - pad, bounds.minY - pad, (bounds.maxX - bounds.minX) + pad * 2, (bounds.maxY - bounds.minY) + pad * 2);
-                });
+                ctx.strokeRect(bounds.minX - pad, bounds.minY - pad, (bounds.maxX - bounds.minX) + pad * 2, (bounds.maxY - bounds.minY) + pad * 2);
                 ctx.setLineDash([]);
 
-                if (isShapeStroke(stroke)) {
+                const stroke = selectedStrokeIndex >= 0 ? strokes[selectedStrokeIndex] : null;
+                if (stroke && selectedStrokeIndices.size === 1 && isShapeStroke(stroke)) {
                     const handles = getShapeResizeHandles(stroke);
                     const handleSize = 10 / viewZoom;
                     for (const handle of handles) {
@@ -4558,7 +4980,7 @@
                     }
                 }
                 const hitIndex = findSelectableStrokeIndex(worldPoint);
-                return hitIndex !== -1 ? 'move' : 'default';
+                return hitIndex !== -1 ? 'select' : 'default';
             }
 
             function moveStrokeBy(stroke, dx, dy) {
@@ -5059,15 +5481,15 @@
                     return;
                 }
 
-                // === STYLUS DETECTION ===
-                // If stylus is detected, force pen tool
-                if (e.pointerType === 'pen') {
-                    selectTool('pen');
-                }
-
                 // === BLOCK RIGHT-CLICK ===
                 // Ignore right-click completely
                 if (e.pointerType === 'mouse' && e.button !== 0) return;
+
+                if (activePointerId !== null && activePointerId !== e.pointerId) return;
+                activePointerId = e.pointerId;
+                currentTool = getToolForPointer(e.pointerType);
+                drawingTool = currentTool;
+                updateActiveToolButton(currentTool);
 
                 // Text tool handling
                 if (currentTool === 'text') {
@@ -5078,6 +5500,8 @@
                     textInputOverlay.dataset.x = worldPoint.x;
                     textInputOverlay.dataset.y = worldPoint.y;
                     positionTextOverlay(screenX, screenY);
+                    activePointerId = null;
+                    drawingTool = null;
                     return;
                 }
 
@@ -5112,11 +5536,23 @@
                     isPanning = true;
                     lastPanPos = { x: screenX, y: screenY };
                     canvas.classList.add('panning');
+                    canvas.setPointerCapture?.(e.pointerId);
                     return;
                 }
-                if (currentTool === 'move') {
+                if (isSelectTool(currentTool)) {
+                    hideSelectionContextMenu();
                     const selectedStroke = selectedStrokeIndex >= 0 ? strokes[selectedStrokeIndex] : null;
                     const resizeHandle = selectedStroke ? isPointOnResizeHandle(worldPoint, selectedStroke) : null;
+
+                    if (selectionBounds && selectedStrokeIndices.size > 1 && isPointInBounds(worldPoint, selectionBounds, 8 / viewZoom)) {
+                        movingStrokeIndex = -2;
+                        moveInteractionMode = 'move-selection';
+                        lastMovePoint = worldPoint;
+                        hasMovedShape = false;
+                        isDrawing = true;
+                        canvas.setPointerCapture?.(e.pointerId);
+                        return;
+                    }
 
                     if (resizeHandle) {
                         // === CLICKING ON RESIZE HANDLE ===
@@ -5141,23 +5577,28 @@
                     const selectableIndex = findSelectableStrokeIndex(worldPoint);
                     if (selectableIndex !== -1) {
                         selectedStrokeIndex = selectableIndex;
+                        selectedStrokeIndices = new Set([selectableIndex]);
+                        computeSelectionBounds();
                         movingStrokeIndex = selectableIndex;
-                        moveInteractionMode = 'move';
+                        moveInteractionMode = 'select';
                         lastMovePoint = worldPoint;
                         hasMovedShape = false;
                         isDrawing = true;
                     } else {
-                        selectedStrokeIndex = -1;
-                        isDrawing = false;
+                        clearSelection();
                         movingStrokeIndex = -1;
-                        moveInteractionMode = 'none';
-                        lastMovePoint = null;
+                        moveInteractionMode = 'lasso';
+                        lastMovePoint = worldPoint;
                         hasMovedShape = false;
+                        lassoPath = [worldPoint];
+                        isDrawing = true;
+                        canvas.setPointerCapture?.(e.pointerId);
                     }
                     render();
                     return;
                 }
                 isDrawing = true;
+                canvas.setPointerCapture?.(e.pointerId);
                 if (currentTool === 'eraser') {
                     if (currentEraserMode === 'object') {
                         eraserHistorySnapshot = null;
@@ -5174,9 +5615,10 @@
                         return;
                     }
                 }
-                const strokeTool = currentTool === 'pen' ? (currentPenType === 'spray' ? 'spray' : currentPenType === 'highlighter' ? 'highlighter' : 'pen') : currentTool;
+                const strokeTool = currentTool === 'pen' ? (currentPenType === 'spray' ? 'spray' : currentPenType === 'highlighter' ? 'highlighter' : 'pen') : (currentTool === 'rect' ? currentQuadrilateralType : currentTool);
                 const startPoint = makeStrokePoint(worldPoint, e.timeStamp || Date.now());
-                currentPath = { id: Date.now(), tool: strokeTool, color: currentColor, size: currentBrushSize, points: [startPoint], paneId: activePaneId };
+                const strokeSize = ['line', 'rect', 'circle', 'triangle', 'rhombus', 'parallelogram', 'kite'].includes(strokeTool) ? currentShapeSize : currentBrushSize;
+                currentPath = { id: Date.now(), tool: strokeTool, color: currentColor, size: strokeSize, points: [startPoint], paneId: activePaneId };
                 if (strokeTool === 'pen') {
                     currentPath.variableWidth = false;
                 }
@@ -5195,6 +5637,7 @@
             }
 
             function draw(e) {
+                if (activePointerId !== null && e.pointerId !== activePointerId) return;
                 if (touchHoldTimer) {
                     clearTimeout(touchHoldTimer);
                     touchHoldTimer = null;
@@ -5225,7 +5668,25 @@
                         }
                     }
                     const worldPoint = screenToWorld(screenX, screenY, activePaneId);
-                    if (currentTool === 'move') {
+                    if (isSelectTool(currentTool)) {
+                        if (moveInteractionMode === 'lasso' && lassoPath) {
+                            lassoPath.push(worldPoint);
+                            render();
+                            return;
+                        }
+                        if (moveInteractionMode === 'move-selection' && lastMovePoint) {
+                            const dx = worldPoint.x - lastMovePoint.x;
+                            const dy = worldPoint.y - lastMovePoint.y;
+                            if (dx !== 0 || dy !== 0) {
+                                if (!hasMovedShape) addHistoryAction();
+                                selectedStrokeIndices.forEach((index) => moveStrokeBy(strokes[index], dx, dy));
+                                lastMovePoint = worldPoint;
+                                hasMovedShape = true;
+                                computeSelectionBounds();
+                                render();
+                            }
+                            return;
+                        }
                         if (movingStrokeIndex !== -1 && lastMovePoint) {
                             if (moveInteractionMode === 'resize') {
                                 if (!hasMovedShape) {
@@ -5293,6 +5754,9 @@
                             case 'rect':
                             case 'circle':
                             case 'triangle':
+                            case 'rhombus':
+                            case 'parallelogram':
+                            case 'kite':
                                 currentPath.points[1] = snapPointToAxis(currentPath.points[0], worldPoint);
                                 break;
                         }
@@ -5301,7 +5765,8 @@
                 }
             }
 
-            function stopDrawing() {
+            function stopDrawing(e = null) {
+                if (e && activePointerId !== null && e.pointerId !== activePointerId) return;
                 if (touchHoldTimer) {
                     clearTimeout(touchHoldTimer);
                     touchHoldTimer = null;
@@ -5342,8 +5807,18 @@
                             }
                             currentPath = null;
                         }
-                    } else if (currentTool === 'move') {
-                        didChange = movingStrokeIndex !== -1 && hasMovedShape;
+                    } else if (isSelectTool(currentTool)) {
+                        if (moveInteractionMode === 'lasso') {
+                            selectStrokesInsideLasso();
+                            lassoPath = null;
+                            render();
+                            didChange = false;
+                        } else {
+                            didChange = movingStrokeIndex !== -1 && hasMovedShape;
+                            if (!hasMovedShape && selectedStrokeIndices.size) {
+                                showSelectionContextMenu();
+                            }
+                        }
                         movingStrokeIndex = -1;
                         moveInteractionMode = 'none';
                         currentResizeHandle = null;
@@ -5375,6 +5850,9 @@
                     isEraserGesture = false;
                     currentTool = originalTool;
                 }
+                if (e) canvas.releasePointerCapture?.(e.pointerId);
+                activePointerId = null;
+                drawingTool = null;
             }
 
             // --- Toolbar Event Listeners ---
@@ -5386,7 +5864,7 @@
                         btn.el.classList.remove('active');
                     }
                 });
-                if (activeTool === 'move') {
+                if (isSelectTool(activeTool)) {
                     canvas.style.cursor = 'grab';
                 } else {
                     // Changed from none to crosshair for safety if custom cursor fails
@@ -5394,11 +5872,12 @@
                 }
                 customCursorCircle.style.display = 'none';
                 customCursorEraser.style.display = 'none';
-                if (activeTool !== 'move') {
-                    selectedStrokeIndex = -1;
+                if (!isSelectTool(activeTool)) {
+                    clearSelection();
                     movingStrokeIndex = -1;
                     moveInteractionMode = 'none';
                 }
+                updateToolInputIndicators();
                 render();
             }
 
@@ -5418,13 +5897,10 @@
             setupToolButton(penBtn, 'pen', true);
             setupToolButton(eraserBtn, 'eraser', true);
             setupToolButton(textBtn, 'text', false);
-            setupToolButton(moveBtn, 'move', false);
+            setupToolButton(selectBtn, 'select', false);
+            setupToolButton(rectBtn, 'rect', true);
+            setupToolButton(circleBtn, 'circle', true);
             setupToolButton(triangleBtn, 'triangle', true);
-
-            moveBtn.addEventListener('click', () => {
-                closeAllToolPopovers();
-                selectTool('move');
-            });
 
             function updateEraserModeButtons() {
                 objectEraserBtn.classList.toggle('active', currentEraserMode === 'object');
@@ -5445,6 +5921,14 @@
                 button.addEventListener('click', () => {
                     currentTriangleType = button.dataset.triangleType || 'isosceles';
                     triangleOptionButtons.forEach((option) => option.classList.toggle('active', option === button));
+                });
+            });
+
+            quadrilateralOptionButtons.forEach((button) => {
+                button.addEventListener('click', () => {
+                    currentQuadrilateralType = button.dataset.quadType || 'rect';
+                    quadrilateralOptionButtons.forEach((option) => option.classList.toggle('active', option === button));
+                    selectTool('rect', { keepSettingsOpen: true, pointerType: button.dataset.lastPointerType || 'mouse' });
                 });
             });
 
@@ -5586,14 +6070,44 @@
                 }
             });
 
-            [lineBtn, rectBtn, circleBtn].forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const tool = toolButtons.find(b => b.el === btn).tool;
-                    closeAllToolPopovers();
-                    selectTool(tool);
-                });
-            });
             setupToolButton(lineBtn, 'line', true);
+
+
+            if (selectionContextMenu) {
+                selectionContextMenu.addEventListener('click', (event) => {
+                    const button = event.target.closest('button[data-selection-action]');
+                    if (!button) return;
+                    const action = button.dataset.selectionAction;
+                    if (action === 'copy') {
+                        clipboardStrokes = Array.from(selectedStrokeIndices).map((index) => JSON.parse(JSON.stringify(strokes[index])));
+                        showNotification(`${clipboardStrokes.length} item${clipboardStrokes.length === 1 ? '' : 's'} copied`, 'success');
+                    } else if (action === 'paste') {
+                        if (!clipboardStrokes.length) return;
+                        addHistoryAction();
+                        clearSelection({ hideMenu: false });
+                        clipboardStrokes.forEach((stroke) => {
+                            const pasted = JSON.parse(JSON.stringify(stroke));
+                            pasted.id = Date.now() + Math.random();
+                            moveStrokeBy(pasted, 24 / viewZoom, 24 / viewZoom);
+                            strokes.push(pasted);
+                            selectedStrokeIndices.add(strokes.length - 1);
+                        });
+                        selectedStrokeIndex = selectedStrokeIndices.size === 1 ? Array.from(selectedStrokeIndices)[0] : -1;
+                        computeSelectionBounds();
+                        saveStrokesAndSettings();
+                        render();
+                        showSelectionContextMenu();
+                    } else if (action === 'delete') {
+                        if (!selectedStrokeIndices.size) return;
+                        addHistoryAction();
+                        const indices = Array.from(selectedStrokeIndices).sort((a, b) => b - a);
+                        indices.forEach((index) => strokes.splice(index, 1));
+                        clearSelection();
+                        saveStrokesAndSettings();
+                        render();
+                    }
+                });
+            }
 
             undoBtn.addEventListener('click', undo);
             redoBtn.addEventListener('click', redo);
@@ -5623,6 +6137,13 @@
                         updatePenCursorSize();
                         penPreview.style.height = `${Math.min(currentBrushSize, 40)}px`;
                         updateMainPenIcon();
+                    } else if (type.startsWith('shape')) {
+                        currentShapeSize = newSize;
+                        shapeThicknessControls.forEach((control) => {
+                            const shapeInput = control.querySelector('input[type="number"]');
+                            if (shapeInput && shapeInput !== input) shapeInput.value = newSize;
+                        });
+                        shapeSizeLabels.forEach((label) => { label.textContent = `${newSize}px`; });
                     } else { // eraser
                         currentEraserSize = newSize;
                         eraserSizeLabel.textContent = `${newSize}px`;
@@ -5639,6 +6160,7 @@
             }
             setupThicknessControl(penThicknessControl);
             setupThicknessControl(eraserThicknessControl);
+            shapeThicknessControls.forEach(setupThicknessControl);
 
             if (presetColorsEl) {
                 PRESET_COLORS.forEach((color) => {
@@ -5737,8 +6259,8 @@
             function handlePointerDown(e) {
                 startDrawing(e);
             }
-            function handlePointerUp() {
-                stopDrawing();
+            function handlePointerUp(e) {
+                stopDrawing(e);
             }
             canvas.addEventListener('pointerdown', handlePointerDown);
             document.addEventListener('pointermove', draw);
@@ -5883,12 +6405,12 @@
                             customCursorCircle.style.display = 'none';
                             customCursorEraser.style.display = 'block';
                             canvas.style.cursor = 'none';
-                        } else if (currentTool === 'move') {
+                        } else if (isSelectTool(currentTool)) {
                             customCursorCircle.style.display = 'none';
                             customCursorEraser.style.display = 'none';
                             const worldPoint = screenToWorld(clientX, clientY);
                             canvas.style.cursor = getMoveCursorAtPoint(worldPoint);
-                        } else if (currentTool !== 'pan' && currentTool !== 'move') {
+                        } else if (currentTool !== 'pan' && !isSelectTool(currentTool)) {
                             customCursorCircle.style.display = 'block';
                             customCursorEraser.style.display = 'none';
                             canvas.style.cursor = 'none';
@@ -5927,7 +6449,7 @@
                 { target: '#line-btn', title: 'Lines Snap Cleanly', animation: 'line', body: 'The line menu includes solid, dotted, and dashed styles. Lines and shapes near perfectly straight angles snap into alignment.' },
                 { target: '#eraser-tool-wrapper', title: 'Eraser Is The Only Delete', animation: 'eraser', body: 'Nothing else removes your work. Select the eraser when you want object erasing or pixel erasing.' },
                 { target: '#whiteboard', title: 'Split The View', animation: 'split', body: 'Swipe with three fingers for a split view. On desktop, use Alt+V for left/right and Alt+H for top/bottom, or use the split buttons.' },
-                { target: '#move-btn', title: 'Resize And Rotate', animation: 'move', body: 'Choose Move, select a shape, then drag corners, edges, or the round rotation handle.' },
+                { target: '#select-btn', title: 'Select, Lasso, Resize And Rotate', animation: 'move', body: 'Choose Select, lasso multiple strokes, or drag selected shapes by their corners, edges, and rotation handle.' },
                 { target: '#board-controls', title: 'Board Controls', animation: 'controls', body: 'The top-right controls reopen this guide, toggle dark mode, and manage split views.' }
             ];
             let guideIndex = 0;
@@ -6027,11 +6549,15 @@
                     const shortcutTool = getNumberShortcutTools()[Number(e.key) - 1];
                     if (shortcutTool) {
                         e.preventDefault();
-                        selectTool(shortcutTool);
+                        selectTool(shortcutTool, { pointerType: 'mouse' });
                     }
                 } else if (e.key === 'Delete') {
                     e.preventDefault();
-                    showNotification('Use the eraser to remove content', 'error');
+                    if (isSelectTool(currentTool) && selectedStrokeIndices.size) {
+                        selectionContextMenu?.querySelector('[data-selection-action="delete"]')?.click();
+                    } else {
+                        showNotification('Use the eraser to remove content', 'error');
+                    }
                 }
             });
 
@@ -6104,11 +6630,11 @@
             eraserPreview.style.width = `${eraserPreviewSize}px`;
             eraserPreview.style.height = `${eraserPreviewSize}px`;
 
-            if (themeToggleBtn) {
-                themeToggleBtn.addEventListener('click', () => {
+            themeToggleButtons.forEach((button) => {
+                button.addEventListener('click', () => {
                     applyThemeMode(isDarkMode ? 'light' : 'dark');
                 });
-            }
+            });
 
             splitVerticalBtn?.addEventListener('click', () => splitAtViewportCenter('horizontal'));
             splitHorizontalBtn?.addEventListener('click', () => splitAtViewportCenter('vertical'));
@@ -6184,7 +6710,7 @@
             function getNumberShortcutTools() {
                 return Array.from(toolbar.children)
                     .map((item) => toolButtons.find((entry) => item.contains(entry.el))?.tool)
-                    .filter((tool) => ['move', 'pen', 'eraser', 'text', 'line', 'rect', 'circle', 'triangle'].includes(tool))
+                    .filter((tool) => ['select', 'pen', 'eraser', 'text', 'line', 'rect', 'circle', 'triangle'].includes(tool))
                     .slice(0, 9);
             }
 
@@ -6206,13 +6732,13 @@
                     item.addEventListener('dragstart', (event) => {
                         if (event.target.closest('.pinned-config-btn')) return;
                         event.dataTransfer.setData('text/plain', getToolbarItemId(item));
-                        event.dataTransfer.effectAllowed = 'move';
+                        event.dataTransfer.effectAllowed = 'select';
                         item.classList.add('toolbar-reorder-ghost');
                     });
                     item.addEventListener('dragend', () => item.classList.remove('toolbar-reorder-ghost'));
                     item.addEventListener('dragover', (event) => {
                         event.preventDefault();
-                        event.dataTransfer.dropEffect = 'move';
+                        event.dataTransfer.dropEffect = 'select';
                         item.classList.add('toolbar-drop-before');
                     });
                     item.addEventListener('dragleave', () => item.classList.remove('toolbar-drop-before'));
