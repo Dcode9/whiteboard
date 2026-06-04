@@ -404,6 +404,82 @@
             color: #6b7280;
         }
 
+        .templates-section {
+            margin-bottom: 36px;
+        }
+
+        .section-heading-row {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .section-heading-row h2 {
+            margin-bottom: 4px;
+        }
+
+        .section-heading-row p {
+            margin: 0;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .template-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+        }
+
+        .template-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.92);
+            padding: 14px;
+            cursor: pointer;
+            text-align: left;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+        }
+
+        .template-card:hover,
+        .template-card:focus-visible {
+            transform: translateY(-2px);
+            border-color: #93c5fd;
+            box-shadow: 0 18px 32px rgba(15, 23, 42, 0.12);
+            outline: none;
+        }
+
+        .template-preview {
+            height: 112px;
+            border-radius: 12px;
+            border: 1px solid #dbeafe;
+            background: #ffffff;
+            overflow: hidden;
+            margin-bottom: 12px;
+            position: relative;
+        }
+
+        .template-preview svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .template-card h3 {
+            color: #0f172a;
+            font-size: 15px;
+            font-weight: 700;
+            margin: 0 0 4px;
+        }
+
+        .template-card p {
+            color: #64748b;
+            font-size: 13px;
+            line-height: 1.35;
+            margin: 0;
+        }
+
         /* Whiteboard view - show floating containers */
         #whiteboard-view.active .header-logo-container,
         #whiteboard-view.active .header-account-container {
@@ -766,8 +842,14 @@
                 display: none;
             }
 
-            .boards-grid {
+            .boards-grid,
+            .template-grid {
                 grid-template-columns: 1fr;
+            }
+
+            .section-heading-row {
+                align-items: flex-start;
+                flex-direction: column;
             }
         }
         /* The canvas itself */
@@ -1314,8 +1396,25 @@
         }
 
         body.dark-mode .board-card p,
-        body.dark-mode .empty-state {
+        body.dark-mode .empty-state,
+        body.dark-mode .section-heading-row p,
+        body.dark-mode .template-card p {
             color: #cbd5e1;
+        }
+
+        body.dark-mode .template-card {
+            background: rgba(15, 23, 42, 0.9);
+            border-color: rgba(148, 163, 184, 0.28);
+            box-shadow: 0 20px 35px rgba(2, 6, 23, 0.28);
+        }
+
+        body.dark-mode .template-card h3 {
+            color: #f8fafc;
+        }
+
+        body.dark-mode .template-preview {
+            background: #0f172a;
+            border-color: rgba(96, 165, 250, 0.28);
         }
 
         body.dark-mode .board-card-actions button,
@@ -1849,6 +1948,45 @@
 
         <!-- Boards Container -->
         <div class="boards-container">
+            <div class="templates-section" aria-labelledby="templates-heading">
+                <div class="section-heading-row">
+                    <div>
+                        <h2 id="templates-heading">Start with a template</h2>
+                        <p>Use a ready-made layout, or start from a clean canvas.</p>
+                    </div>
+                </div>
+                <div class="template-grid">
+                    <button class="template-card" type="button" data-template-id="blank">
+                        <div class="template-preview" aria-hidden="true">
+                            <svg viewBox="0 0 220 128"><rect width="220" height="128" fill="#fff"/><path d="M28 38h164M28 64h164M28 90h104" stroke="#dbeafe" stroke-width="3" stroke-linecap="round"/></svg>
+                        </div>
+                        <h3>Blank Board</h3>
+                        <p>A clean whiteboard for sketches, notes, and ideas.</p>
+                    </button>
+                    <button class="template-card" type="button" data-template-id="cornell">
+                        <div class="template-preview" aria-hidden="true">
+                            <svg viewBox="0 0 220 128"><rect width="220" height="128" fill="#fff"/><path d="M72 16v96M16 88h188" stroke="#60a5fa" stroke-width="3"/><path d="M88 32h88M88 48h88M88 64h68M28 32h28M28 48h24M28 64h28" stroke="#cbd5e1" stroke-width="3" stroke-linecap="round"/></svg>
+                        </div>
+                        <h3>Cornell Notes</h3>
+                        <p>Cues, notes, and summary areas for structured study.</p>
+                    </button>
+                    <button class="template-card" type="button" data-template-id="weekly-planner">
+                        <div class="template-preview" aria-hidden="true">
+                            <svg viewBox="0 0 220 128"><rect width="220" height="128" fill="#fff"/><path d="M16 34h188M16 62h188M16 90h188M63 34v78M110 34v78M157 34v78" stroke="#93c5fd" stroke-width="2"/><path d="M24 22h52M90 22h42" stroke="#2563eb" stroke-width="4" stroke-linecap="round"/></svg>
+                        </div>
+                        <h3>Weekly Planner</h3>
+                        <p>Plan tasks and milestones across the week.</p>
+                    </button>
+                    <button class="template-card" type="button" data-template-id="kanban">
+                        <div class="template-preview" aria-hidden="true">
+                            <svg viewBox="0 0 220 128"><rect width="220" height="128" fill="#fff"/><path d="M75 18v94M145 18v94" stroke="#bfdbfe" stroke-width="3"/><rect x="24" y="42" width="40" height="20" rx="5" fill="#dbeafe"/><rect x="94" y="42" width="40" height="20" rx="5" fill="#fde68a"/><rect x="156" y="42" width="40" height="20" rx="5" fill="#bbf7d0"/><rect x="94" y="72" width="40" height="20" rx="5" fill="#fde68a"/></svg>
+                        </div>
+                        <h3>Kanban Board</h3>
+                        <p>Organize work into To do, Doing, and Done lanes.</p>
+                    </button>
+                </div>
+            </div>
+
             <!-- Local Boards Section -->
             <div class="boards-section">
                 <h2>On your Computer</h2>
@@ -2719,27 +2857,131 @@
       }
     }
 
-    window.createNewBoard = async function(type) {
+    const BOARD_TEMPLATE_LABELS = {
+      blank: 'Blank Board',
+      cornell: 'Cornell Notes',
+      'weekly-planner': 'Weekly Planner',
+      kanban: 'Kanban Board'
+    };
+
+    function makeTemplateText(text, x, y, options = {}) {
+      return {
+        type: 'text',
+        text,
+        x,
+        y,
+        color: options.color || '#1e3a8a',
+        fontSize: options.fontSize || 18,
+        fontFamily: 'Arial, sans-serif',
+        bold: options.bold !== false,
+        italic: false,
+        underline: false
+      };
+    }
+
+    function makeTemplateLine(x1, y1, x2, y2, options = {}) {
+      return {
+        tool: 'line',
+        color: options.color || '#93c5fd',
+        size: options.size || 3,
+        points: [{ x: x1, y: y1 }, { x: x2, y: y2 }],
+        lineStyle: options.lineStyle || 'solid'
+      };
+    }
+
+    function makeTemplateRect(x1, y1, x2, y2, options = {}) {
+      return {
+        tool: 'rect',
+        color: options.color || '#93c5fd',
+        size: options.size || 3,
+        points: [{ x: x1, y: y1 }, { x: x2, y: y2 }],
+        lineStyle: options.lineStyle || 'solid'
+      };
+    }
+
+    function createBoardDataFromTemplate(templateId = 'blank') {
+      const baseData = {
+        strokes: [],
+        backgroundColor: '#FFFFFF',
+        backgroundPattern: 'plain',
+        viewOffset: { x: 0, y: 0 },
+        viewZoom: 1
+      };
+
+      switch (templateId) {
+        case 'cornell':
+          baseData.strokes = [
+            makeTemplateText('Cornell Notes', 80, 70, { fontSize: 30, color: '#1d4ed8' }),
+            makeTemplateLine(260, 110, 260, 760, { color: '#60a5fa', size: 4 }),
+            makeTemplateLine(80, 620, 1040, 620, { color: '#60a5fa', size: 4 }),
+            makeTemplateText('Cues', 96, 145, { fontSize: 22 }),
+            makeTemplateText('Notes', 300, 145, { fontSize: 22 }),
+            makeTemplateText('Summary', 96, 665, { fontSize: 22 }),
+            ...Array.from({ length: 10 }, (_, i) => makeTemplateLine(300, 185 + (i * 38), 1000, 185 + (i * 38), { color: '#dbeafe', size: 2 })),
+            ...Array.from({ length: 7 }, (_, i) => makeTemplateLine(96, 185 + (i * 45), 220, 185 + (i * 45), { color: '#dbeafe', size: 2 })),
+            ...Array.from({ length: 3 }, (_, i) => makeTemplateLine(96, 700 + (i * 34), 1000, 700 + (i * 34), { color: '#dbeafe', size: 2 }))
+          ];
+          break;
+        case 'weekly-planner':
+          baseData.strokes = [
+            makeTemplateText('Weekly Planner', 80, 70, { fontSize: 30, color: '#1d4ed8' }),
+            makeTemplateRect(80, 110, 1040, 760, { color: '#60a5fa', size: 4 }),
+            ...Array.from({ length: 6 }, (_, i) => makeTemplateLine(80 + ((i + 1) * 137), 110, 80 + ((i + 1) * 137), 760, { color: '#bfdbfe', size: 2 })),
+            makeTemplateLine(80, 170, 1040, 170, { color: '#60a5fa', size: 3 }),
+            ...['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, i) => makeTemplateText(day, 100 + (i * 137), 150, { fontSize: 18 })),
+            ...Array.from({ length: 6 }, (_, row) => makeTemplateLine(80, 250 + (row * 80), 1040, 250 + (row * 80), { color: '#eff6ff', size: 2 }))
+          ];
+          break;
+        case 'kanban':
+          baseData.strokes = [
+            makeTemplateText('Kanban Board', 80, 70, { fontSize: 30, color: '#1d4ed8' }),
+            makeTemplateRect(80, 110, 1040, 760, { color: '#60a5fa', size: 4 }),
+            makeTemplateLine(400, 110, 400, 760, { color: '#bfdbfe', size: 4 }),
+            makeTemplateLine(720, 110, 720, 760, { color: '#bfdbfe', size: 4 }),
+            makeTemplateLine(80, 175, 1040, 175, { color: '#60a5fa', size: 3 }),
+            makeTemplateText('To Do', 180, 152, { fontSize: 22 }),
+            makeTemplateText('Doing', 500, 152, { fontSize: 22 }),
+            makeTemplateText('Done', 830, 152, { fontSize: 22 }),
+            makeTemplateRect(120, 220, 350, 300, { color: '#93c5fd', size: 3 }),
+            makeTemplateRect(440, 220, 670, 300, { color: '#f59e0b', size: 3 }),
+            makeTemplateRect(760, 220, 990, 300, { color: '#22c55e', size: 3 }),
+            makeTemplateText('Add task', 150, 265, { fontSize: 18, color: '#64748b', bold: false }),
+            makeTemplateText('In progress', 470, 265, { fontSize: 18, color: '#64748b', bold: false }),
+            makeTemplateText('Completed', 790, 265, { fontSize: 18, color: '#64748b', bold: false })
+          ];
+          break;
+        default:
+          break;
+      }
+
+      return baseData;
+    }
+
+    window.createNewBoard = async function(type, templateId = 'blank') {
       if (type === 'cloud' && !localStorage.getItem('authToken')) {
         showNotification('Please sign in to create cloud boards', 'error');
         return;
       }
 
-      const boardTitle = await window.customPrompt('Create New Board', 'Enter board title', 'Untitled Board');
+      const templateName = BOARD_TEMPLATE_LABELS[templateId] || BOARD_TEMPLATE_LABELS.blank;
+      const defaultTitle = templateId === 'blank' ? 'Untitled Board' : templateName;
+      const boardTitle = await window.customPrompt('Create New Board', 'Enter board title', defaultTitle);
       if (!boardTitle) return;
 
       const boardId = 'board_' + Date.now();
+      const initialBoardData = createBoardDataFromTemplate(templateId);
 
       if (type === 'local') {
         const board = {
           id: boardId,
           title: boardTitle,
           type: 'local',
+          templateId,
           lastModified: Date.now(),
           dataKey: `drawing:${boardId}`,
           data: null
         };
-        whiteboardStorage.set(board.dataKey, { strokes: [], backgroundColor: '#FFFFFF', backgroundPattern: 'plain', viewOffset: { x: 0, y: 0 }, viewZoom: 1 });
+        await whiteboardStorage.set(board.dataKey, initialBoardData);
 
         const boards = JSON.parse(localStorage.getItem('localBoards') || '[]');
         boards.push(board);
@@ -2755,6 +2997,9 @@
         currentCloudBoardId = null; // Will be set after first save
         currentBoardType = 'cloud';
         window.goToWhiteboard(); // No boardId = blank canvas
+        if (window.loadDrawingData) {
+          window.loadDrawingData(initialBoardData);
+        }
       }
     }
 
@@ -3074,6 +3319,7 @@
             const userProfileBtn = document.getElementById('user-profile-btn');
             const userMenu = document.getElementById('user-menu');
             const boardSearch = document.getElementById('board-search');
+            const templateCards = document.querySelectorAll('.template-card[data-template-id]');
 
             // New board dropdown
             if (newBoardBtn && newBoardMenu) {
@@ -3109,6 +3355,12 @@
                     });
                 });
             }
+
+            templateCards.forEach((card) => {
+                card.addEventListener('click', () => {
+                    window.createNewBoard('local', card.dataset.templateId || 'blank');
+                });
+            });
 
             // Initialize boards on homepage
             window.renderLocalBoards();
