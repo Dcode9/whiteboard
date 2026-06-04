@@ -1237,6 +1237,7 @@
         }
 
         .tool-btn {
+            position: relative;
             padding: 0.55rem;
             border-radius: 0.5rem; /* rounded-md */
         }
@@ -1610,6 +1611,7 @@
         body.dark-mode .triangle-option,
         body.dark-mode .eraser-mode-grid button,
         body.dark-mode .pen-mode-grid button,
+        body.dark-mode .shape-type-option,
         body.dark-mode .tool-mini-btn,
         body.dark-mode .pin-config-btn,
         body.dark-mode .pinned-config-btn,
@@ -1633,7 +1635,8 @@
         body.dark-mode .text-input-toolbar button:hover,
         body.dark-mode .triangle-option:hover,
         body.dark-mode .eraser-mode-grid button:hover,
-        body.dark-mode .pen-mode-grid button:hover {
+        body.dark-mode .pen-mode-grid button:hover,
+        body.dark-mode .shape-type-option:hover {
             background: rgba(30, 41, 59, 0.96);
         }
 
@@ -1641,7 +1644,8 @@
         body.dark-mode .text-input-toolbar button.active,
         body.dark-mode .triangle-option.active,
         body.dark-mode .eraser-mode-grid button.active,
-        body.dark-mode .pen-mode-grid button.active {
+        body.dark-mode .pen-mode-grid button.active,
+        body.dark-mode .shape-type-option.active {
             background: rgba(37, 99, 235, 0.24);
             color: #93c5fd;
             border-color: rgba(96, 165, 250, 0.55);
@@ -1738,6 +1742,7 @@
             color: #94a3b8;
         }
 
+        body.dark-mode .board-card .top-right-actions button,
         body.dark-mode .board-card-actions button,
         body.dark-mode .header-search,
         body.dark-mode .dropdown-menu,
@@ -1749,6 +1754,7 @@
             border-color: rgba(148, 163, 184, 0.22);
         }
 
+        body.dark-mode .board-card .top-right-actions button:hover,
         body.dark-mode .board-card-actions button:hover,
         body.dark-mode .dropdown-menu button:hover,
         body.dark-mode .user-menu button:hover {
@@ -1821,6 +1827,24 @@
             filter: brightness(0.84) contrast(1.06) saturate(0.92);
         }
 
+        body.dark-mode .section-toggle,
+        body.dark-mode .arrow-toggle {
+            background: rgba(15, 23, 42, 0.9);
+            color: #e2e8f0;
+            border-color: rgba(148, 163, 184, 0.28);
+        }
+
+        body.dark-mode .selection-context-menu {
+            background: rgba(15, 23, 42, 0.94);
+            color: #e2e8f0;
+            border-color: rgba(148, 163, 184, 0.28);
+        }
+
+        body.dark-mode .selection-context-menu button {
+            background: rgba(37, 99, 235, 0.28);
+            color: #bfdbfe;
+        }
+
         body.dark-mode .template-badge {
             background: rgba(37, 99, 235, 0.18);
             border-color: rgba(96, 165, 250, 0.24);
@@ -1858,6 +1882,28 @@
             width: 28px;
             height: 28px;
         }
+
+
+
+        .tool-btn.assigned-pen::after,
+        .tool-btn.assigned-touch::before {
+            content: '';
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            border: 1px solid #ffffff;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.35);
+            pointer-events: none;
+        }
+        .tool-btn.assigned-pen::after { right: 4px; bottom: 4px; background: #ef4444; }
+        .tool-btn.assigned-touch::before { left: 4px; bottom: 4px; background: #2563eb; }
+        .selection-context-menu { position: fixed; z-index: 5000; display: none; gap: 6px; padding: 6px; border: 1px solid rgba(148, 163, 184, 0.28); border-radius: 999px; background: rgba(255, 255, 255, 0.96); box-shadow: 0 18px 35px rgba(15, 23, 42, 0.2); }
+        .selection-context-menu.active { display: flex; }
+        .selection-context-menu button { padding: 6px 10px; border: 0; border-radius: 999px; background: #eef2ff; color: #1e3a8a; cursor: pointer; font-size: 12px; font-weight: 700; }
+        .shape-type-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; width: 100%; }
+        .shape-type-option { border: 1px solid #d1d5db; border-radius: 8px; background: #ffffff; color: #334155; cursor: pointer; font-size: 12px; padding: 8px 6px; }
+        .shape-type-option.active { background: #dbeafe; border-color: #2563eb; color: #1d4ed8; }
 
         .eraser-mode-grid {
             display: grid;
@@ -2190,6 +2236,11 @@
 
         <!-- Floating Account Container -->
         <div class="floating-container header-account-container">
+            <button id="theme-toggle-btn" class="board-theme-toggle" type="button" title="Toggle dark mode" aria-label="Toggle dark mode" aria-pressed="false">
+                <svg id="theme-toggle-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+                </svg>
+            </button>
             <div id="buttonDiv" style="display: flex; align-items: center;"></div>
             <div id="user-profile-area" style="display: none;">
                 <div class="user-profile" id="user-profile-btn">
@@ -2258,16 +2309,14 @@
                     </svg>
                 </button>
 
-                <div id="move-tool-wrapper" class="tool-group">
-                    <button id="move-btn" class="tool-btn tool-action rounded-md hover:bg-gray-200" title="Move (1)" aria-label="Move tool">
+                <div id="select-tool-wrapper" class="tool-group">
+                    <button id="select-btn" class="tool-btn tool-action rounded-md hover:bg-gray-200" title="Select (1)" aria-label="Select tool">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 pointer-events-none">
-                            <path d="M12 3v18"></path>
-                            <path d="m8 7 4-4 4 4"></path>
-                            <path d="m8 17 4 4 4-4"></path>
-                            <path d="M3 12h18"></path>
+                            <path d="M4 4 14 20 16.5 13.5 23 11Z"></path>
+                            <path d="M13.5 13.5 19 19"></path>
                         </svg>
                     </button>
-                    <div class="tool-meta"><span class="tool-label">Move</span><span class="tool-shortcut">1</span></div>
+                    <div class="tool-meta"><span class="tool-label">Select</span><span class="tool-shortcut">1</span></div>
                 </div>
                 <div id="pen-tool-wrapper" class="tool-group">
                     <div id="pen-config-group" class="tool-config-group">
@@ -2388,8 +2437,8 @@
                     <path d="M12 17h.01"></path>
                 </svg>
             </button>
-            <button id="theme-toggle-btn" class="board-theme-toggle" type="button" title="Toggle dark mode" aria-label="Toggle dark mode" aria-pressed="false">
-                <svg id="theme-toggle-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <button id="theme-toggle-board-btn" class="board-theme-toggle" type="button" title="Toggle dark mode" aria-label="Toggle dark mode" aria-pressed="false">
+                <svg id="theme-toggle-board-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
                 </svg>
             </button>
@@ -2569,6 +2618,47 @@
             </div>
         </div>
     </div>
+
+    <div id="rect-popover" class="popover">
+        <div class="flex flex-col gap-4">
+            <div class="flex flex-col items-center">
+                <label class="text-sm font-medium text-gray-700 mb-2">Quadrilateral</label>
+                <div class="shape-type-grid">
+                    <button class="shape-type-option active" data-shape-tool="rect">Rectangle</button>
+                    <button class="shape-type-option" data-shape-tool="rhombus">Rhombus</button>
+                    <button class="shape-type-option" data-shape-tool="parallelogram">Parallelogram</button>
+                    <button class="shape-type-option" data-shape-tool="kite">Kite</button>
+                </div>
+            </div>
+            <div class="flex flex-col items-center">
+                <label class="text-sm font-medium text-gray-700 mb-2">Thickness</label>
+                <div class="thickness-control" data-type="shape">
+                    <button data-action="decrease" title="Decrease size">-</button>
+                    <input type="number" class="th-input" min="1" max="500" value="5">
+                    <button data-action="increase" title="Increase size">+</button>
+                </div>
+                <span id="shape-size-label" class="text-xs text-gray-500 mt-1">5px</span>
+            </div>
+        </div>
+    </div>
+    <div id="circle-popover" class="popover">
+        <div class="flex flex-col gap-4">
+            <div class="flex flex-col items-center">
+                <label class="text-sm font-medium text-gray-700 mb-2">Thickness</label>
+                <div class="thickness-control" data-type="shape">
+                    <button data-action="decrease" title="Decrease size">-</button>
+                    <input type="number" class="th-input" min="1" max="500" value="5">
+                    <button data-action="increase" title="Increase size">+</button>
+                </div>
+                <span class="shape-size-label text-xs text-gray-500 mt-1">5px</span>
+            </div>
+        </div>
+    </div>
+    <div id="selection-context-menu" class="selection-context-menu" aria-hidden="true">
+        <button id="selection-copy-btn" type="button">Copy</button>
+        <button id="selection-paste-btn" type="button">Paste</button>
+        <button id="selection-delete-btn" type="button">Delete</button>
+    </div>
     <div id="triangle-popover" class="popover">
         <div class="flex flex-col gap-4">
             <div class="flex flex-col items-center">
@@ -2587,6 +2677,15 @@
                         <span>Equilateral</span>
                     </button>
                 </div>
+            </div>
+            <div class="flex flex-col items-center">
+                <label class="text-sm font-medium text-gray-700 mb-2">Thickness</label>
+                <div class="thickness-control" data-type="shape">
+                    <button data-action="decrease" title="Decrease size">-</button>
+                    <input type="number" class="th-input" min="1" max="500" value="5">
+                    <button data-action="increase" title="Increase size">+</button>
+                </div>
+                <span class="shape-size-label text-xs text-gray-500 mt-1">5px</span>
             </div>
         </div>
     </div>
@@ -2682,7 +2781,7 @@
 
                 google.accounts.id.renderButton(
                     btnDiv,
-                    { theme: 'outline', size: 'large', locale: 'en' }
+                    { theme: document.body.classList.contains('dark-mode') ? 'filled_black' : 'outline', size: 'large', locale: 'en' }
                 );
                 console.log("Google Sign-In button rendered successfully");
 
@@ -4649,13 +4748,15 @@
             const customCursorEraser = document.getElementById('custom-cursor-eraser');
             const toolbarWrapper = document.getElementById('toolbar-wrapper');
             const logoContainer = document.querySelector('#whiteboard-view .header-logo-container');
-                        const themeToggleBtn = document.getElementById('theme-toggle-btn');
-            const themeToggleIcon = document.getElementById('theme-toggle-icon');
+                        const themeToggleButtons = [document.getElementById('theme-toggle-btn'), document.getElementById('theme-toggle-board-btn')].filter(Boolean);
+            const themeToggleIcons = [document.getElementById('theme-toggle-icon'), document.getElementById('theme-toggle-board-icon')].filter(Boolean);
+            const themeToggleBtn = themeToggleButtons[0] || null;
+            const themeToggleIcon = themeToggleIcons[0] || null;
             const zoomSlider = document.getElementById('zoom-slider');
             const zoomValueLabel = document.getElementById('zoom-value-label');
 
             // (Tool Buttons)
-            const moveBtn = document.getElementById('move-btn');
+            const moveBtn = document.getElementById('select-btn');
             const penBtn = document.getElementById('pen-btn');
             const eraserBtn = document.getElementById('eraser-btn');
             const textBtn = document.getElementById('text-btn');
@@ -4681,8 +4782,15 @@
             const guidePrevBtn = document.getElementById('guide-prev-btn');
             const guideNextBtn = document.getElementById('guide-next-btn');
             const guideCloseBtn = document.getElementById('guide-close-btn');
+            const rectPopover = document.getElementById('rect-popover');
+            const circlePopover = document.getElementById('circle-popover');
             const trianglePopover = document.getElementById('triangle-popover');
+            const shapeTypeButtons = rectPopover ? Array.from(rectPopover.querySelectorAll('.shape-type-option')) : [];
             const triangleOptionButtons = trianglePopover ? Array.from(trianglePopover.querySelectorAll('.triangle-option')) : [];
+            const selectionContextMenu = document.getElementById('selection-context-menu');
+            const selectionCopyBtn = document.getElementById('selection-copy-btn');
+            const selectionPasteBtn = document.getElementById('selection-paste-btn');
+            const selectionDeleteBtn = document.getElementById('selection-delete-btn');
 
             // Text tool elements
             const textInputOverlay = document.getElementById('text-input-overlay');
@@ -4736,13 +4844,15 @@
             const objectEraserBtn = document.getElementById('object-eraser-btn');
             const pixelEraserBtn = document.getElementById('pixel-eraser-btn');
             const eraserPreview = document.getElementById('eraser-preview');
+            const shapeThicknessControls = Array.from(document.querySelectorAll('.thickness-control[data-type="shape"]'));
+            const shapeSizeLabels = Array.from(document.querySelectorAll('#shape-size-label, .shape-size-label'));
 
             // (Canvas Popover)
             const bgColorPicker = document.getElementById('bg-color-picker');
             const bgPatternSelector = document.getElementById('bg-pattern');
 
             const toolButtons = [
-                { el: moveBtn, tool: 'move' },
+                { el: moveBtn, tool: 'select' },
                 { el: penBtn, tool: 'pen' },
                 { el: eraserBtn, tool: 'eraser' },
                 { el: textBtn, tool: 'text' },
@@ -4778,13 +4888,23 @@
             let currentBrushSize = 5;
             let currentTool = 'pen';
             let originalTool = 'pen';
+            let activePenTool = 'pen';
+            let activeTouchTool = 'pen';
+            let lastToolPointerType = 'touch';
+            let activePointerId = null;
             let currentPenType = 'default';
             let currentLineStyle = 'solid';
+            let currentShapeSize = 5;
+            let currentQuadrilateralType = 'rect';
             let currentResizeHandle = null;
             let rotateStartAngle = 0;
             let rotateStartValue = 0;
             let activeStrokeCenter = null;
             let selectedStrokeIndex = -1;
+            let selectedStrokeIndices = new Set();
+            let selectionClipboard = [];
+            let lassoPath = null;
+            let movingSelection = false;
             let movingStrokeIndex = -1;
             let lastMovePoint = null;
             let hasMovedShape = false;
@@ -5015,21 +5135,22 @@
                 isDarkMode = mode === 'dark';
                 document.body.classList.toggle('dark-mode', isDarkMode);
                 document.documentElement.style.colorScheme = isDarkMode ? 'dark' : 'light';
-                if (themeToggleBtn) {
-                    themeToggleBtn.setAttribute('aria-pressed', String(isDarkMode));
-                    themeToggleBtn.setAttribute('title', isDarkMode ? 'Switch to light mode' : 'Switch to dark mode');
-                }
-                if (themeToggleIcon) {
-                    themeToggleIcon.innerHTML = isDarkMode
+                themeToggleButtons.forEach((button) => {
+                    button.setAttribute('aria-pressed', String(isDarkMode));
+                    button.setAttribute('title', isDarkMode ? 'Switch to light mode' : 'Switch to dark mode');
+                });
+                themeToggleIcons.forEach((icon) => {
+                    icon.innerHTML = isDarkMode
                         ? '<path d="M12 3a9 9 0 1 0 9 9 7 7 0 1 1-9-9Z"></path>'
                         : '<circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="M4.93 4.93 6.34 6.34"></path><path d="M17.66 17.66 19.07 19.07"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="M4.93 19.07 6.34 17.66"></path><path d="M17.66 6.34 19.07 4.93"></path>';
-                }
+                });
                 
                 updateMainPenIcon();
                 updateCanvasIconPreview();
                 renderPinnedPenConfigs();
                 if (penPreview) penPreview.style.backgroundColor = resolveThemeColor(currentColor);
                 render();
+                if (typeof window.initGoogleAuth === 'function' && typeof google !== 'undefined' && google.accounts) window.initGoogleAuth();
                 try {
                     localStorage.setItem('whiteboardThemeMode', isDarkMode ? 'dark' : 'light');
                 } catch (e) {
@@ -5041,7 +5162,9 @@
                 penPopover.classList.remove('active');
                 eraserPopover.classList.remove('active');
                 canvasPopover.classList.remove('active');
-                trianglePopover.classList.remove('active');
+                trianglePopover?.classList.remove('active');
+                rectPopover?.classList.remove('active');
+                circlePopover?.classList.remove('active');
                 linePopover.classList.remove('active');
             }
 
@@ -5144,6 +5267,8 @@
                     eraser: eraserPopover,
                     canvas: canvasPopover,
                     triangle: trianglePopover,
+                    rect: rectPopover,
+                    circle: circlePopover,
                     line: linePopover,
                 };
                 const popover = popoverMap[tool];
@@ -5155,8 +5280,7 @@
             }
 
             function selectTool(tool, { keepSettingsOpen = false } = {}) {
-                currentTool = tool;
-                originalTool = tool;
+                setToolForPointerType(tool);
                 if (!keepSettingsOpen) {
                     if (tool === 'pen') {
                         currentPenMode = 'draw';
@@ -5396,6 +5520,9 @@
 
             function setupToolButton(buttonEl, tool, hasSettings = false) {
                 if (!buttonEl) return;
+                buttonEl.addEventListener('pointerdown', (event) => {
+                    lastToolPointerType = event.pointerType === 'pen' ? 'pen' : 'touch';
+                });
                 buttonEl.addEventListener('click', (event) => {
                     event.stopPropagation();
                     handleToolPress(tool, buttonEl);
@@ -5761,6 +5888,46 @@
                 ctx.restore();
             }
 
+
+            function getQuadrilateralPoints(stroke) {
+                if (!stroke?.points || stroke.points.length < 2) return null;
+                const p1 = stroke.points[0];
+                const p2 = stroke.points[1];
+                const minX = Math.min(p1.x, p2.x);
+                const maxX = Math.max(p1.x, p2.x);
+                const minY = Math.min(p1.y, p2.y);
+                const maxY = Math.max(p1.y, p2.y);
+                const w = maxX - minX;
+                const h = maxY - minY;
+                switch (stroke.tool) {
+                    case 'rhombus': {
+                        const cx = (minX + maxX) / 2;
+                        const cy = (minY + maxY) / 2;
+                        return [{ x: cx, y: minY }, { x: maxX, y: cy }, { x: cx, y: maxY }, { x: minX, y: cy }];
+                    }
+                    case 'parallelogram': {
+                        const skew = Math.max(12, Math.abs(w) * 0.22);
+                        const dir = p2.x >= p1.x ? 1 : -1;
+                        return [{ x: minX + skew * dir, y: minY }, { x: maxX + skew * dir, y: minY }, { x: maxX - skew * dir, y: maxY }, { x: minX - skew * dir, y: maxY }];
+                    }
+                    case 'kite': {
+                        const cx = (minX + maxX) / 2;
+                        const cy = (minY + maxY) / 2;
+                        return [{ x: cx, y: minY }, { x: maxX, y: cy }, { x: cx, y: maxY }, { x: minX + w * 0.18, y: cy }];
+                    }
+                    case 'rect':
+                    default:
+                        return [{ x: minX, y: minY }, { x: maxX, y: minY }, { x: maxX, y: maxY }, { x: minX, y: maxY }];
+                }
+            }
+
+            function drawPolygon(points) {
+                if (!points || points.length < 3) return;
+                ctx.moveTo(points[0].x, points[0].y);
+                points.slice(1).forEach((point) => ctx.lineTo(point.x, point.y));
+                ctx.closePath();
+            }
+
             function drawStroke(stroke) {
                 // Handle text rendering
                 if (stroke.type === 'text') {
@@ -5849,6 +6016,16 @@
                         }
                         drawSmoothPath(stroke.points);
                         break;
+                    case 'lasso':
+                        if (stroke.points.length < 2) return;
+                        ctx.save();
+                        ctx.setLineDash([6 / viewZoom, 5 / viewZoom]);
+                        ctx.strokeStyle = '#2563eb';
+                        ctx.lineWidth = 1.5 / viewZoom;
+                        drawSmoothPath(stroke.points);
+                        ctx.stroke();
+                        ctx.restore();
+                        return;
                     case 'cut':
                         if (stroke.points.length < 2) return;
                         ctx.save();
@@ -5875,10 +6052,15 @@
                         ctx.setLineDash([]);
                         return;
                     case 'rect':
+                    case 'rhombus':
+                    case 'parallelogram':
+                    case 'kite':
                         if (stroke.points.length < 2) return;
-                        const p1 = stroke.points[0];
-                        const p2 = stroke.points[1];
-                        withStrokeRotation(stroke, () => ctx.strokeRect(p1.x, p1.y, p2.x - p1.x, p2.y - p1.y));
+                        withStrokeRotation(stroke, () => {
+                            ctx.beginPath();
+                            drawPolygon(getQuadrilateralPoints(stroke));
+                            ctx.stroke();
+                        });
                         return;
                     case 'circle':
                         if (stroke.points.length < 2) return;
@@ -6027,7 +6209,8 @@
 
                 const testPoint = pointToStrokeLocal(worldPoint, stroke);
                 const screenPixelTolerance = 5 / viewZoom;
-                const tolerance = (currentEraserMode === 'object' ? currentEraserSize : stroke.size) + screenPixelTolerance;
+                const baseTolerance = (currentEraserMode === 'object' ? currentEraserSize : stroke.size) + screenPixelTolerance;
+                const tolerance = currentTool === 'select' ? baseTolerance * 1.5 : baseTolerance;
                 switch (stroke.tool) {
                     case 'pen':
                     case 'highlighter':
@@ -6041,6 +6224,9 @@
                     case 'split':
                     case 'rect':
                     case 'circle':
+                    case 'rhombus':
+                    case 'parallelogram':
+                    case 'kite':
                         const p1 = stroke.points[0];
                         const p2 = stroke.points[1];
                         const minX = Math.min(p1.x, p2.x) - tolerance;
@@ -6051,7 +6237,7 @@
                             const center = stroke.points[0];
                             const radius = getDistance(stroke.points[0], stroke.points[1]);
                             const distToCenter = getDistance(testPoint, center);
-                            return Math.abs(distToCenter - radius) < tolerance;
+                            return Math.abs(distToCenter - radius) < tolerance || (currentTool === 'select' && distToCenter <= radius + tolerance);
                         }
                         return (testPoint.x >= minX && testPoint.x <= maxX &&
                                 testPoint.y >= minY && testPoint.y <= maxY);
@@ -6100,7 +6286,7 @@
             }
 
             function isShapeStroke(stroke) {
-                return stroke && ['line', 'rect', 'circle', 'triangle'].includes(stroke.tool);
+                return stroke && ['line', 'rect', 'circle', 'triangle', 'rhombus', 'parallelogram', 'kite'].includes(stroke.tool);
             }
 
             function getStrokeBounds(stroke) {
@@ -6167,6 +6353,12 @@
                         maxY: Math.max(...ys)
                     };
                 }
+                if (['rhombus', 'parallelogram', 'kite'].includes(stroke.tool)) {
+                    const points = getQuadrilateralPoints(stroke);
+                    const xs = points.map(p => p.x);
+                    const ys = points.map(p => p.y);
+                    return { minX: Math.min(...xs), maxX: Math.max(...xs), minY: Math.min(...ys), maxY: Math.max(...ys) };
+                }
                 return {
                     minX: Math.min(p1.x, p2.x),
                     maxX: Math.max(p1.x, p2.x),
@@ -6176,22 +6368,20 @@
             }
 
             function drawSelectionOverlay() {
-                if (currentTool !== 'move' || selectedStrokeIndex < 0 || selectedStrokeIndex >= strokes.length) return;
-                const stroke = strokes[selectedStrokeIndex];
-                const bounds = getStrokeBounds(stroke);
+                if (currentTool !== 'select') return;
+                const bounds = getSelectedStrokeBounds();
                 if (!bounds) return;
                 const pad = 8 / viewZoom;
                 ctx.save();
-                ctx.strokeStyle = '#2563eb';
+                ctx.strokeStyle = selectedStrokeIndices.size > 1 ? '#dc2626' : '#2563eb';
                 ctx.fillStyle = '#ffffff';
                 ctx.lineWidth = 1.5 / viewZoom;
                 ctx.setLineDash([6 / viewZoom, 4 / viewZoom]);
-                withStrokeRotation(stroke, () => {
-                    ctx.strokeRect(bounds.minX - pad, bounds.minY - pad, (bounds.maxX - bounds.minX) + pad * 2, (bounds.maxY - bounds.minY) + pad * 2);
-                });
+                ctx.strokeRect(bounds.minX - pad, bounds.minY - pad, (bounds.maxX - bounds.minX) + pad * 2, (bounds.maxY - bounds.minY) + pad * 2);
                 ctx.setLineDash([]);
 
-                if (isShapeStroke(stroke)) {
+                const stroke = selectedStrokeIndex >= 0 ? strokes[selectedStrokeIndex] : null;
+                if (stroke && selectedStrokeIndices.size <= 1 && isShapeStroke(stroke)) {
                     const handles = getShapeResizeHandles(stroke);
                     const handleSize = 10 / viewZoom;
                     for (const handle of handles) {
@@ -6777,6 +6967,105 @@
                 createSplitBoard(direction, window.innerWidth / 2, window.innerHeight / 2);
             }
 
+
+            function getToolForPointerType(pointerType) {
+                return pointerType === 'pen' ? activePenTool : activeTouchTool;
+            }
+
+            function setToolForPointerType(tool, pointerType = lastToolPointerType) {
+                if (pointerType === 'pen') {
+                    activePenTool = tool;
+                } else {
+                    activeTouchTool = tool;
+                }
+                currentTool = tool;
+                originalTool = tool;
+                updateToolAssignmentIndicators();
+            }
+
+            function updateToolAssignmentIndicators() {
+                toolButtons.forEach(({ el, tool }) => {
+                    if (!el) return;
+                    el.classList.toggle('assigned-pen', activePenTool === tool);
+                    el.classList.toggle('assigned-touch', activeTouchTool === tool);
+                });
+            }
+
+            function getSelectedStrokeBounds() {
+                const indices = Array.from(selectedStrokeIndices).filter((i) => i >= 0 && i < strokes.length);
+                if (indices.length === 0 && selectedStrokeIndex >= 0) indices.push(selectedStrokeIndex);
+                const boxes = indices.map((i) => getStrokeBounds(strokes[i])).filter(Boolean);
+                if (!boxes.length) return null;
+                return {
+                    minX: Math.min(...boxes.map((b) => b.minX)),
+                    maxX: Math.max(...boxes.map((b) => b.maxX)),
+                    minY: Math.min(...boxes.map((b) => b.minY)),
+                    maxY: Math.max(...boxes.map((b) => b.maxY)),
+                };
+            }
+
+            function isPointInsideBounds(point, bounds, pad = 0) {
+                return bounds && point.x >= bounds.minX - pad && point.x <= bounds.maxX + pad && point.y >= bounds.minY - pad && point.y <= bounds.maxY + pad;
+            }
+
+            function pointInPolygon(point, polygon) {
+                if (!polygon || polygon.length < 3) return false;
+                let inside = false;
+                for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+                    const xi = polygon[i].x, yi = polygon[i].y;
+                    const xj = polygon[j].x, yj = polygon[j].y;
+                    const intersects = ((yi > point.y) !== (yj > point.y)) &&
+                        (point.x < (xj - xi) * (point.y - yi) / ((yj - yi) || 0.000001) + xi);
+                    if (intersects) inside = !inside;
+                }
+                return inside;
+            }
+
+            function strokeSelectionPoint(stroke) {
+                const bounds = getStrokeBounds(stroke);
+                if (!bounds) return null;
+                return { x: (bounds.minX + bounds.maxX) / 2, y: (bounds.minY + bounds.maxY) / 2 };
+            }
+
+            function selectStrokesInLasso(path) {
+                selectedStrokeIndices = new Set();
+                strokes.forEach((stroke, index) => {
+                    const point = strokeSelectionPoint(stroke);
+                    if (point && pointInPolygon(point, path)) selectedStrokeIndices.add(index);
+                });
+                selectedStrokeIndex = selectedStrokeIndices.size === 1 ? Array.from(selectedStrokeIndices)[0] : -1;
+                updateSelectionContextMenu();
+            }
+
+            function moveSelectedStrokesBy(dx, dy) {
+                const targets = selectedStrokeIndices.size ? Array.from(selectedStrokeIndices) : (selectedStrokeIndex >= 0 ? [selectedStrokeIndex] : []);
+                targets.forEach((index) => moveStrokeBy(strokes[index], dx, dy));
+            }
+
+            function hideSelectionContextMenu() {
+                if (!selectionContextMenu) return;
+                selectionContextMenu.classList.remove('active');
+                selectionContextMenu.setAttribute('aria-hidden', 'true');
+            }
+
+            function updateSelectionContextMenu() {
+                if (!selectionContextMenu) return;
+                const bounds = getSelectedStrokeBounds();
+                if (!bounds) {
+                    hideSelectionContextMenu();
+                    return;
+                }
+                const screen = worldToScreen(bounds.maxX, bounds.minY);
+                selectionContextMenu.style.left = `${Math.min(window.innerWidth - 170, Math.max(12, screen.x + 8))}px`;
+                selectionContextMenu.style.top = `${Math.max(12, screen.y - 42)}px`;
+                selectionContextMenu.classList.add('active');
+                selectionContextMenu.setAttribute('aria-hidden', 'false');
+            }
+
+            function cloneStroke(stroke) {
+                return JSON.parse(JSON.stringify(stroke));
+            }
+
             function startDrawing(e) {
                 // If not drawing on canvas or overlay, ignore
                 if(e.target !== canvas) return;
@@ -6786,11 +7075,10 @@
                     return;
                 }
 
-                // === STYLUS DETECTION ===
-                // If stylus is detected, force pen tool
-                if (e.pointerType === 'pen') {
-                    selectTool('pen');
-                }
+                activePointerId = e.pointerId;
+                currentTool = getToolForPointerType(e.pointerType);
+                updateActiveToolButton(currentTool);
+            updateToolAssignmentIndicators();
 
                 // === BLOCK RIGHT-CLICK ===
                 // Ignore right-click completely
@@ -6841,7 +7129,7 @@
                     canvas.classList.add('panning');
                     return;
                 }
-                if (currentTool === 'move') {
+                if (currentTool === 'select') {
                     const selectedStroke = selectedStrokeIndex >= 0 ? strokes[selectedStrokeIndex] : null;
                     const resizeHandle = selectedStroke ? isPointOnResizeHandle(worldPoint, selectedStroke) : null;
 
@@ -6863,11 +7151,24 @@
                         return;
                     }
 
+                    const existingSelectionBounds = getSelectedStrokeBounds();
+                    if (selectedStrokeIndices.size > 1 && isPointInsideBounds(worldPoint, existingSelectionBounds, 8 / viewZoom)) {
+                        movingSelection = true;
+                        moveInteractionMode = 'move-selection';
+                        lastMovePoint = worldPoint;
+                        hasMovedShape = false;
+                        isDrawing = true;
+                        render();
+                        return;
+                    }
+
                     // === CLICKING ON SHAPE BORDER OR ANYWHERE INSIDE ===
                     // Allow selecting by clicking on any part of the shape
                     const selectableIndex = findSelectableStrokeIndex(worldPoint);
                     if (selectableIndex !== -1) {
                         selectedStrokeIndex = selectableIndex;
+                        selectedStrokeIndices = new Set([selectableIndex]);
+                        updateSelectionContextMenu();
                         movingStrokeIndex = selectableIndex;
                         moveInteractionMode = 'move';
                         lastMovePoint = worldPoint;
@@ -6875,9 +7176,13 @@
                         isDrawing = true;
                     } else {
                         selectedStrokeIndex = -1;
-                        isDrawing = false;
+                        selectedStrokeIndices = new Set();
+                        hideSelectionContextMenu();
+                        lassoPath = [worldPoint];
+                        currentPath = { id: Date.now(), tool: 'lasso', color: '#2563eb', size: 1.5 / viewZoom, points: lassoPath };
+                        isDrawing = true;
                         movingStrokeIndex = -1;
-                        moveInteractionMode = 'none';
+                        moveInteractionMode = 'lasso';
                         lastMovePoint = null;
                         hasMovedShape = false;
                     }
@@ -6901,9 +7206,10 @@
                         return;
                     }
                 }
-                const strokeTool = currentTool === 'pen' ? (currentPenType === 'spray' ? 'spray' : currentPenType === 'highlighter' ? 'highlighter' : 'pen') : currentTool;
+                const strokeTool = currentTool === 'pen' ? (currentPenType === 'spray' ? 'spray' : currentPenType === 'highlighter' ? 'highlighter' : 'pen') : (currentTool === 'rect' ? currentQuadrilateralType : currentTool);
                 const startPoint = makeStrokePoint(worldPoint, e.timeStamp || Date.now());
-                currentPath = { id: Date.now(), tool: strokeTool, color: currentColor, size: currentBrushSize, points: [startPoint], paneId: activePaneId };
+                const strokeSize = ['line', 'rect', 'circle', 'triangle', 'rhombus', 'parallelogram', 'kite'].includes(strokeTool) ? currentShapeSize : currentBrushSize;
+                currentPath = { id: Date.now(), tool: strokeTool, color: currentColor, size: strokeSize, points: [startPoint], paneId: activePaneId };
                 if (strokeTool === 'pen') {
                     currentPath.variableWidth = false;
                 }
@@ -6922,6 +7228,7 @@
             }
 
             function draw(e) {
+                if (activePointerId !== null && e.pointerId !== activePointerId) return;
                 if (touchHoldTimer) {
                     clearTimeout(touchHoldTimer);
                     touchHoldTimer = null;
@@ -6952,7 +7259,25 @@
                         }
                     }
                     const worldPoint = screenToWorld(screenX, screenY, activePaneId);
-                    if (currentTool === 'move') {
+                    if (currentTool === 'select') {
+                        if (moveInteractionMode === 'lasso' && lassoPath) {
+                            lassoPath.push(worldPoint);
+                            render();
+                            return;
+                        }
+                        const groupBounds = getSelectedStrokeBounds();
+                        if (movingSelection && lastMovePoint) {
+                            const dx = worldPoint.x - lastMovePoint.x;
+                            const dy = worldPoint.y - lastMovePoint.y;
+                            if (dx !== 0 || dy !== 0) {
+                                if (!hasMovedShape) addHistoryAction();
+                                moveSelectedStrokesBy(dx, dy);
+                                lastMovePoint = worldPoint;
+                                hasMovedShape = true;
+                                render();
+                            }
+                            return;
+                        }
                         if (movingStrokeIndex !== -1 && lastMovePoint) {
                             if (moveInteractionMode === 'resize') {
                                 if (!hasMovedShape) {
@@ -7028,7 +7353,8 @@
                 }
             }
 
-            function stopDrawing() {
+            function stopDrawing(e) {
+                if (e && activePointerId !== null && e.pointerId !== activePointerId) return;
                 if (touchHoldTimer) {
                     clearTimeout(touchHoldTimer);
                     touchHoldTimer = null;
@@ -7069,14 +7395,22 @@
                             }
                             currentPath = null;
                         }
-                    } else if (currentTool === 'move') {
-                        didChange = movingStrokeIndex !== -1 && hasMovedShape;
+                    } else if (currentTool === 'select') {
+                        if (moveInteractionMode === 'lasso' && lassoPath) {
+                            selectStrokesInLasso(lassoPath);
+                            currentPath = null;
+                            lassoPath = null;
+                            didChange = false;
+                        } else {
+                            didChange = (movingStrokeIndex !== -1 || movingSelection) && hasMovedShape;
+                        }
                         movingStrokeIndex = -1;
                         moveInteractionMode = 'none';
                         currentResizeHandle = null;
                         activeStrokeCenter = null;
                         lastMovePoint = null;
                         hasMovedShape = false;
+                        movingSelection = false;
                     } else if (currentPath) {
                         if (currentPath.tool === 'pen' && currentPath.points.length === 1) {
                             currentPath.points.push({ x: currentPath.points[0].x + (0.1 / viewZoom), y: currentPath.points[0].y + (0.1 / viewZoom) });
@@ -7102,6 +7436,7 @@
                     isEraserGesture = false;
                     currentTool = originalTool;
                 }
+                activePointerId = null;
             }
 
             // --- Toolbar Event Listeners ---
@@ -7113,7 +7448,7 @@
                         btn.el.classList.remove('active');
                     }
                 });
-                if (activeTool === 'move') {
+                if (activeTool === 'select') {
                     canvas.style.cursor = 'grab';
                 } else {
                     // Changed from none to crosshair for safety if custom cursor fails
@@ -7121,7 +7456,7 @@
                 }
                 customCursorCircle.style.display = 'none';
                 customCursorEraser.style.display = 'none';
-                if (activeTool !== 'move') {
+                if (activeTool !== 'select') {
                     selectedStrokeIndex = -1;
                     movingStrokeIndex = -1;
                     moveInteractionMode = 'none';
@@ -7145,12 +7480,12 @@
             setupToolButton(penBtn, 'pen', true);
             setupToolButton(eraserBtn, 'eraser', true);
             setupToolButton(textBtn, 'text', false);
-            setupToolButton(moveBtn, 'move', false);
+            setupToolButton(moveBtn, 'select', false);
             setupToolButton(triangleBtn, 'triangle', true);
 
             moveBtn.addEventListener('click', () => {
                 closeAllToolPopovers();
-                selectTool('move');
+                selectTool('select');
             });
 
             function updateEraserModeButtons() {
@@ -7168,11 +7503,54 @@
                 updateEraserModeButtons();
             });
 
+            shapeTypeButtons.forEach((button) => {
+                button.addEventListener('click', () => {
+                    currentQuadrilateralType = button.dataset.shapeTool || 'rect';
+                    shapeTypeButtons.forEach((option) => option.classList.toggle('active', option === button));
+                });
+            });
+
             triangleOptionButtons.forEach((button) => {
                 button.addEventListener('click', () => {
                     currentTriangleType = button.dataset.triangleType || 'isosceles';
                     triangleOptionButtons.forEach((option) => option.classList.toggle('active', option === button));
                 });
+            });
+
+
+            selectionCopyBtn?.addEventListener('click', () => {
+                const indices = selectedStrokeIndices.size ? Array.from(selectedStrokeIndices) : (selectedStrokeIndex >= 0 ? [selectedStrokeIndex] : []);
+                selectionClipboard = indices.map((index) => cloneStroke(strokes[index]));
+                showNotification('Selection copied', 'success');
+            });
+            selectionPasteBtn?.addEventListener('click', () => {
+                if (!selectionClipboard.length) return;
+                addHistoryAction();
+                const offset = 24 / viewZoom;
+                const pastedIndices = [];
+                selectionClipboard.forEach((stroke) => {
+                    const copy = cloneStroke(stroke);
+                    copy.id = Date.now() + Math.random();
+                    moveStrokeBy(copy, offset, offset);
+                    strokes.push(copy);
+                    pastedIndices.push(strokes.length - 1);
+                });
+                selectedStrokeIndices = new Set(pastedIndices);
+                selectedStrokeIndex = pastedIndices.length === 1 ? pastedIndices[0] : -1;
+                render();
+                updateSelectionContextMenu();
+                saveStrokesAndSettings();
+            });
+            selectionDeleteBtn?.addEventListener('click', () => {
+                const indices = selectedStrokeIndices.size ? Array.from(selectedStrokeIndices) : (selectedStrokeIndex >= 0 ? [selectedStrokeIndex] : []);
+                if (!indices.length) return;
+                addHistoryAction();
+                indices.sort((a, b) => b - a).forEach((index) => strokes.splice(index, 1));
+                selectedStrokeIndices = new Set();
+                selectedStrokeIndex = -1;
+                hideSelectionContextMenu();
+                render();
+                saveStrokesAndSettings();
             });
 
             // Text formatting button handlers
@@ -7318,6 +7696,9 @@
                     const tool = toolButtons.find(b => b.el === btn).tool;
                     closeAllToolPopovers();
                     selectTool(tool);
+                    if (tool === 'rect' || tool === 'circle') {
+                        openToolPopover(tool, btn);
+                    }
                 });
             });
             setupToolButton(lineBtn, 'line', true);
@@ -7350,6 +7731,13 @@
                         updatePenCursorSize();
                         penPreview.style.height = `${Math.min(currentBrushSize, 40)}px`;
                         updateMainPenIcon();
+                    } else if (type === 'shape') {
+                        currentShapeSize = newSize;
+                        shapeThicknessControls.forEach((control) => {
+                            const field = control.querySelector('input[type="number"]');
+                            if (field && field !== input) field.value = newSize;
+                        });
+                        shapeSizeLabels.forEach((label) => { label.textContent = `${newSize}px`; });
                     } else { // eraser
                         currentEraserSize = newSize;
                         eraserSizeLabel.textContent = `${newSize}px`;
@@ -7366,6 +7754,7 @@
             }
             setupThicknessControl(penThicknessControl);
             setupThicknessControl(eraserThicknessControl);
+            shapeThicknessControls.forEach(setupThicknessControl);
 
             if (presetColorsEl) {
                 PRESET_COLORS.forEach((color) => {
@@ -7464,8 +7853,8 @@
             function handlePointerDown(e) {
                 startDrawing(e);
             }
-            function handlePointerUp() {
-                stopDrawing();
+            function handlePointerUp(e) {
+                stopDrawing(e);
             }
             canvas.addEventListener('pointerdown', handlePointerDown);
             document.addEventListener('pointermove', draw);
@@ -7610,12 +7999,12 @@
                             customCursorCircle.style.display = 'none';
                             customCursorEraser.style.display = 'block';
                             canvas.style.cursor = 'none';
-                        } else if (currentTool === 'move') {
+                        } else if (currentTool === 'select') {
                             customCursorCircle.style.display = 'none';
                             customCursorEraser.style.display = 'none';
                             const worldPoint = screenToWorld(clientX, clientY);
                             canvas.style.cursor = getMoveCursorAtPoint(worldPoint);
-                        } else if (currentTool !== 'pan' && currentTool !== 'move') {
+                        } else if (currentTool !== 'pan' && currentTool !== 'select') {
                             customCursorCircle.style.display = 'block';
                             customCursorEraser.style.display = 'none';
                             canvas.style.cursor = 'none';
@@ -7654,7 +8043,7 @@
                 { target: '#line-btn', title: 'Lines Snap Cleanly', animation: 'line', body: 'The line menu includes solid, dotted, and dashed styles. Lines and shapes near perfectly straight angles snap into alignment.' },
                 { target: '#eraser-tool-wrapper', title: 'Eraser Is The Only Delete', animation: 'eraser', body: 'Nothing else removes your work. Select the eraser when you want object erasing or pixel erasing.' },
                 { target: '#whiteboard', title: 'Split The View', animation: 'split', body: 'Swipe with three fingers for a split view. On desktop, use Alt+V for left/right and Alt+H for top/bottom, or use the split buttons.' },
-                { target: '#move-btn', title: 'Resize And Rotate', animation: 'move', body: 'Choose Move, select a shape, then drag corners, edges, or the round rotation handle.' },
+                { target: '#select-btn', title: 'Resize And Rotate', animation: 'move', body: 'Choose Select, select a shape, then drag corners, edges, or the round rotation handle.' },
                 { target: '#board-controls', title: 'Board Controls', animation: 'controls', body: 'The top-right controls reopen this guide, toggle dark mode, and manage split views.' }
             ];
             let guideIndex = 0;
@@ -7813,6 +8202,7 @@
             syncHeaderContainerHeights();
             applyThemeMode(isDarkMode ? 'dark' : 'light');
             updateActiveToolButton(currentTool);
+            updateToolAssignmentIndicators();
             updateUndoRedoButtons();
             updatePenModeButtons();
             updateEraserModeButtons();
@@ -7832,11 +8222,11 @@
             eraserPreview.style.width = `${eraserPreviewSize}px`;
             eraserPreview.style.height = `${eraserPreviewSize}px`;
 
-            if (themeToggleBtn) {
-                themeToggleBtn.addEventListener('click', () => {
+            themeToggleButtons.forEach((button) => {
+                button.addEventListener('click', () => {
                     applyThemeMode(isDarkMode ? 'light' : 'dark');
                 });
-            }
+            });
 
             splitVerticalBtn?.addEventListener('click', () => splitAtViewportCenter('vertical'));
             splitHorizontalBtn?.addEventListener('click', () => splitAtViewportCenter('horizontal'));
@@ -7912,7 +8302,7 @@
             function getNumberShortcutTools() {
                 return Array.from(toolbar.children)
                     .map((item) => toolButtons.find((entry) => item.contains(entry.el))?.tool)
-                    .filter((tool) => ['move', 'pen', 'eraser', 'text', 'line', 'rect', 'circle', 'triangle'].includes(tool))
+                    .filter((tool) => ['select', 'pen', 'eraser', 'text', 'line', 'rect', 'circle', 'triangle'].includes(tool))
                     .slice(0, 9);
             }
 
