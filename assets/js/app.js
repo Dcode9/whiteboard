@@ -24,7 +24,7 @@ window.initGoogleAuth = function() {
         const btnDiv = document.getElementById('buttonDiv');
         if (btnDiv) {
             btnDiv.innerHTML = '';
-            google.accounts.id.renderButton(btnDiv, { theme: 'outline', size: 'large', locale: 'en' });
+            google.accounts.id.renderButton(btnDiv, { theme: document.body.classList.contains('dark-mode') ? 'filled_black' : 'outline', size: 'large', locale: 'en' });
         }
     } catch (e) { console.error('Auth Init Error', e); }
 };
