@@ -2625,7 +2625,7 @@
                 <label class="text-sm font-medium text-gray-700 mb-2">Quadrilateral</label>
                 <div class="shape-type-grid">
                     <button class="shape-type-option active" data-shape-tool="rect">Rectangle</button>
-                    <button class="shape-type-option" data-shape-tool="rhombus">Rhombus</button>
+                    <button class="shape-type-option" data-shape-tool="rhombus" title="Draw a rhombus">◇ Rhombus</button>
                     <button class="shape-type-option" data-shape-tool="parallelogram">Parallelogram</button>
                     <button class="shape-type-option" data-shape-tool="kite">Kite</button>
                 </div>
@@ -2998,7 +2998,7 @@
             cancelBtn.click();
           }
         };
-      }); I'm
+      });
     }
 
     // --- View Management ---
@@ -4886,6 +4886,7 @@
             let activePenTool = 'pen';
             let activeTouchTool = 'pen';
             let lastToolPointerType = 'touch';
+            const detectedToolPointerTypes = new Set();
             let activePointerId = null;
             let currentPenType = 'default';
             let currentLineStyle = 'solid';
@@ -5794,7 +5795,7 @@
 
             // --- Shape Drawing Functions ---
             function getStrokeCenter(stroke) {
-                const bounds = getStrokeBounds(stroke);
+                const bounds = getStrokeLocalBounds(stroke);
                 if (!bounds) return { x: 0, y: 0 };
                 return { x: (bounds.minX + bounds.maxX) / 2, y: (bounds.minY + bounds.maxY) / 2 };
             }
@@ -6284,7 +6285,7 @@
                 return stroke && ['line', 'rect', 'circle', 'triangle', 'rhombus', 'parallelogram', 'kite'].includes(stroke.tool);
             }
 
-            function getStrokeBounds(stroke) {
+            function getStrokeLocalBounds(stroke) {
                 if (!stroke) return null;
                 if (stroke.type === 'text') {
                     const fontSize = stroke.fontSize || 16;
@@ -6362,20 +6363,46 @@
                 };
             }
 
+            function getStrokeBounds(stroke) {
+                const bounds = getStrokeLocalBounds(stroke);
+                if (!bounds || !stroke?.rotation || !isShapeStroke(stroke)) return bounds;
+                const center = { x: (bounds.minX + bounds.maxX) / 2, y: (bounds.minY + bounds.maxY) / 2 };
+                const corners = [
+                    { x: bounds.minX, y: bounds.minY },
+                    { x: bounds.maxX, y: bounds.minY },
+                    { x: bounds.maxX, y: bounds.maxY },
+                    { x: bounds.minX, y: bounds.maxY },
+                ].map((point) => rotatePointAround(point, center, stroke.rotation));
+                const xs = corners.map((point) => point.x);
+                const ys = corners.map((point) => point.y);
+                return { minX: Math.min(...xs), maxX: Math.max(...xs), minY: Math.min(...ys), maxY: Math.max(...ys) };
+            }
+
             function drawSelectionOverlay() {
                 if (currentTool !== 'select') return;
-                const bounds = getSelectedStrokeBounds();
+                const stroke = selectedStrokeIndex >= 0 ? strokes[selectedStrokeIndex] : null;
+                const singleRotatedShape = stroke && selectedStrokeIndices.size <= 1 && isShapeStroke(stroke) && stroke.rotation;
+                const bounds = singleRotatedShape ? getStrokeLocalBounds(stroke) : getSelectedStrokeBounds();
                 if (!bounds) return;
-                const pad = 8 / viewZoom;
+                const pad = 12 / viewZoom;
                 ctx.save();
                 ctx.strokeStyle = selectedStrokeIndices.size > 1 ? '#dc2626' : '#2563eb';
                 ctx.fillStyle = '#ffffff';
                 ctx.lineWidth = 1.5 / viewZoom;
                 ctx.setLineDash([6 / viewZoom, 4 / viewZoom]);
-                ctx.strokeRect(bounds.minX - pad, bounds.minY - pad, (bounds.maxX - bounds.minX) + pad * 2, (bounds.maxY - bounds.minY) + pad * 2);
+                if (singleRotatedShape) {
+                    const center = getStrokeCenter(stroke);
+                    ctx.save();
+                    ctx.translate(center.x, center.y);
+                    ctx.rotate(stroke.rotation);
+                    ctx.translate(-center.x, -center.y);
+                    ctx.strokeRect(bounds.minX - pad, bounds.minY - pad, (bounds.maxX - bounds.minX) + pad * 2, (bounds.maxY - bounds.minY) + pad * 2);
+                    ctx.restore();
+                } else {
+                    ctx.strokeRect(bounds.minX - pad, bounds.minY - pad, (bounds.maxX - bounds.minX) + pad * 2, (bounds.maxY - bounds.minY) + pad * 2);
+                }
                 ctx.setLineDash([]);
 
-                const stroke = selectedStrokeIndex >= 0 ? strokes[selectedStrokeIndex] : null;
                 if (stroke && selectedStrokeIndices.size <= 1 && isShapeStroke(stroke)) {
                     const handles = getShapeResizeHandles(stroke);
                     const handleSize = 10 / viewZoom;
@@ -6396,7 +6423,7 @@
 
             function getShapeResizeHandles(stroke) {
                 if (!isShapeStroke(stroke)) return [];
-                const bounds = getStrokeBounds(stroke);
+                const bounds = getStrokeLocalBounds(stroke);
                 if (!bounds) return [];
 
                 const center = getStrokeCenter(stroke);
@@ -6494,7 +6521,7 @@
                     stroke.points[1] = { ...stroke.points[1], x: localPoint.x, y: localPoint.y };
                     return;
                 }
-                const bounds = getStrokeBounds(stroke);
+                const bounds = getStrokeLocalBounds(stroke);
                 if (!bounds) return;
                 let minX = bounds.minX;
                 let maxX = bounds.maxX;
@@ -6979,10 +7006,11 @@
             }
 
             function updateToolAssignmentIndicators() {
+                const showAssignments = detectedToolPointerTypes.size >= 2;
                 toolButtons.forEach(({ el, tool }) => {
                     if (!el) return;
-                    el.classList.toggle('assigned-pen', activePenTool === tool);
-                    el.classList.toggle('assigned-touch', activeTouchTool === tool);
+                    el.classList.toggle('assigned-pen', showAssignments && activePenTool === tool);
+                    el.classList.toggle('assigned-touch', showAssignments && activeTouchTool === tool);
                 });
             }
 
@@ -7071,9 +7099,10 @@
                 }
 
                 activePointerId = e.pointerId;
+                detectedToolPointerTypes.add(e.pointerType === 'pen' ? 'pen' : 'touch');
                 currentTool = getToolForPointerType(e.pointerType);
                 updateActiveToolButton(currentTool);
-            updateToolAssignmentIndicators();
+                updateToolAssignmentIndicators();
 
                 // === BLOCK RIGHT-CLICK ===
                 // Ignore right-click completely
@@ -7513,13 +7542,20 @@
             });
 
 
-            selectionCopyBtn?.addEventListener('click', () => {
-                const indices = selectedStrokeIndices.size ? Array.from(selectedStrokeIndices) : (selectedStrokeIndex >= 0 ? [selectedStrokeIndex] : []);
+            function getSelectionIndices() {
+                return selectedStrokeIndices.size ? Array.from(selectedStrokeIndices) : (selectedStrokeIndex >= 0 ? [selectedStrokeIndex] : []);
+            }
+
+            function copySelectedStrokes() {
+                const indices = getSelectionIndices();
+                if (!indices.length) return false;
                 selectionClipboard = indices.map((index) => cloneStroke(strokes[index]));
                 showNotification('Selection copied', 'success');
-            });
-            selectionPasteBtn?.addEventListener('click', () => {
-                if (!selectionClipboard.length) return;
+                return true;
+            }
+
+            function pasteSelectedStrokes() {
+                if (!selectionClipboard.length) return false;
                 addHistoryAction();
                 const offset = 24 / viewZoom;
                 const pastedIndices = [];
@@ -7535,9 +7571,14 @@
                 render();
                 updateSelectionContextMenu();
                 saveStrokesAndSettings();
-            });
+                showNotification('Selection pasted', 'success');
+                return true;
+            }
+
+            selectionCopyBtn?.addEventListener('click', copySelectedStrokes);
+            selectionPasteBtn?.addEventListener('click', pasteSelectedStrokes);
             selectionDeleteBtn?.addEventListener('click', () => {
-                const indices = selectedStrokeIndices.size ? Array.from(selectedStrokeIndices) : (selectedStrokeIndex >= 0 ? [selectedStrokeIndex] : []);
+                const indices = getSelectionIndices();
                 if (!indices.length) return;
                 addHistoryAction();
                 indices.sort((a, b) => b - a).forEach((index) => strokes.splice(index, 1));
@@ -7935,10 +7976,14 @@
                     const dy = splitGesture.lastY - splitGesture.startY;
                     const distance = Math.hypot(dx, dy);
                     if (distance > 32) {
-                        const direction = Math.abs(dx) >= Math.abs(dy) ? 'horizontal' : 'vertical';
-                        const splitX = (splitGesture.startX + splitGesture.lastX) / 2;
-                        const splitY = (splitGesture.startY + splitGesture.lastY) / 2;
-                        createSplitBoard(direction, splitX, splitY);
+                        if (splitView) {
+                            exitSplitView();
+                        } else {
+                            const direction = Math.abs(dx) >= Math.abs(dy) ? 'horizontal' : 'vertical';
+                            const splitX = (splitGesture.startX + splitGesture.lastX) / 2;
+                            const splitY = (splitGesture.startY + splitGesture.lastY) / 2;
+                            createSplitBoard(direction, splitX, splitY);
+                        }
                     }
                     splitGesture = null;
                     return;
@@ -8119,12 +8164,17 @@
                 if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
 
                 if (e.ctrlKey || e.metaKey) {
-                    if (e.key === 'z') {
+                    const key = e.key.toLowerCase();
+                    if (key === 'z') {
                         e.preventDefault();
                         undo();
-                    } else if (e.key === 'y') {
+                    } else if (key === 'y') {
                         e.preventDefault();
                         redo();
+                    } else if (key === 'c') {
+                        if (copySelectedStrokes()) e.preventDefault();
+                    } else if (key === 'v') {
+                        if (pasteSelectedStrokes()) e.preventDefault();
                     }
                 } else if (e.altKey && e.key.toLowerCase() === 'v') {
                     e.preventDefault();
