@@ -883,7 +883,9 @@
             padding: 0.25rem;
             border-radius: 0.5rem;
             background: #eef2f7;
-            max-width: calc(100vw - 150px);
+            max-width: min(24rem, calc(100vw - 150px));
+            flex: 0 0 auto;
+            overflow: hidden;
             transition: background 0.18s ease, max-width 0.22s ease, max-height 0.22s ease;
         }
 
@@ -891,9 +893,12 @@
             display: inline-flex;
             align-items: center;
             gap: 0.25rem;
-            overflow: hidden;
-            max-width: 20rem;
+            overflow-x: auto;
+            overflow-y: hidden;
+            max-width: min(14rem, 38vw);
             max-height: 20rem;
+            flex: 1 1 auto;
+            min-width: 0;
             transition: max-width 0.22s ease, max-height 0.22s ease, opacity 0.18s ease;
             scrollbar-width: none;
         }
@@ -903,10 +908,15 @@
             height: 0;
         }
 
+        .tool-config-group.collapsed {
+            max-width: max-content;
+        }
+
         .tool-config-group.collapsed .pinned-tool-configs {
             max-width: 0;
             max-height: 0;
             opacity: 0;
+            flex-basis: 0;
         }
 
         .tool-mini-btn,
@@ -2185,12 +2195,21 @@
             }
 
             .tool-config-group {
-                max-width: min(64vw, 18rem);
+                max-width: min(54vw, 14rem);
+            }
+
+            .tool-config-group.collapsed {
+                max-width: max-content;
             }
 
             .pinned-tool-configs {
                 overflow-x: auto;
-                max-width: min(44vw, 14rem);
+                max-width: min(30vw, 8rem);
+            }
+
+            .tool-config-group .tool-mini-btn {
+                width: 1.5rem;
+                min-width: 1.5rem;
             }
 
             .board-controls {
@@ -2627,6 +2646,7 @@
                     <button class="shape-type-option active" data-shape-tool="rect">Rectangle</button>
                     <button class="shape-type-option" data-shape-tool="rhombus" title="Draw a rhombus">◇ Rhombus</button>
                     <button class="shape-type-option" data-shape-tool="parallelogram">Parallelogram</button>
+                    <button class="shape-type-option" data-shape-tool="trapezium" title="Draw a trapezium">Trapezium</button>
                     <button class="shape-type-option" data-shape-tool="kite">Kite</button>
                 </div>
             </div>
@@ -4882,7 +4902,6 @@
             let currentColor = '#000000';
             let currentBrushSize = 5;
             let currentTool = 'pen';
-            let originalTool = 'pen';
             let activePenTool = 'pen';
             let activeTouchTool = 'pen';
             let lastToolPointerType = 'touch';
@@ -4937,16 +4956,13 @@
             let isTwoFingerPanning = false;
             let lastTouchMidpoint = { x: 0, y: 0 };
             let lastTouchDistance = 0; // For pinch-zoom
-            let isEraserGesture = false;
             let eraserHistorySnapshot = null;
             let splitGesture = null;
             let splitDragState = null;
             let pinnedPenConfigs = [];
             let isPenGroupCollapsed = localStorage.getItem('whiteboardPenGroupCollapsed') === 'true';
 
-            // Hold-to-erase state
-            let touchHoldTimer = null;
-            const TOUCH_HOLD_DURATION = 500;
+            // Tool press state
             const TOOL_DOUBLE_TAP_DURATION = 300;
             const TOOL_LONG_PRESS_DURATION = 420;
             let toolbarDragState = null;
@@ -4957,8 +4973,8 @@
             let suppressNextToolClick = false;
             let zoomSaveTimer = null;
 
-            const MIN_ZOOM = 0.1;
-            const MAX_ZOOM = 10.0;
+            const MIN_ZOOM = 0.0001;
+            const MAX_ZOOM = 10000;
             const ZOOM_STEP = 0.1;
             const PRESET_COLORS = ['#000000', '#EF4444', '#F97316', '#FACC15', '#22C55E', '#06B6D4', '#2563EB', '#7C3AED', '#EC4899', '#64748B', '#FFFFFF', '#A16207'];
 
@@ -5086,6 +5102,7 @@
             }
 
             function clampZoom(zoomValue) {
+                if (!Number.isFinite(zoomValue) || zoomValue <= 0) return viewZoom || 1;
                 return Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoomValue));
             }
 
@@ -5911,6 +5928,10 @@
                         const cy = (minY + maxY) / 2;
                         return [{ x: cx, y: minY }, { x: maxX, y: cy }, { x: cx, y: maxY }, { x: minX + w * 0.18, y: cy }];
                     }
+                    case 'trapezium': {
+                        const inset = Math.min(Math.abs(w) * 0.22, Math.abs(w) / 2);
+                        return [{ x: minX + inset, y: minY }, { x: maxX - inset, y: minY }, { x: maxX, y: maxY }, { x: minX, y: maxY }];
+                    }
                     case 'rect':
                     default:
                         return [{ x: minX, y: minY }, { x: maxX, y: minY }, { x: maxX, y: maxY }, { x: minX, y: maxY }];
@@ -6051,6 +6072,7 @@
                     case 'rhombus':
                     case 'parallelogram':
                     case 'kite':
+                    case 'trapezium':
                         if (stroke.points.length < 2) return;
                         withStrokeRotation(stroke, () => {
                             ctx.beginPath();
@@ -6222,6 +6244,7 @@
                     case 'circle':
                     case 'rhombus':
                     case 'parallelogram':
+                    case 'trapezium':
                     case 'kite':
                         const p1 = stroke.points[0];
                         const p2 = stroke.points[1];
@@ -6282,7 +6305,7 @@
             }
 
             function isShapeStroke(stroke) {
-                return stroke && ['line', 'rect', 'circle', 'triangle', 'rhombus', 'parallelogram', 'kite'].includes(stroke.tool);
+                return stroke && ['line', 'rect', 'circle', 'triangle', 'rhombus', 'parallelogram', 'trapezium', 'kite'].includes(stroke.tool);
             }
 
             function getStrokeLocalBounds(stroke) {
@@ -6349,7 +6372,7 @@
                         maxY: Math.max(...ys)
                     };
                 }
-                if (['rhombus', 'parallelogram', 'kite'].includes(stroke.tool)) {
+                if (['rhombus', 'parallelogram', 'trapezium', 'kite'].includes(stroke.tool)) {
                     const points = getQuadrilateralPoints(stroke);
                     const xs = points.map(p => p.x);
                     const ys = points.map(p => p.y);
@@ -7001,7 +7024,6 @@
                     activeTouchTool = tool;
                 }
                 currentTool = tool;
-                originalTool = tool;
                 updateToolAssignmentIndicators();
             }
 
@@ -7120,26 +7142,6 @@
                     return;
                 }
 
-                if (e.pointerType === 'touch') {
-                    touchHoldTimer = setTimeout(() => {
-                        isEraserGesture = true;
-                        originalTool = currentTool;
-                        currentTool = 'eraser';
-
-                        const { x: screenX, y: screenY } = getCoords(e);
-                        const pane = getPaneAtScreenPoint(screenX, screenY);
-                        activePaneId = pane?.id || null;
-                        const worldPoint = screenToWorld(screenX, screenY, activePaneId);
-                        isDrawing = true;
-                        didDeleteInStroke = false;
-                        if (findAndRemoveStroke(worldPoint)) {
-                            didDeleteInStroke = true;
-                        }
-
-                    }, TOUCH_HOLD_DURATION);
-                }
-
-                if (isEraserGesture) return;
                 if (e.pointerType === 'mouse' && e.button !== 0) return;
                 e.preventDefault();
 
@@ -7232,7 +7234,7 @@
                 }
                 const strokeTool = currentTool === 'pen' ? (currentPenType === 'spray' ? 'spray' : currentPenType === 'highlighter' ? 'highlighter' : 'pen') : (currentTool === 'rect' ? currentQuadrilateralType : currentTool);
                 const startPoint = makeStrokePoint(worldPoint, e.timeStamp || Date.now());
-                const strokeSize = ['line', 'rect', 'circle', 'triangle', 'rhombus', 'parallelogram', 'kite'].includes(strokeTool) ? currentShapeSize : currentBrushSize;
+                const strokeSize = ['line', 'rect', 'circle', 'triangle', 'rhombus', 'parallelogram', 'trapezium', 'kite'].includes(strokeTool) ? currentShapeSize : currentBrushSize;
                 currentPath = { id: Date.now(), tool: strokeTool, color: currentColor, size: strokeSize, points: [startPoint], paneId: activePaneId };
                 if (strokeTool === 'pen') {
                     currentPath.variableWidth = false;
@@ -7253,11 +7255,6 @@
 
             function draw(e) {
                 if (activePointerId !== null && e.pointerId !== activePointerId) return;
-                if (touchHoldTimer) {
-                    clearTimeout(touchHoldTimer);
-                    touchHoldTimer = null;
-                }
-
                 if ((!isDrawing && !isPanning) || isTwoFingerPanning) return;
                 e.preventDefault();
 
@@ -7379,11 +7376,6 @@
 
             function stopDrawing(e) {
                 if (e && activePointerId !== null && e.pointerId !== activePointerId) return;
-                if (touchHoldTimer) {
-                    clearTimeout(touchHoldTimer);
-                    touchHoldTimer = null;
-                }
-
                 if (isPanning) {
                     isPanning = false;
                     canvas.classList.remove('panning');
@@ -7456,10 +7448,6 @@
                     }
                 }
 
-                if (isEraserGesture) {
-                    isEraserGesture = false;
-                    currentTool = originalTool;
-                }
                 activePointerId = null;
             }
 
@@ -7962,9 +7950,8 @@
                     const deltaDistance = newTouchDistance - lastTouchDistance;
 
                     // Use a slower zoom factor for touch
-                    const zoomFactor = 1 + (deltaDistance / 100) * (ZOOM_STEP * 5);
-                    const newZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, transform.zoom * zoomFactor));
-                    setZoom(newZoom, newMidpoint.x, newMidpoint.y, false);
+                    const zoomFactor = Math.exp((deltaDistance / 100) * (ZOOM_STEP * 5));
+                    setZoom(transform.zoom * zoomFactor, newMidpoint.x, newMidpoint.y, false);
 
                     lastTouchDistance = newTouchDistance;
                 }
@@ -7999,11 +7986,10 @@
                 e.preventDefault();
                 if (e.ctrlKey) {
                     // Zoom
-                    const delta = -Math.sign(e.deltaY) * ZOOM_STEP;
                     activePaneId = getPaneAtScreenPoint(e.clientX, e.clientY)?.id || null;
                     const transform = getActiveTransform(e.clientX, e.clientY, activePaneId);
-                    const newZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, transform.zoom + delta));
-                    setZoom(newZoom, e.clientX, e.clientY, false);
+                    const zoomFactor = Math.exp(-Math.sign(e.deltaY) * ZOOM_STEP);
+                    setZoom(transform.zoom * zoomFactor, e.clientX, e.clientY, false);
                 } else {
                     // Pan
                     activePaneId = getPaneAtScreenPoint(e.clientX, e.clientY)?.id || null;
