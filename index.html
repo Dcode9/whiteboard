@@ -912,6 +912,20 @@
             max-width: max-content;
         }
 
+        .tool-config-group.collapsed .tool-mini-btn {
+            display: none;
+        }
+
+        #whiteboard-view.active .toolbar-dock-top .tool-config-group,
+        #whiteboard-view.active .toolbar-dock-bottom .tool-config-group {
+            max-width: min(18rem, 42vw);
+        }
+
+        #whiteboard-view.active .toolbar-dock-top .tool-config-group.collapsed,
+        #whiteboard-view.active .toolbar-dock-bottom .tool-config-group.collapsed {
+            max-width: max-content;
+        }
+
         .tool-config-group.collapsed .pinned-tool-configs {
             max-width: 0;
             max-height: 0;
@@ -1275,6 +1289,7 @@
             padding: 1rem;
             z-index: 1200;
             width: 280px;
+            max-width: calc(100vw - 24px);
             overflow-y: auto;
             max-height: 70vh;
         }
@@ -1537,6 +1552,23 @@
             cursor: pointer;
         }
 
+        .file-size-indicator {
+            min-height: 2.25rem;
+            padding: 0 0.85rem;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.25);
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(14px);
+            box-shadow: 0 12px 30px -12px rgba(15, 23, 42, 0.35);
+            color: #334155;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
         .split-divider-handle {
             position: fixed;
             z-index: 240;
@@ -1598,7 +1630,8 @@
         body.dark-mode .popover,
         body.dark-mode .text-input-overlay,
         body.dark-mode .custom-modal,
-        body.dark-mode .board-theme-toggle {
+        body.dark-mode .board-theme-toggle,
+        body.dark-mode .file-size-indicator {
             background: rgba(15, 23, 42, 0.92);
             color: #e2e8f0;
             border-color: rgba(148, 163, 184, 0.22);
@@ -1912,7 +1945,8 @@
         .selection-context-menu.active { display: flex; }
         .selection-context-menu button { padding: 6px 10px; border: 0; border-radius: 999px; background: #eef2ff; color: #1e3a8a; cursor: pointer; font-size: 12px; font-weight: 700; }
         .shape-type-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; width: 100%; }
-        .shape-type-option { border: 1px solid #d1d5db; border-radius: 8px; background: #ffffff; color: #334155; cursor: pointer; font-size: 12px; padding: 8px 6px; }
+        .shape-type-option { border: 1px solid #d1d5db; border-radius: 8px; background: #ffffff; color: #334155; cursor: pointer; font-size: 12px; padding: 8px 6px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .shape-type-option svg { width: 32px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linejoin: round; }
         .shape-type-option.active { background: #dbeafe; border-color: #2563eb; color: #1d4ed8; }
 
         .eraser-mode-grid {
@@ -2461,6 +2495,15 @@
                     <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
                 </svg>
             </button>
+            <span id="file-size-indicator" class="file-size-indicator" title="Approximate board file size">0 KB</span>
+            <button id="export-pdf-btn" class="board-theme-toggle" type="button" title="Export current view to PDF" aria-label="Export current view to PDF">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"></path>
+                    <path d="M14 2v6h6"></path>
+                    <path d="M8 15h8"></path>
+                    <path d="M8 18h5"></path>
+                </svg>
+            </button>
             <button id="split-vertical-btn" class="board-theme-toggle" type="button" title="Split vertically (Alt+V)" aria-label="Split vertically">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <rect x="4" y="4" width="16" height="16" rx="2"></rect>
@@ -2643,11 +2686,11 @@
             <div class="flex flex-col items-center">
                 <label class="text-sm font-medium text-gray-700 mb-2">Quadrilateral</label>
                 <div class="shape-type-grid">
-                    <button class="shape-type-option active" data-shape-tool="rect">Rectangle</button>
-                    <button class="shape-type-option" data-shape-tool="rhombus" title="Draw a rhombus">◇ Rhombus</button>
-                    <button class="shape-type-option" data-shape-tool="parallelogram">Parallelogram</button>
-                    <button class="shape-type-option" data-shape-tool="trapezium" title="Draw a trapezium">Trapezium</button>
-                    <button class="shape-type-option" data-shape-tool="kite">Kite</button>
+                    <button class="shape-type-option active" data-shape-tool="rect" title="Draw a rectangle"><svg viewBox="0 0 32 24" aria-hidden="true"><path d="M5 5h22v14H5Z"></path></svg><span>Rectangle</span></button>
+                    <button class="shape-type-option" data-shape-tool="rhombus" title="Draw a rhombus"><svg viewBox="0 0 32 24" aria-hidden="true"><path d="M16 3 28 12 16 21 4 12Z"></path></svg><span>Rhombus</span></button>
+                    <button class="shape-type-option" data-shape-tool="parallelogram" title="Draw a parallelogram"><svg viewBox="0 0 32 24" aria-hidden="true"><path d="M10 5h20l-8 14H2Z"></path></svg><span>Parallelogram</span></button>
+                    <button class="shape-type-option" data-shape-tool="trapezium" title="Draw a trapezium"><svg viewBox="0 0 32 24" aria-hidden="true"><path d="M10 5h12l7 14H3Z"></path></svg><span>Trapezium</span></button>
+                    <button class="shape-type-option" data-shape-tool="kite" title="Draw a kite"><svg viewBox="0 0 32 24" aria-hidden="true"><path d="M16 3 28 12 16 21 8 12Z"></path></svg><span>Kite</span></button>
                 </div>
             </div>
             <div class="flex flex-col items-center">
@@ -4786,6 +4829,8 @@
             const splitVerticalBtn = document.getElementById('split-vertical-btn');
             const splitHorizontalBtn = document.getElementById('split-horizontal-btn');
             const splitExitBtn = document.getElementById('split-exit-btn');
+            const fileSizeIndicator = document.getElementById('file-size-indicator');
+            const exportPdfBtn = document.getElementById('export-pdf-btn');
             const splitDividerHandle = document.getElementById('split-divider-handle');
             const featureGuide = document.getElementById('feature-guide');
             const guideSpotlight = document.getElementById('guide-spotlight');
@@ -5660,6 +5705,85 @@
                 }, 1500);
             }
 
+            function getSerializedDrawingData() {
+                const data = window.getDrawingData ? window.getDrawingData() : {
+                    strokes,
+                    backgroundColor,
+                    backgroundPattern,
+                    viewOffset,
+                    viewZoom,
+                    splitView
+                };
+                return JSON.stringify(data || {});
+            }
+
+            function formatBytes(bytes) {
+                if (!Number.isFinite(bytes) || bytes < 0) return '0 KB';
+                if (bytes < 1024) return `${bytes} B`;
+                if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(bytes < 10 * 1024 ? 1 : 0)} KB`;
+                return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+            }
+
+            function updateFileSizeIndicator() {
+                if (!fileSizeIndicator) return;
+                try {
+                    const bytes = new Blob([getSerializedDrawingData()]).size;
+                    fileSizeIndicator.textContent = formatBytes(bytes);
+                    fileSizeIndicator.title = `Approximate board file size: ${formatBytes(bytes)}`;
+                } catch (error) {
+                    fileSizeIndicator.textContent = 'Size --';
+                }
+            }
+
+            function buildSingleImagePdf(imageDataUrl, pageWidth, pageHeight, imageWidth, imageHeight) {
+                const base64 = imageDataUrl.split(',')[1] || '';
+                const imageBinary = atob(base64);
+                const contentStream = `q ${pageWidth} 0 0 ${pageHeight} 0 0 cm /Im0 Do Q\n`;
+                const objects = [
+                    '<< /Type /Catalog /Pages 2 0 R >>',
+                    '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
+                    `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pageWidth} ${pageHeight}] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>`,
+                    `<< /Type /XObject /Subtype /Image /Width ${Math.round(imageWidth)} /Height ${Math.round(imageHeight)} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${imageBinary.length} >>\nstream\n${imageBinary}\nendstream`,
+                    `<< /Length ${contentStream.length} >>\nstream\n${contentStream}endstream`
+                ];
+                let pdf = '%PDF-1.4\n';
+                const offsets = [0];
+                objects.forEach((object, index) => {
+                    offsets.push(pdf.length);
+                    pdf += `${index + 1} 0 obj\n${object}\nendobj\n`;
+                });
+                const xrefOffset = pdf.length;
+                pdf += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
+                offsets.slice(1).forEach((offset) => {
+                    pdf += `${String(offset).padStart(10, '0')} 00000 n \n`;
+                });
+                pdf += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`;
+                const bytes = new Uint8Array(pdf.length);
+                for (let i = 0; i < pdf.length; i++) bytes[i] = pdf.charCodeAt(i) & 0xff;
+                return new Blob([bytes], { type: 'application/pdf' });
+            }
+
+            function exportCurrentViewToPdf() {
+                try {
+                    render();
+                    const pageWidth = Math.max(1, Math.round(canvas.width / dpr));
+                    const pageHeight = Math.max(1, Math.round(canvas.height / dpr));
+                    const imageDataUrl = canvas.toDataURL('image/jpeg', 0.92);
+                    const blob = buildSingleImagePdf(imageDataUrl, pageWidth, pageHeight, canvas.width, canvas.height);
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = `whiteboard-${new Date().toISOString().slice(0, 10)}.pdf`;
+                    document.body.appendChild(link);
+                    link.click();
+                    link.remove();
+                    setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+                    showNotification(`Exported PDF (${formatBytes(blob.size)})`, 'success');
+                } catch (error) {
+                    console.error('PDF export failed', error);
+                    showNotification('PDF export failed: ' + error.message, 'error');
+                }
+            }
+
             function saveViewTransform() {
                 try {
                     const viewState = { offset: viewOffset, zoom: viewZoom, splitView };
@@ -5689,6 +5813,7 @@
                     if (window.saveCurrentLocalBoard) {
                         window.saveCurrentLocalBoard();
                     }
+                    updateFileSizeIndicator();
                     // Note: Cloud boards now require manual save via "Save" button
                 } catch (e) {
                     console.error("Error saving strokes", e);
@@ -5902,6 +6027,14 @@
             }
 
 
+            function getQuadrilateralAdjust(stroke, fallback) {
+                return Number.isFinite(stroke?.shapeAdjust) ? stroke.shapeAdjust : fallback;
+            }
+
+            function clampShapeAdjust(value, min, max) {
+                return Math.max(min, Math.min(max, value));
+            }
+
             function getQuadrilateralPoints(stroke) {
                 if (!stroke?.points || stroke.points.length < 2) return null;
                 const p1 = stroke.points[0];
@@ -5916,20 +6049,23 @@
                     case 'rhombus': {
                         const cx = (minX + maxX) / 2;
                         const cy = (minY + maxY) / 2;
-                        return [{ x: cx, y: minY }, { x: maxX, y: cy }, { x: cx, y: maxY }, { x: minX, y: cy }];
+                        const shift = clampShapeAdjust(getQuadrilateralAdjust(stroke, 0), -1, 1) * w * 0.22;
+                        return [{ x: cx + shift, y: minY }, { x: maxX, y: cy }, { x: cx - shift, y: maxY }, { x: minX, y: cy }];
                     }
                     case 'parallelogram': {
-                        const skew = Math.max(12, Math.abs(w) * 0.22);
-                        const dir = p2.x >= p1.x ? 1 : -1;
-                        return [{ x: minX + skew * dir, y: minY }, { x: maxX + skew * dir, y: minY }, { x: maxX - skew * dir, y: maxY }, { x: minX - skew * dir, y: maxY }];
+                        const skewRatio = clampShapeAdjust(getQuadrilateralAdjust(stroke, 0.22), -0.45, 0.45);
+                        const skew = w * skewRatio;
+                        return [{ x: minX + skew, y: minY }, { x: maxX + skew, y: minY }, { x: maxX - skew, y: maxY }, { x: minX - skew, y: maxY }];
                     }
                     case 'kite': {
                         const cx = (minX + maxX) / 2;
                         const cy = (minY + maxY) / 2;
-                        return [{ x: cx, y: minY }, { x: maxX, y: cy }, { x: cx, y: maxY }, { x: minX + w * 0.18, y: cy }];
+                        const leftRatio = clampShapeAdjust(getQuadrilateralAdjust(stroke, 0.18), 0.02, 0.45);
+                        return [{ x: cx, y: minY }, { x: maxX, y: cy }, { x: cx, y: maxY }, { x: minX + w * leftRatio, y: cy }];
                     }
                     case 'trapezium': {
-                        const inset = Math.min(Math.abs(w) * 0.22, Math.abs(w) / 2);
+                        const insetRatio = clampShapeAdjust(getQuadrilateralAdjust(stroke, 0.22), 0, 0.45);
+                        const inset = Math.abs(w) * insetRatio;
                         return [{ x: minX + inset, y: minY }, { x: maxX - inset, y: minY }, { x: maxX, y: maxY }, { x: minX, y: maxY }];
                     }
                     case 'rect':
@@ -6437,6 +6573,16 @@
                             ctx.stroke();
                             continue;
                         }
+                        if (handle.type === 'angle') {
+                            ctx.save();
+                            ctx.fillStyle = '#f97316';
+                            ctx.translate(handle.x, handle.y);
+                            ctx.rotate(Math.PI / 4);
+                            ctx.fillRect(-handleSize / 2, -handleSize / 2, handleSize, handleSize);
+                            ctx.strokeRect(-handleSize / 2, -handleSize / 2, handleSize, handleSize);
+                            ctx.restore();
+                            continue;
+                        }
                         ctx.fillRect(handle.x - handleSize / 2, handle.y - handleSize / 2, handleSize, handleSize);
                         ctx.strokeRect(handle.x - handleSize / 2, handle.y - handleSize / 2, handleSize, handleSize);
                     }
@@ -6463,6 +6609,14 @@
                     { x: bounds.maxX, y: (bounds.minY + bounds.maxY) / 2, key: 'e', type: 'edge', cursor: 'ew-resize' },
                     { x: (bounds.minX + bounds.maxX) / 2, y: bounds.minY - (28 / viewZoom), key: 'rotate', type: 'rotate', cursor: 'grab' },
                 ];
+                if (['rhombus', 'parallelogram', 'trapezium', 'kite'].includes(stroke.tool)) {
+                    const anglePoints = getQuadrilateralPoints(stroke) || [];
+                    const angleIndices = stroke.tool === 'kite' ? [3] : stroke.tool === 'rhombus' ? [0, 2] : [0, 1];
+                    angleIndices.forEach((pointIndex, slotIndex) => {
+                        const point = anglePoints[pointIndex];
+                        if (point) handles.push({ ...point, key: `angle-${pointIndex}`, type: 'angle', cursor: 'grab', slotIndex });
+                    });
+                }
                 return handles.map((handle) => ({
                     ...handle,
                     ...rotatePointAround(handle, center, stroke.rotation || 0)
@@ -6537,9 +6691,43 @@
                 }
             }
 
+            function adjustShapeAngleToPoint(stroke, localPoint, handle) {
+                const bounds = getStrokeLocalBounds(stroke);
+                if (!bounds) return;
+                const width = Math.max(1e-9, bounds.maxX - bounds.minX);
+                const centerX = (bounds.minX + bounds.maxX) / 2;
+                switch (stroke.tool) {
+                    case 'rhombus': {
+                        const sign = handle.key === 'angle-2' ? -1 : 1;
+                        stroke.shapeAdjust = clampShapeAdjust(sign * (localPoint.x - centerX) / (width * 0.22), -1, 1);
+                        break;
+                    }
+                    case 'parallelogram': {
+                        stroke.shapeAdjust = handle.key === 'angle-1'
+                            ? clampShapeAdjust((localPoint.x - bounds.maxX) / width, -0.45, 0.45)
+                            : clampShapeAdjust((localPoint.x - bounds.minX) / width, -0.45, 0.45);
+                        break;
+                    }
+                    case 'trapezium': {
+                        stroke.shapeAdjust = handle.key === 'angle-1'
+                            ? clampShapeAdjust((bounds.maxX - localPoint.x) / width, 0, 0.45)
+                            : clampShapeAdjust((localPoint.x - bounds.minX) / width, 0, 0.45);
+                        break;
+                    }
+                    case 'kite': {
+                        stroke.shapeAdjust = clampShapeAdjust((localPoint.x - bounds.minX) / width, 0.02, 0.45);
+                        break;
+                    }
+                }
+            }
+
             function resizeShapeToPoint(stroke, worldPoint, handle) {
                 if (!stroke || !isShapeStroke(stroke) || !stroke.points || stroke.points.length < 2) return;
                 const localPoint = pointToStrokeLocal(worldPoint, stroke);
+                if (handle?.type === 'angle') {
+                    adjustShapeAngleToPoint(stroke, localPoint, handle);
+                    return;
+                }
                 if (!handle) {
                     stroke.points[1] = { ...stroke.points[1], x: localPoint.x, y: localPoint.y };
                     return;
@@ -7168,6 +7356,8 @@
                             activeStrokeCenter = getStrokeCenter(selectedStroke);
                             rotateStartAngle = Math.atan2(worldPoint.y - activeStrokeCenter.y, worldPoint.x - activeStrokeCenter.x);
                             rotateStartValue = selectedStroke.rotation || 0;
+                        } else if (resizeHandle.type === 'angle') {
+                            moveInteractionMode = 'angle';
                         } else {
                             moveInteractionMode = 'resize';
                         }
@@ -7300,7 +7490,7 @@
                             return;
                         }
                         if (movingStrokeIndex !== -1 && lastMovePoint) {
-                            if (moveInteractionMode === 'resize') {
+                            if (moveInteractionMode === 'resize' || moveInteractionMode === 'angle') {
                                 if (!hasMovedShape) {
                                     addHistoryAction();
                                 }
@@ -7477,15 +7667,38 @@
             }
 
             function positionPopover(popover, buttonRect) {
-                const popoverWidth = popover.offsetWidth;
-                let top = buttonRect.bottom + 12;
+                const margin = 12;
+                const popoverWidth = popover.offsetWidth || 280;
+                const popoverHeight = popover.offsetHeight || 260;
+                const dock = toolbarDockPosition || 'top';
                 let left = buttonRect.left + (buttonRect.width / 2) - (popoverWidth / 2);
-                left = Math.max(16, left);
-                if (left + popoverWidth > window.innerWidth - 16) {
-                    left = window.innerWidth - 16 - popoverWidth;
+                let top = buttonRect.bottom + margin;
+
+                if (dock === 'bottom') {
+                    top = buttonRect.top - popoverHeight - margin;
+                } else if (dock === 'left') {
+                    left = buttonRect.right + margin;
+                    top = buttonRect.top + (buttonRect.height / 2) - (popoverHeight / 2);
+                } else if (dock === 'right') {
+                    left = buttonRect.left - popoverWidth - margin;
+                    top = buttonRect.top + (buttonRect.height / 2) - (popoverHeight / 2);
                 }
-                popover.style.top = `${top}px`;
-                popover.style.left = `${left}px`;
+
+                if (top + popoverHeight > window.innerHeight - margin) {
+                    top = buttonRect.top - popoverHeight - margin;
+                }
+                if (top < margin) {
+                    top = Math.min(window.innerHeight - popoverHeight - margin, buttonRect.bottom + margin);
+                }
+                if (left + popoverWidth > window.innerWidth - margin) {
+                    left = buttonRect.left - popoverWidth - margin;
+                }
+                if (left < margin) {
+                    left = Math.min(window.innerWidth - popoverWidth - margin, buttonRect.right + margin);
+                }
+
+                popover.style.top = `${Math.max(margin, top)}px`;
+                popover.style.left = `${Math.max(margin, left)}px`;
                 popover.style.transform = 'none';
             }
 
@@ -8262,6 +8475,7 @@
             splitVerticalBtn?.addEventListener('click', () => splitAtViewportCenter('vertical'));
             splitHorizontalBtn?.addEventListener('click', () => splitAtViewportCenter('horizontal'));
             splitExitBtn?.addEventListener('click', exitSplitView);
+            exportPdfBtn?.addEventListener('click', exportCurrentViewToPdf);
 
             if (splitDividerHandle) {
                 splitDividerHandle.addEventListener('pointerdown', (event) => {
@@ -8437,6 +8651,7 @@
                 syncZoomControls();
                 render();
                 updateUndoRedoButtons();
+                updateFileSizeIndicator();
             };
 
             window.handleBoardRoute = function(options = {}) {
