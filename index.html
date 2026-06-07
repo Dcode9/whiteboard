@@ -564,6 +564,7 @@
 
         .templates-section {
             margin-bottom: 48px;
+            padding-top: 0;
         }
 
         .template-hero {
@@ -1646,6 +1647,8 @@
         body.dark-mode .triangle-option,
         body.dark-mode .eraser-mode-grid button,
         body.dark-mode .pen-mode-grid button,
+        body.dark-mode .line-style-grid button,
+        body.dark-mode .line-ending-grid button,
         body.dark-mode .shape-type-option,
         body.dark-mode .tool-mini-btn,
         body.dark-mode .pin-config-btn,
@@ -1671,6 +1674,8 @@
         body.dark-mode .triangle-option:hover,
         body.dark-mode .eraser-mode-grid button:hover,
         body.dark-mode .pen-mode-grid button:hover,
+        body.dark-mode .line-style-grid button:hover,
+        body.dark-mode .line-ending-grid button:hover,
         body.dark-mode .shape-type-option:hover {
             background: rgba(30, 41, 59, 0.96);
         }
@@ -1680,6 +1685,8 @@
         body.dark-mode .triangle-option.active,
         body.dark-mode .eraser-mode-grid button.active,
         body.dark-mode .pen-mode-grid button.active,
+        body.dark-mode .line-style-grid button.active,
+        body.dark-mode .line-ending-grid button.active,
         body.dark-mode .shape-type-option.active {
             background: rgba(37, 99, 235, 0.24);
             color: #93c5fd;
@@ -1989,7 +1996,8 @@
         }
 
         .pen-type-grid,
-        .line-style-grid {
+        .line-style-grid,
+        .line-ending-grid {
             display: grid;
             grid-template-columns: repeat(3, minmax(0, 1fr));
             gap: 6px;
@@ -1997,7 +2005,8 @@
         }
 
         .pen-type-grid button,
-        .line-style-grid button {
+        .line-style-grid button,
+        .line-ending-grid button {
             border: 1px solid #d1d5db;
             border-radius: 8px;
             background: white;
@@ -2007,7 +2016,8 @@
         }
 
         .pen-type-grid button.active,
-        .line-style-grid button.active {
+        .line-style-grid button.active,
+        .line-ending-grid button.active {
             background: #dbeafe;
             border-color: #2563eb;
             color: #1d4ed8;
@@ -2631,6 +2641,15 @@
     </div>
     <div id="line-popover" class="popover">
         <div class="flex flex-col gap-4">
+            <div class="flex flex-col items-center">
+                <label class="text-sm font-medium text-gray-700 mb-2">Line Type</label>
+                <div class="line-ending-grid">
+                    <button class="line-ending-option active" data-line-ending="none">Line</button>
+                    <button class="line-ending-option" data-line-ending="arrow">Arrow</button>
+                    <button class="line-ending-option" data-line-ending="double-arrow">Double</button>
+                    <button class="line-ending-option" data-line-ending="ray">Ray</button>
+                </div>
+            </div>
             <div class="flex flex-col items-center">
                 <label class="text-sm font-medium text-gray-700 mb-2">Line Style</label>
                 <div class="line-style-grid">
@@ -4953,6 +4972,7 @@
             const presetColorsEl = document.getElementById('preset-colors');
             const penTypeButtons = Array.from(document.querySelectorAll('.pen-type-option'));
             const lineStyleButtons = Array.from(document.querySelectorAll('.line-style-option'));
+            const lineEndingButtons = Array.from(document.querySelectorAll('.line-ending-option'));
             const pinPenConfigBtn = document.getElementById('pin-pen-config-btn');
             const pinnedPenConfigsEl = document.getElementById('pinned-pen-configs');
             const pinnedPenEditorEl = document.getElementById('pinned-pen-editor');
@@ -5020,6 +5040,7 @@
             let activePointerId = null;
             let currentPenType = 'default';
             let currentLineStyle = 'solid';
+            let currentLineEnding = 'none';
             let currentShapeSize = 5;
             let currentQuadrilateralType = 'rect';
             let currentResizeHandle = null;
@@ -5491,6 +5512,9 @@
                 lineStyleButtons.forEach((button) => {
                     button.classList.toggle('active', button.dataset.lineStyle === currentLineStyle);
                 });
+                lineEndingButtons.forEach((button) => {
+                    button.classList.toggle('active', button.dataset.lineEnding === currentLineEnding);
+                });
             }
 
             function getCurrentPenConfig() {
@@ -5869,6 +5893,7 @@
                 undoStack = [];
                 redoStack = [];
                 selectedStrokeIndex = -1;
+                selectedStrokeIndices = new Set();
                 movingStrokeIndex = -1;
                 moveInteractionMode = 'none';
                 backgroundColor = '#FFFFFF';
@@ -5909,6 +5934,7 @@
                 try {
                     strokes = JSON.parse(undoStack.pop());
                     selectedStrokeIndex = -1;
+                    selectedStrokeIndices = new Set();
                     movingStrokeIndex = -1;
                     moveInteractionMode = 'none';
                     updateUndoRedoButtons();
@@ -5923,6 +5949,7 @@
                 try {
                     strokes = JSON.parse(redoStack.pop());
                     selectedStrokeIndex = -1;
+                    selectedStrokeIndices = new Set();
                     movingStrokeIndex = -1;
                     moveInteractionMode = 'none';
                     updateUndoRedoButtons();
@@ -5978,6 +6005,41 @@
                 } else {
                     ctx.setLineDash([]);
                 }
+            }
+
+            function drawLineEnding(from, to, size, ending) {
+                if (!from || !to || !ending || ending === 'none') return;
+                const dx = to.x - from.x;
+                const dy = to.y - from.y;
+                const length = Math.hypot(dx, dy);
+                if (length < 0.0001) return;
+                const angle = Math.atan2(dy, dx);
+                const headLength = Math.max(12, (size || 2) * 4.5);
+                const drawHead = (tip, theta) => {
+                    ctx.beginPath();
+                    ctx.moveTo(tip.x, tip.y);
+                    ctx.lineTo(tip.x - headLength * Math.cos(theta - Math.PI / 6), tip.y - headLength * Math.sin(theta - Math.PI / 6));
+                    ctx.moveTo(tip.x, tip.y);
+                    ctx.lineTo(tip.x - headLength * Math.cos(theta + Math.PI / 6), tip.y - headLength * Math.sin(theta + Math.PI / 6));
+                    ctx.stroke();
+                };
+                ctx.save();
+                ctx.setLineDash([]);
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                if (ending === 'arrow' || ending === 'double-arrow' || ending === 'ray') {
+                    drawHead(to, angle);
+                }
+                if (ending === 'double-arrow') {
+                    drawHead(from, angle + Math.PI);
+                }
+                if (ending === 'ray') {
+                    ctx.fillStyle = ctx.strokeStyle;
+                    ctx.beginPath();
+                    ctx.arc(from.x, from.y, Math.max(2.5, (size || 2) * 0.65), 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.restore();
             }
 
             function drawSmoothPath(points) {
@@ -6190,6 +6252,7 @@
                             ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
                             ctx.lineTo(stroke.points[1].x, stroke.points[1].y);
                             ctx.stroke();
+                            drawLineEnding(stroke.points[0], stroke.points[1], stroke.size, stroke.lineEnding);
                         });
                         ctx.setLineDash([]);
                         return;
@@ -6569,12 +6632,13 @@
             }
 
             function drawSelectionOverlay() {
-                if (currentTool !== 'select') return;
                 const stroke = selectedStrokeIndex >= 0 ? strokes[selectedStrokeIndex] : null;
+                const showResizeSelection = stroke && isShapeStroke(stroke);
+                if (currentTool !== 'select' && !showResizeSelection) return;
                 const singleRotatedShape = stroke && selectedStrokeIndices.size <= 1 && isShapeStroke(stroke) && stroke.rotation;
                 const bounds = singleRotatedShape ? getStrokeLocalBounds(stroke) : getSelectedStrokeBounds();
                 if (!bounds) return;
-                const pad = 12 / viewZoom;
+                const pad = selectedStrokeIndices.size > 1 ? 0 : 12 / viewZoom;
                 ctx.save();
                 ctx.strokeStyle = selectedStrokeIndices.size > 1 ? '#dc2626' : '#2563eb';
                 ctx.fillStyle = '#ffffff';
@@ -7344,6 +7408,26 @@
                     canvas.classList.add('panning');
                     return;
                 }
+                if (currentTool !== 'select' && ['line', 'rect', 'circle', 'triangle'].includes(currentTool)) {
+                    const selectedStroke = selectedStrokeIndex >= 0 ? strokes[selectedStrokeIndex] : null;
+                    const resizeHandle = selectedStroke ? isPointOnResizeHandle(worldPoint, selectedStroke) : null;
+                    if (resizeHandle) {
+                        movingStrokeIndex = selectedStrokeIndex;
+                        currentResizeHandle = resizeHandle;
+                        if (resizeHandle.type === 'rotate') {
+                            moveInteractionMode = 'rotate';
+                            activeStrokeCenter = getStrokeCenter(selectedStroke);
+                            rotateStartAngle = Math.atan2(worldPoint.y - activeStrokeCenter.y, worldPoint.x - activeStrokeCenter.x);
+                            rotateStartValue = selectedStroke.rotation || 0;
+                        } else {
+                            moveInteractionMode = 'resize';
+                        }
+                        lastMovePoint = worldPoint;
+                        hasMovedShape = false;
+                        isDrawing = true;
+                        return;
+                    }
+                }
                 if (currentTool === 'select') {
                     const selectedStroke = selectedStrokeIndex >= 0 ? strokes[selectedStrokeIndex] : null;
                     const resizeHandle = selectedStroke ? isPointOnResizeHandle(worldPoint, selectedStroke) : null;
@@ -7404,6 +7488,11 @@
                     render();
                     return;
                 }
+                if (currentTool !== 'select') {
+                    selectedStrokeIndex = -1;
+                    selectedStrokeIndices = new Set();
+                    hideSelectionContextMenu();
+                }
                 isDrawing = true;
                 if (currentTool === 'eraser') {
                     if (currentEraserMode === 'object') {
@@ -7438,6 +7527,7 @@
                     }
                     if (currentTool === 'line') {
                         currentPath.lineStyle = currentLineStyle;
+                        currentPath.lineEnding = currentLineEnding;
                     }
                 }
             }
@@ -7469,6 +7559,25 @@
                         }
                     }
                     const worldPoint = screenToWorld(screenX, screenY, activePaneId);
+                    if (currentTool !== 'select' && movingStrokeIndex !== -1 && lastMovePoint) {
+                        if (moveInteractionMode === 'resize') {
+                            if (!hasMovedShape) {
+                                addHistoryAction();
+                            }
+                            resizeShapeToPoint(strokes[movingStrokeIndex], worldPoint, currentResizeHandle);
+                            hasMovedShape = true;
+                            requestRender();
+                        } else if (moveInteractionMode === 'rotate') {
+                            if (!hasMovedShape) {
+                                addHistoryAction();
+                            }
+                            const angle = Math.atan2(worldPoint.y - activeStrokeCenter.y, worldPoint.x - activeStrokeCenter.x);
+                            strokes[movingStrokeIndex].rotation = rotateStartValue + (angle - rotateStartAngle);
+                            hasMovedShape = true;
+                            requestRender();
+                        }
+                        return;
+                    }
                     if (currentTool === 'select') {
                         if (moveInteractionMode === 'lasso' && lassoPath) {
                             lassoPath.push(worldPoint);
@@ -7573,7 +7682,15 @@
                 if (isDrawing) {
                     isDrawing = false;
                     let didChange = false;
-                    if (currentTool === 'eraser') {
+                    if (currentTool !== 'select' && movingStrokeIndex !== -1) {
+                        didChange = hasMovedShape;
+                        movingStrokeIndex = -1;
+                        moveInteractionMode = 'none';
+                        currentResizeHandle = null;
+                        activeStrokeCenter = null;
+                        lastMovePoint = null;
+                        hasMovedShape = false;
+                    } else if (currentTool === 'eraser') {
                         if (currentEraserMode === 'object') {
                             if (didDeleteInStroke) {
                                 if (eraserHistorySnapshot) {
@@ -7630,10 +7747,8 @@
                             if (isShapeStroke(finishedStroke)) {
                                 selectedStrokeIndex = strokes.length - 1;
                                 selectedStrokeIndices = new Set([selectedStrokeIndex]);
-                                currentTool = 'select';
-                                setToolForPointerType('select');
-                                updateActiveToolButton('select');
                                 updateSelectionContextMenu();
+                                openToolPopover(currentTool === 'rect' ? 'rect' : finishedStroke.tool, currentTool === 'line' ? lineBtn : currentTool === 'circle' ? circleBtn : currentTool === 'triangle' ? triangleBtn : rectBtn);
                             }
                             didChange = true;
                         }
@@ -7666,8 +7781,10 @@
                 }
                 customCursorCircle.style.display = 'none';
                 customCursorEraser.style.display = 'none';
-                if (activeTool !== 'select') {
+                const shapeResizeToolActive = ['line', 'rect', 'circle', 'triangle'].includes(activeTool);
+                if (activeTool !== 'select' && !shapeResizeToolActive) {
                     selectedStrokeIndex = -1;
+                    selectedStrokeIndices = new Set();
                     movingStrokeIndex = -1;
                     moveInteractionMode = 'none';
                 }
@@ -8001,6 +8118,12 @@
             lineStyleButtons.forEach((button) => {
                 button.addEventListener('click', () => {
                     currentLineStyle = button.dataset.lineStyle || 'solid';
+                    updateLineStyleButtons();
+                });
+            });
+            lineEndingButtons.forEach((button) => {
+                button.addEventListener('click', () => {
+                    currentLineEnding = button.dataset.lineEnding || 'none';
                     updateLineStyleButtons();
                 });
             });
