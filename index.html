@@ -7747,8 +7747,7 @@
                             if (isShapeStroke(finishedStroke)) {
                                 selectedStrokeIndex = strokes.length - 1;
                                 selectedStrokeIndices = new Set([selectedStrokeIndex]);
-                                updateSelectionContextMenu();
-                                openToolPopover(currentTool === 'rect' ? 'rect' : finishedStroke.tool, currentTool === 'line' ? lineBtn : currentTool === 'circle' ? circleBtn : currentTool === 'triangle' ? triangleBtn : rectBtn);
+                                hideSelectionContextMenu();
                             }
                             didChange = true;
                         }
