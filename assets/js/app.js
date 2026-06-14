@@ -9,6 +9,7 @@ const DVERSE_SUPABASE_KEY = window.DVERSE_SUPABASE_KEY || 'sb_publishable_KX3MYt
 const dverseSupabase = window.supabase
   ? window.supabase.createClient(DVERSE_SUPABASE_URL, DVERSE_SUPABASE_KEY)
   : null;
+const DVERSE_PORTAL_ORIGIN = (window.DVERSE_PORTAL_ORIGIN || 'https://dverse.fun').replace(/\/$/, '');
 const dverseAuthRedirectUrl = () => `${window.location.origin}/`;
 
 // Safety Timeout (same as before)
@@ -25,11 +26,7 @@ setTimeout(function() {
 window.signInWithDverse = async function() {
   try {
     if (!dverseSupabase) throw new Error('Supabase client is not available');
-    const { error } = await dverseSupabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: dverseAuthRedirectUrl() }
-    });
-    if (error) throw error;
+    window.location.href = `${DVERSE_PORTAL_ORIGIN}/?dverse_return_to=${encodeURIComponent(dverseAuthRedirectUrl())}`;
   } catch (error) { console.error('Sign-in error:', error); showNotification('Sign-in failed: ' + error.message, 'error'); }
 };
 
