@@ -4,7 +4,12 @@
 document.addEventListener('contextmenu', (e) => { e.preventDefault(); });
 
 // ===== CONFIGURATION =====
-const GOOGLE_CLIENT_ID = '263202480558-jm6e5brpr0l00nlrcrer2vjvvtpcfr1r.apps.googleusercontent.com';
+const DVERSE_SUPABASE_URL = window.DVERSE_SUPABASE_URL || 'https://gmwieijbrrztukqpfwkg.supabase.co';
+const DVERSE_SUPABASE_KEY = window.DVERSE_SUPABASE_KEY || 'sb_publishable_KX3MYtV84QJJdy9bPDuMEA_V99sLKSE';
+const dverseSupabase = window.supabase
+  ? window.supabase.createClient(DVERSE_SUPABASE_URL, DVERSE_SUPABASE_KEY)
+  : null;
+const dverseAuthRedirectUrl = () => `${window.location.origin}/`;
 
 // Safety Timeout (same as before)
 setTimeout(function() {
@@ -17,30 +22,14 @@ setTimeout(function() {
 
 // -- All other functions and logic are ported from index.html with behavioral fixes --
 
-window.initGoogleAuth = function() {
-    if (typeof google === 'undefined' || !google.accounts) return;
-    try {
-        google.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: window.handleCredentialResponse, auto_select: false });
-        const btnDiv = document.getElementById('buttonDiv');
-        if (btnDiv) {
-            btnDiv.innerHTML = '';
-            google.accounts.id.renderButton(btnDiv, { theme: document.body.classList.contains('dark-mode') ? 'filled_black' : 'outline', size: 'large', locale: 'en' });
-        }
-    } catch (e) { console.error('Auth Init Error', e); }
-};
-
-window.handleCredentialResponse = async function(response) {
+window.signInWithDverse = async function() {
   try {
-    const authResponse = await fetch('/api/google', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ credential: response.credential }) });
-    if (!authResponse.ok) throw new Error('Authentication failed');
-    const authData = await authResponse.json();
-    localStorage.setItem('authToken', authData.token);
-    localStorage.setItem('userId', authData.user.userId);
-    localStorage.setItem('userEmail', authData.user.email);
-    localStorage.setItem('userName', authData.user.name);
-    localStorage.setItem('userPicture', authData.user.picture || '');
-    showNotification('Signed in successfully!', 'success');
-    updateAuthUI();
+    if (!dverseSupabase) throw new Error('Supabase client is not available');
+    const { error } = await dverseSupabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: dverseAuthRedirectUrl() }
+    });
+    if (error) throw error;
   } catch (error) { console.error('Sign-in error:', error); showNotification('Sign-in failed: ' + error.message, 'error'); }
 };
 
