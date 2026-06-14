@@ -2945,6 +2945,21 @@
       setTimeout(() => notif.remove(), 3000);
     }
 
+    async function apiErrorMessage(response, fallback) {
+      try {
+        const text = await response.text();
+        if (!text) return fallback;
+        try {
+          const payload = JSON.parse(text);
+          return payload.details || payload.error || fallback;
+        } catch (jsonError) {
+          return text;
+        }
+      } catch (error) {
+        return fallback;
+      }
+    }
+
     function updateAuthUI() {
       const token = localStorage.getItem('authToken');
       const userEmail = localStorage.getItem('userEmail');
@@ -4222,7 +4237,7 @@
                 });
 
                 if (!response.ok) {
-                    throw new Error('Upload failed');
+                    throw new Error(await apiErrorMessage(response, 'Upload failed'));
                 }
 
                 boards[boardIndex].lastUploaded = Date.now();
@@ -4233,7 +4248,7 @@
                 }
             } catch (error) {
                 console.error('Upload local board error:', error);
-                showNotification('Failed to upload local board', 'error');
+                showNotification('Failed to upload local board: ' + error.message, 'error');
             }
         }
 
@@ -4590,7 +4605,7 @@
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
-        if (!response.ok) throw new Error('Failed to load drawing');
+        if (!response.ok) throw new Error(await apiErrorMessage(response, 'Failed to load drawing'));
 
         const drawing = await response.json();
         currentBoardId = null; // Cloud board, not local
@@ -4622,10 +4637,12 @@
             if (res.ok) {
                 window.renderAllBoards();
                 showNotification('Renamed successfully', 'success');
+            } else {
+                throw new Error(await apiErrorMessage(res, 'Failed to rename cloud board'));
             }
         } catch(e) {
             console.error(e);
-            showNotification('Failed to rename cloud board', 'error');
+            showNotification('Failed to rename cloud board: ' + e.message, 'error');
         }
     };
 
@@ -4639,7 +4656,7 @@
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
-        if (!response.ok) throw new Error('Failed to delete');
+        if (!response.ok) throw new Error(await apiErrorMessage(response, 'Failed to delete'));
 
         window.renderAllBoards();
         showNotification('Board deleted', 'success');
@@ -4679,7 +4696,7 @@
           });
 
           if (!response.ok) {
-            throw new Error('Failed to update board');
+            throw new Error(await apiErrorMessage(response, 'Failed to update board'));
           }
 
           console.log('Board updated successfully');
@@ -4703,7 +4720,7 @@
           });
 
           if (!response.ok) {
-            throw new Error('Failed to save board');
+            throw new Error(await apiErrorMessage(response, 'Failed to save board'));
           }
 
           const result = await response.json();

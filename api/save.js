@@ -10,7 +10,8 @@ module.exports = async (req, res) => {
 
   try {
     const { supabase, user } = await getUserSupabase(req);
-    const { id, drawingData, title } = req.body || {};
+    const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
+    const { id, drawingData, title } = body;
 
     if (id) {
       const patch = { updated_at: new Date().toISOString() };
