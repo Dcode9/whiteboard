@@ -2797,7 +2797,86 @@
     const dverseSupabase = window.supabase
       ? window.supabase.createClient(DVERSE_SUPABASE_URL, DVERSE_SUPABASE_KEY)
       : null;
+    const DVERSE_PORTAL_ORIGIN = (window.DVERSE_PORTAL_ORIGIN || 'https://dverse.fun').replace(/\/$/, '');
+    const DVERSE_AUTH_BRIDGE_URL = `${DVERSE_PORTAL_ORIGIN}/auth-bridge.html`;
     const dverseAuthRedirectUrl = () => `${window.location.origin}/`;
+    let dversePortalSessionPromise = null;
+
+    function dverseBridgeRequest(message, timeoutMs = 2500) {
+      if (!DVERSE_PORTAL_ORIGIN || window.location.origin === DVERSE_PORTAL_ORIGIN || typeof document === 'undefined') {
+        return Promise.resolve(null);
+      }
+      return new Promise((resolve) => {
+        const requestId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+        const frame = document.createElement('iframe');
+        let finished = false;
+
+        function cleanup(value) {
+          if (finished) return;
+          finished = true;
+          window.removeEventListener('message', onMessage);
+          clearTimeout(timer);
+          frame.remove();
+          resolve(value);
+        }
+
+        function onMessage(event) {
+          if (event.origin !== DVERSE_PORTAL_ORIGIN) return;
+          const data = event.data || {};
+          if (data.source !== 'dverse-auth-bridge' || data.requestId !== requestId) return;
+          cleanup(data);
+        }
+
+        const timer = setTimeout(() => cleanup(null), timeoutMs);
+        frame.style.cssText = 'position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;border:0;';
+        frame.setAttribute('aria-hidden', 'true');
+        frame.addEventListener('load', () => {
+          frame.contentWindow?.postMessage({
+            source: 'dverse-app',
+            requestId,
+            ...message
+          }, DVERSE_PORTAL_ORIGIN);
+        });
+        window.addEventListener('message', onMessage);
+        frame.src = DVERSE_AUTH_BRIDGE_URL;
+        (document.body || document.documentElement).appendChild(frame);
+      });
+    }
+
+    async function bootstrapDverseSession() {
+      if (!dverseSupabase) return null;
+      const { data, error } = await dverseSupabase.auth.getSession();
+      if (error) throw error;
+      if (data.session) return data.session;
+
+      if (!dversePortalSessionPromise) {
+        dversePortalSessionPromise = (async () => {
+          const response = await dverseBridgeRequest({ type: 'dverse-auth:get-session' });
+          const session = response?.session;
+          if (!session?.access_token || !session?.refresh_token) return null;
+          const { data: restored, error: restoreError } = await dverseSupabase.auth.setSession({
+            access_token: session.access_token,
+            refresh_token: session.refresh_token
+          });
+          if (restoreError) throw restoreError;
+          return restored.session || null;
+        })().finally(() => {
+          dversePortalSessionPromise = null;
+        });
+      }
+      return dversePortalSessionPromise;
+    }
+
+    function syncDverseSessionToPortal(session) {
+      if (!session?.access_token || !session?.refresh_token) return;
+      dverseBridgeRequest({
+        type: 'dverse-auth:set-session',
+        session: {
+          access_token: session.access_token,
+          refresh_token: session.refresh_token
+        }
+      }, 1500).catch((error) => console.warn('[DVerse] Portal session sync failed:', error));
+    }
 
     // ===== Consolidated Application Logic =====
 
@@ -2845,11 +2924,7 @@
     window.signInWithDverse = async function() {
       try {
         if (!dverseSupabase) throw new Error('Supabase client is not available');
-        const { error } = await dverseSupabase.auth.signInWithOAuth({
-          provider: 'google',
-          options: { redirectTo: dverseAuthRedirectUrl() }
-        });
-        if (error) throw error;
+        window.location.href = `${DVERSE_PORTAL_ORIGIN}/?dverse_return_to=${encodeURIComponent(dverseAuthRedirectUrl())}`;
       } catch (error) {
         console.error('Sign-in error:', error);
         showNotification('Sign-in failed: ' + error.message, 'error');
@@ -2931,6 +3006,7 @@
     window.signOut = async function() {
       console.log("Signing out...");
       if (dverseSupabase) await dverseSupabase.auth.signOut();
+      await dverseBridgeRequest({ type: 'dverse-auth:sign-out' }, 1500);
       applyDverseSession(null);
       updateAuthUI();
       showNotification('Signed out', 'success');
@@ -4651,15 +4727,15 @@
       }
 
       dverseSupabase.auth.onAuthStateChange((_event, session) => {
+        if (session && (_event === 'SIGNED_IN' || _event === 'TOKEN_REFRESHED')) syncDverseSessionToPortal(session);
         applyDverseSession(session);
         updateAuthUI();
         if (window.renderAllBoards) window.renderAllBoards();
       });
 
       try {
-        const { data, error } = await dverseSupabase.auth.getSession();
-        if (error) throw error;
-        applyDverseSession(data.session);
+        const session = await bootstrapDverseSession();
+        applyDverseSession(session);
       } catch (error) {
         console.error('Session restore failed:', error);
         applyDverseSession(null);
