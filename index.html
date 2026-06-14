@@ -2797,6 +2797,7 @@
     const dverseSupabase = window.supabase
       ? window.supabase.createClient(DVERSE_SUPABASE_URL, DVERSE_SUPABASE_KEY)
       : null;
+    const dverseAuthRedirectUrl = () => `${window.location.origin}/`;
 
     // ===== Consolidated Application Logic =====
 
@@ -2846,7 +2847,7 @@
         if (!dverseSupabase) throw new Error('Supabase client is not available');
         const { error } = await dverseSupabase.auth.signInWithOAuth({
           provider: 'google',
-          options: { redirectTo: window.location.href.split('#')[0] }
+          options: { redirectTo: dverseAuthRedirectUrl() }
         });
         if (error) throw error;
       } catch (error) {
