@@ -175,6 +175,10 @@
 
     <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script type="module">
+        import { getStroke } from "https://unpkg.com/perfect-freehand@1.1.0/dist/esm/index.js";
+        window.getStroke = getStroke;
+    </script>
     <script>
         // Check if Tailwind loaded
         window.onload = function() {
@@ -6097,15 +6101,73 @@
             function drawVariablePen(stroke) {
                 const points = stroke.points || [];
                 if (points.length < 2) return;
-                for (let i = 1; i < points.length; i++) {
-                    const prev = points[i - 1];
-                    const point = points[i];
-                    ctx.beginPath();
-                    ctx.lineWidth = point.w || stroke.size || 1;
-                    ctx.moveTo(prev.x, prev.y);
-                    ctx.lineTo(point.x, point.y);
-                    ctx.stroke();
+
+                if (!window.getStroke) {
+                    for (let i = 1; i < points.length; i++) {
+                        const prev = points[i - 1];
+                        const point = points[i];
+                        ctx.beginPath();
+                        ctx.lineWidth = point.w || stroke.size || 1;
+                        ctx.moveTo(prev.x, prev.y);
+                        ctx.lineTo(point.x, point.y);
+                        ctx.stroke();
+                    }
+                    return;
                 }
+
+                // Map existing generated widths (w) to pressure.
+                // The size option acts as a multiplier in perfect-freehand.
+                // Since w is the absolute desired width, we can set size to 1 and pressure to w,
+                // or we can set size to max(w) and pressure to w / size.
+                // Using size=1 and pressure=w is straightforward because pressure directly translates to width when thinning is not altering it too much.
+                // Or better, we can calculate a normalized pressure based on the stroke's base size.
+                const baseSize = stroke.size || 3;
+
+                const mappedPoints = points.map(p => {
+                    // `p.w` is the target width. perfect-freehand will calculate thickness as size * pressure.
+                    // If we pass pressure as p.w / baseSize, and set size to baseSize, thickness = baseSize * (p.w / baseSize) = p.w
+                    const pressure = p.w ? (p.w / baseSize) : 0.5;
+                    return {
+                        x: p.x,
+                        y: p.y,
+                        pressure: pressure
+                    };
+                });
+
+                const outlinePoints = window.getStroke(mappedPoints, {
+                    size: baseSize,
+                    thinning: 1, // Set thinning to 1 so thickness = size * pressure
+                    smoothing: 0.5,
+                    streamline: 0.5,
+                    simulatePressure: false, // Turn off simulated pressure so it uses our provided pressure
+                    easing: (t) => t,
+                    start: { taper: 0, easing: (t) => t, cap: true },
+                    end: { taper: 0, easing: (t) => t, cap: true }
+                });
+
+                if (!outlinePoints || outlinePoints.length === 0) return;
+
+                const getSvgPathFromStroke = (stroke) => {
+                    if (!stroke.length) return ""
+
+                    const d = stroke.reduce(
+                        (acc, [x0, y0], i, arr) => {
+                            const [x1, y1] = arr[(i + 1) % arr.length]
+                            acc.push(x0, y0, (x0 + x1) / 2, (y0 + y1) / 2)
+                            return acc
+                        },
+                        ["M", ...stroke[0], "Q"]
+                    )
+
+                    d.push("Z")
+                    return d.join(" ")
+                };
+
+                const pathData = getSvgPathFromStroke(outlinePoints);
+
+                const path = new Path2D(pathData);
+                ctx.fillStyle = resolveThemeColor(stroke.color);
+                ctx.fill(path);
             }
 
             function drawSprayStroke(stroke) {
