@@ -32,7 +32,7 @@ export const AgentPanel: React.FC<Props> = ({ document: doc, onUpdateDocument, o
     {
       role: 'assistant',
       content:
-        "Hello! I am your D'Note Agent. I don't just write markdown — I construct rich Word elements (styled tables, callouts, whiteboard diagrams, and page layouts). What would you like to build?",
+        "I can help build styled tables, callouts, whiteboard diagrams, and page layouts in your document. What would you like to work on?",
     },
   ]);
   const [inputPrompt, setInputPrompt] = useState('');
@@ -151,7 +151,7 @@ export const AgentPanel: React.FC<Props> = ({ document: doc, onUpdateDocument, o
             <Sparkles className="w-4 h-4" />
           </div>
           <div>
-            <h2 className="text-sm font-bold text-slate-800 flex items-center gap-1.5">
+            <h2 className="text-sm font-medium text-slate-800 flex items-center gap-1.5">
               D'Note Agent
               <span className="text-[10px] font-medium bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full">
                 D-Ai
