@@ -79,7 +79,12 @@ export const WhiteboardView: React.FC<Props> = ({ onInsertToDocument }) => {
     };
     resize();
     window.addEventListener('resize', resize);
-    return () => window.removeEventListener('resize', resize);
+    const observer = new ResizeObserver(resize);
+    if (containerRef.current) observer.observe(containerRef.current);
+    return () => {
+      window.removeEventListener('resize', resize);
+      observer.disconnect();
+    };
   }, [elements, zoom, pan]);
 
   const draw = () => {

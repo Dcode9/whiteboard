@@ -64,39 +64,17 @@ export const App: React.FC = () => {
       <div className="flex-1 flex overflow-hidden relative">
         {/* Workspace Center Viewports */}
         <div className="flex-1 flex overflow-hidden">
-          {appMode === 'document' && (
-            <div className="flex-1 overflow-y-auto">
-              <PaginatedDocumentView
-                document={document}
-                onUpdateDocument={setDocument}
-                onExpandWhiteboard={() => setAppMode('whiteboard')}
-              />
-            </div>
-          )}
-
-          {appMode === 'whiteboard' && (
-            <div className="flex-1 h-full">
-              <WhiteboardView onInsertToDocument={handleInsertDrawingToDoc} />
-            </div>
-          )}
-
-          {appMode === 'split' && (
-            <div className="flex-1 flex w-full h-full overflow-hidden">
-              {/* Document Side (55%) */}
-              <div className="w-[55%] h-full overflow-y-auto border-r border-slate-300">
-                <PaginatedDocumentView
-                  document={document}
-                  onUpdateDocument={setDocument}
-                  onExpandWhiteboard={() => setAppMode('whiteboard')}
-                />
-              </div>
-
-              {/* Whiteboard Side (45%) */}
-              <div className="w-[45%] h-full">
-                <WhiteboardView onInsertToDocument={handleInsertDrawingToDoc} />
-              </div>
-            </div>
-          )}
+          {/* Keep each workspace mounted so mode changes do not discard drawings. */}
+          <div className={appMode === 'whiteboard' ? 'hidden' : appMode === 'split' ? 'w-[55%] h-full overflow-y-auto border-r border-slate-300' : 'flex-1 overflow-y-auto'}>
+            <PaginatedDocumentView
+              document={document}
+              onUpdateDocument={setDocument}
+              onExpandWhiteboard={() => setAppMode('whiteboard')}
+            />
+          </div>
+          <div className={appMode === 'document' ? 'hidden' : appMode === 'split' ? 'w-[45%] h-full' : 'flex-1 h-full'}>
+            <WhiteboardView onInsertToDocument={handleInsertDrawingToDoc} />
+          </div>
         </div>
 
         {/* AI Agent Sidecar */}
