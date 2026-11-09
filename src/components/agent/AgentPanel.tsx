@@ -132,7 +132,11 @@ export const AgentPanel: React.FC<Props> = ({ document: doc, onUpdateDocument, o
 
   const [showKeyModal, setShowKeyModal] = useState(false);
   const [apiKeyInput, setApiKeyInput] = useState(() => {
-    return (typeof window !== 'undefined' ? localStorage.getItem('d_ai_api_key') || '' : '');
+    try {
+      return (typeof window !== 'undefined' ? localStorage.getItem('d_ai_api_key') || '' : '');
+    } catch {
+      return '';
+    }
   });
 
   const saveApiKey = () => {

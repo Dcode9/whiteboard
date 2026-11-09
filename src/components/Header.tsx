@@ -15,6 +15,7 @@ import { exportToDocx } from '../services/docxExporter';
 
 interface Props {
   document: DNoteDocument;
+  saveStatus: 'saving' | 'saved' | 'unavailable' | 'protected';
   onUpdateDocument: (doc: DNoteDocument) => void;
   appMode: AppMode;
   onChangeMode: (mode: AppMode) => void;
@@ -24,6 +25,7 @@ interface Props {
 
 export const Header: React.FC<Props> = ({
   document: doc,
+  saveStatus,
   onUpdateDocument,
   appMode,
   onChangeMode,
@@ -88,8 +90,9 @@ export const Header: React.FC<Props> = ({
           title="Click to rename document"
         />
 
-        <div className="hidden lg:flex items-center gap-1 text-[11px] text-emerald-600 font-medium bg-emerald-50 px-2 py-0.5 rounded-full">
-          <CheckCircle2 className="w-3 h-3" /> Saved
+        <div className={`hidden lg:flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full ${saveStatus === 'saved' ? 'text-emerald-700 bg-emerald-50' : 'text-amber-800 bg-amber-50'}`}>
+          {saveStatus === 'saved' && <CheckCircle2 className="w-3 h-3" />}
+          {saveStatus === 'saved' ? 'Saved on this device' : saveStatus === 'saving' ? 'Saving...' : 'Not saved'}
         </div>
       </div>
 
