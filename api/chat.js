@@ -348,7 +348,7 @@ async function callProviderAPI({ provider, apiKey, incomingBody, isVision = fals
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS, GET');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-inception-key, x-groq-key, x-gemini-key, x-cerebras-key, x-pollinations-key');
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
@@ -357,7 +357,7 @@ export default async function handler(req, res) {
   const inceptionKey = (req.headers['x-inception-key'] || process.env.INCEPTION_API || process.env.INCEPTION_API_KEY || process.env.INCEPTION_KEY || '').trim();
   const groqKey = (req.headers['x-groq-key'] || process.env.GROQ_API_KEY || process.env.GROQ_API || process.env.GROK_API_KEY || process.env.GROK_API || '').trim();
   const geminiKey = (req.headers['x-gemini-key'] || process.env.GEMINI_API_KEY || process.env.API_KEY || '').trim();
-  const cerebrasKey = (req.headers['x-cerebras-key'] || process.env.CEREBRAS_API_KEY || '').trim();
+  const cerebrasKey = (req.headers['x-cerebras-key'] || process.env.CEREBRAS_API_KEY || process.env.CEREBRAS_API || '').trim();
   const pollinationsKey = (req.headers['x-pollinations-key'] || process.env.POLLINATIONS_API || process.env.NEXT_PUBLIC_POLLINATIONS_API || 'free').trim();
   const cfKey = (process.env.CLOUDFLARE_API_TOKEN || '').trim();
   const cfAccount = (process.env.CLOUDFLARE_ACCOUNT_ID || '').trim();
